@@ -10,6 +10,8 @@
 
 # production
 /build
+.cache/
+/dist
 
 # misc
 .DS_Store
@@ -21,3 +23,18 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Cache and Output
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
