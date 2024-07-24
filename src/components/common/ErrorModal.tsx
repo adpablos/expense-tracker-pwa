@@ -52,6 +52,18 @@ const CloseButton = styled.button`
   }
 `;
 
+const ErrorTitle = styled.h3`
+  color: ${theme.colors.error};
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+`;
+
+const ErrorMessage = styled.p`
+  color: ${theme.colors.text};
+  font-size: 1rem;
+  margin-bottom: 1rem;
+`;
+
 interface ErrorModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -61,14 +73,16 @@ interface ErrorModalProps {
 const ErrorModal: React.FC<ErrorModalProps> = ({ isOpen, onClose, message }) => {
   if (!isOpen) return null;
 
+  console.log("Error received and processing in ErrorModal:", message);
+
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
         <IconContainer>
           <FaExclamationTriangle />
         </IconContainer>
-        <Message>Error al procesar el gasto</Message>
-        <p>{message}</p>
+        <ErrorTitle>Error al procesar el gasto</ErrorTitle>
+        <ErrorMessage>{message}</ErrorMessage>
         <CloseButton onClick={onClose}>Cerrar</CloseButton>
       </ModalContent>
     </ModalOverlay>

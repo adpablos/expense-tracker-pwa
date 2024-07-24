@@ -7,6 +7,7 @@ import { theme } from '../../styles/theme';
 import SubmitButton from '../common/SubmitButton';
 import ErrorModal from '../common/ErrorModal';
 import LoadingOverlay from '../common/LoadingOverlay';
+import axios from 'axios';
 
 const Container = styled.div`
   display: flex;
@@ -87,14 +88,29 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onUploadComplete }) => {
       setIsLoading(true);
       try {
         const response = await uploadExpenseFile(selectedFile);
-        if (response.data.message === 'No expense logged.') {
-          setErrorMessage('No se pudo identificar un gasto válido en la imagen. Por favor, intenta de nuevo o usa otro método.');
-        } else {
-          onUploadComplete(response.data.expense);
-        }
+        // Response was succcessful 2xx
+        onUploadComplete(response.data.expense);
       } catch (error) {
-        console.error('Error al cargar la imagen:', error);
-        setErrorMessage('Ocurrió un error al procesar la imagen. Por favor, intenta de nuevo.');
+        console.error('Error al cargar el audio:', error);
+        if (axios.isAxiosError(error)) {
+          if (error.response) {
+            // El servidor respondió con un status fuera del rango 2xx
+            if (error.response.status === 422) {
+              setErrorMessage("No se registró ningún gasto. El archivo se procesó correctamente, pero no se pudo identificar ningún gasto válido.");
+            } else {
+              setErrorMessage('Error en la respuesta del servidor: ' + error.response.data.message);
+            }
+          } else if (error.request) {
+            // La petición fue hecha pero no se recibió respuesta
+            setErrorMessage('No se recibió respuesta del servidor. Por favor, intenta de nuevo.');
+          } else {
+            // Algo sucedió al configurar la petición que provocó un Error
+            setErrorMessage('Error al preparar la solicitud. Por favor, intenta de nuevo.');
+          }
+        } else {
+          // Error no relacionado con Axios
+          setErrorMessage('Ocurrió un error inesperado. Por favor, intenta de nuevo.');
+        }
       } finally {
         setIsLoading(false);
       }

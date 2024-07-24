@@ -1,5 +1,3 @@
-// src/styles/theme.ts
-
 export const theme = {
   colors: {
     primary: '#007bff',
@@ -15,11 +13,20 @@ export const theme = {
     successHover: '#218838',
     error: '#dc3545',
     disabled: '#e9ecef',
+    waveform: '#007bff',
+    waveformBackground: '#e9ecef',
   },
   borderRadius: '4px',
   padding: {
     small: '0.5rem',
     medium: '1rem',
+    large: '1.5rem',
   },
   boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+  fontSize: {
+    small: '0.875rem',
+    medium: '1rem',
+    large: '1.25rem',
+  },
+  transition: '0.3s ease',
 };
