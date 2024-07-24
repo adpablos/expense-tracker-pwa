@@ -1,4 +1,3 @@
-// src/components/common/SubmitButton.tsx
 import React from 'react';
 import styled from 'styled-components';
 import { FaCheck } from 'react-icons/fa';
@@ -31,14 +30,14 @@ const Button = styled.button`
   }
 `;
 
-export interface SubmitButtonProps {
-  onClick: () => void;
+export interface SubmitButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  onClick?: () => void;
   disabled?: boolean;
   children?: React.ReactNode;
 }
 
-const SubmitButton: React.FC<SubmitButtonProps> = ({ onClick, disabled, children }) => (
-  <Button onClick={onClick} disabled={disabled}>
+const SubmitButton: React.FC<SubmitButtonProps> = ({ onClick, disabled, children, ...props }) => (
+  <Button onClick={onClick} disabled={disabled} {...props}>
     <FaCheck /> {children || 'Registrar gasto'}
   </Button>
 );

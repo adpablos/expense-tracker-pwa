@@ -1,8 +1,13 @@
-// src/components/common/SuccessModal.tsx
 import React, { useEffect } from 'react';
-import styled from 'styled-components';
-import { FaCheckCircle } from 'react-icons/fa';
+import styled, { keyframes } from 'styled-components';
+import { FaCheckCircle, FaFileAlt, FaDollarSign, FaTag, FaLayerGroup, FaCalendarAlt } from 'react-icons/fa';
 import { theme } from '../../styles/theme';
+import { Expense } from '../../types';
+
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -10,7 +15,7 @@ const ModalOverlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -20,73 +25,129 @@ const ModalOverlay = styled.div`
 const ModalContent = styled.div`
   background-color: ${theme.colors.background};
   padding: 2rem;
-  border-radius: ${theme.borderRadius};
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   text-align: center;
   max-width: 90%;
   width: 400px;
+  animation: ${fadeIn} 0.3s ease-out;
 `;
 
 const IconContainer = styled.div`
   color: ${theme.colors.success};
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
 `;
 
-const Message = styled.p`
+const Message = styled.h2`
   color: ${theme.colors.text};
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
 `;
 
 const ExpenseDetails = styled.div`
   background-color: ${theme.colors.backgroundLight};
-  padding: 1rem;
-  border-radius: ${theme.borderRadius};
+  padding: 1.5rem;
+  border-radius: 10px;
+  border: 1px solid ${theme.colors.border};
+  text-align: left;
+`;
+
+const DetailItem = styled.div`
+  display: flex;
+  align-items: flex-start;
   margin-bottom: 1rem;
+  color: ${theme.colors.text};
+  font-size: 1.1rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const DetailIcon = styled.span`
+  color: ${theme.colors.primary};
+  margin-right: 0.75rem;
+  min-width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const DetailLabel = styled.span`
+  font-weight: bold;
+  min-width: 120px;
+  margin-right: 0.5rem;
+`;
+
+const DetailValue = styled.span`
+  flex: 1;
 `;
 
 interface SuccessModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  expense: {
-    description: string;
-    amount: number;
-    category: string;
-    subcategory: string;
-    date: string;
-  };
+    isOpen: boolean;
+    onClose: () => void;
+    expense: Expense | null;
 }
 
 const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, expense }) => {
-  useEffect(() => {
-    if (isOpen) {
-      const timer = setTimeout(() => {
-        onClose();
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen, onClose]);
+    useEffect(() => {
+        if (isOpen) {
+            const timer = setTimeout(() => {
+                onClose();
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+    if (!isOpen || !expense) return null;
 
-  return (
-    <ModalOverlay onClick={onClose}>
-      <ModalContent onClick={(e) => e.stopPropagation()}>
-        <IconContainer>
-          <FaCheckCircle />
-        </IconContainer>
-        <Message>Gasto registrado con éxito</Message>
-        <ExpenseDetails>
-          <p><strong>Descripción:</strong> {expense.description}</p>
-          <p><strong>Monto:</strong> ${expense.amount.toFixed(2)}</p>
-          <p><strong>Categoría:</strong> {expense.category}</p>
-          <p><strong>Subcategoría:</strong> {expense.subcategory}</p>
-          <p><strong>Fecha:</strong> {expense.date}</p>
-        </ExpenseDetails>
-      </ModalContent>
-    </ModalOverlay>
-  );
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
+    return (
+        <ModalOverlay onClick={onClose}>
+            <ModalContent onClick={(e) => e.stopPropagation()}>
+                <IconContainer>
+                    <FaCheckCircle />
+                </IconContainer>
+                <Message>Gasto registrado con éxito</Message>
+                <ExpenseDetails>
+                    <DetailItem>
+                        <DetailIcon><FaFileAlt /></DetailIcon>
+                        <DetailLabel>Descripción:</DetailLabel>
+                        <DetailValue>{expense.description}</DetailValue>
+                    </DetailItem>
+                    <DetailItem>
+                        <DetailIcon><FaDollarSign /></DetailIcon>
+                        <DetailLabel>Cantidad:</DetailLabel>
+                        <DetailValue>${typeof expense.amount === 'string' ? parseFloat(expense.amount).toFixed(2) : expense.amount.toFixed(2)}</DetailValue>
+                    </DetailItem>
+                    <DetailItem>
+                        <DetailIcon><FaTag /></DetailIcon>
+                        <DetailLabel>Categoría:</DetailLabel>
+                        <DetailValue>{expense.category}</DetailValue>
+                    </DetailItem>
+                    <DetailItem>
+                        <DetailIcon><FaLayerGroup /></DetailIcon>
+                        <DetailLabel>Subcategoría:</DetailLabel>
+                        <DetailValue>{expense.subcategory}</DetailValue>
+                    </DetailItem>
+                    <DetailItem>
+                        <DetailIcon><FaCalendarAlt /></DetailIcon>
+                        <DetailLabel>Fecha:</DetailLabel>
+                        <DetailValue>{formatDate(expense.date)}</DetailValue>
+                    </DetailItem>
+                </ExpenseDetails>
+            </ModalContent>
+        </ModalOverlay>
+    );
 };
 
 export default SuccessModal;

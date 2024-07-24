@@ -1,46 +1,50 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaMicrophone, FaStop, FaPlay, FaPause } from 'react-icons/fa';
+import { FaMicrophone, FaStop, FaPlay, FaPause, FaUpload } from 'react-icons/fa';
 import { uploadExpenseFile } from '../../services/api';
 import { Expense } from '../../types';
 import { theme } from '../../styles/theme';
 import SubmitButton from '../common/SubmitButton';
+import ErrorModal from '../common/ErrorModal';
+import LoadingOverlay from '../common/LoadingOverlay';
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
+  gap: 1.5rem;
+  padding: 1.5rem;
   background-color: ${theme.colors.backgroundLight};
   border-radius: ${theme.borderRadius};
   box-shadow: ${theme.boxShadow};
 `;
 
-const WaveformContainer = styled.div`
+const WaveformContainer = styled.div<{ isVisible: boolean }>`
   width: 100%;
-  height: 60px;
+  height: 80px;
   background-color: ${theme.colors.background};
   border-radius: ${theme.borderRadius};
   overflow: hidden;
-  margin-bottom: 1rem;
+  display: ${props => props.isVisible ? 'flex' : 'none'};
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 1rem;
 `;
 
 const Waveform = styled.div<{ height: number }>`
   height: ${props => props.height}%;
+  width: 3px;
   background-color: ${theme.colors.primary};
-  width: 2px;
   margin: 0 1px;
-  display: inline-block;
-  vertical-align: bottom;
 `;
 
 const ButtonContainer = styled.div`
   display: flex;
   gap: 1rem;
+  justify-content: center;
 `;
 
-const CircleButton = styled.button`
+const ActionButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -64,6 +68,33 @@ const CircleButton = styled.button`
   }
 `;
 
+const FileInput = styled.input`
+  display: none;
+`;
+
+const FileButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  background-color: ${theme.colors.primary};
+  color: ${theme.colors.background};
+  border: none;
+  border-radius: ${theme.borderRadius};
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: fit-content;
+
+  &:hover {
+    background-color: ${theme.colors.primaryHover};
+  }
+
+  svg {
+    margin-right: 0.5rem;
+  }
+`;
+
 interface AudioRecorderProps {
   onUploadComplete: (expense: Expense) => void;
 }
@@ -74,6 +105,8 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [waveform, setWaveform] = useState<number[]>([]);
+  const [isWaveformVisible, setIsWaveformVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -97,6 +130,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
       setIsRecording(true);
     } catch (error) {
       console.error('Error accessing microphone:', error);
+      setErrorMessage('No se pudo acceder al micrófono. Por favor, verifica los permisos e intenta de nuevo.');
     }
   };
 
@@ -107,11 +141,20 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
     }
   };
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setAudioBlob(file);
+      handleAudioData(file);
+    }
+  };
+
   const handleAudioData = async (blob: Blob) => {
     const arrayBuffer = await blob.arrayBuffer();
     const audioContext = new AudioContext();
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
     updateWaveform(audioBuffer);
+    setIsWaveformVisible(true);
   };
 
   const updateWaveform = (audioBuffer: AudioBuffer) => {
@@ -146,15 +189,21 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
     }
   };
 
+
   const handleUpload = async () => {
     if (audioBlob) {
       setIsLoading(true);
       try {
         const file = new File([audioBlob], 'audio_expense.wav', { type: 'audio/wav' });
         const response = await uploadExpenseFile(file);
-        onUploadComplete(response.data.expense);
+        if (response.data.message === 'No expense logged.') {
+          setErrorMessage('No se pudo identificar un gasto válido en el audio. Por favor, intenta de nuevo o usa otro método.');
+        } else {
+          onUploadComplete(response.data.expense);
+        }
       } catch (error) {
         console.error('Error al cargar el audio:', error);
+        setErrorMessage('Ocurrió un error al procesar el audio. Por favor, intenta de nuevo.');
       } finally {
         setIsLoading(false);
       }
@@ -163,29 +212,59 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
 
   return (
     <Container>
-      <WaveformContainer>
+      {isLoading && <LoadingOverlay message="Procesando audio..." />}
+      <WaveformContainer isVisible={isWaveformVisible}>
         {waveform.map((height, index) => (
           <Waveform key={index} height={height} />
         ))}
       </WaveformContainer>
       <ButtonContainer>
-        {isRecording ? (
-          <CircleButton onClick={stopRecording}><FaStop /></CircleButton>
+        {!audioBlob ? (
+          <>
+            {isRecording ? (
+              <ActionButton onClick={stopRecording}>
+                <FaStop />
+              </ActionButton>
+            ) : (
+              <ActionButton onClick={startRecording}>
+                <FaMicrophone />
+              </ActionButton>
+            )}
+            <FileInput
+              type="file"
+              accept="audio/*"
+              onChange={handleFileSelect}
+              id="audioFileInput"
+            />
+            <FileButton as="label" htmlFor="audioFileInput">
+              <FaUpload /> Seleccionar archivo
+            </FileButton>
+          </>
         ) : (
-          <CircleButton onClick={startRecording}><FaMicrophone /></CircleButton>
-        )}
-        {audioBlob && (
-          <CircleButton onClick={isPlaying ? pauseAudio : playAudio}>
-            {isPlaying ? <FaPause /> : <FaPlay />}
-          </CircleButton>
+          <>
+            <ActionButton onClick={isPlaying ? pauseAudio : playAudio}>
+              {isPlaying ? <FaPause /> : <FaPlay />}
+            </ActionButton>
+            <ActionButton onClick={() => {
+              setAudioBlob(null);
+              setIsWaveformVisible(false);
+            }}>
+              <FaStop />
+            </ActionButton>
+          </>
         )}
       </ButtonContainer>
       {audioBlob && (
         <SubmitButton onClick={handleUpload} disabled={isLoading}>
-          Submit
+          Registrar gasto
         </SubmitButton>
       )}
       <audio ref={audioRef} onEnded={() => setIsPlaying(false)} />
+      <ErrorModal
+        isOpen={!!errorMessage}
+        onClose={() => setErrorMessage(null)}
+        message={errorMessage || ''}
+      />
     </Container>
   );
 };
