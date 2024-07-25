@@ -9,11 +9,6 @@ import ErrorModal from '../common/ErrorModal';
 import LoadingOverlay from '../common/LoadingOverlay';
 import axios from 'axios';
 
-const createAudioContext = (): AudioContext => {
-  const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-  return new AudioContextClass();
-};
-
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -127,8 +122,10 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
   const [playbackPosition, setPlaybackPosition] = useState(0);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
     const audioElement = audioRef.current;
@@ -141,23 +138,48 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
         audioElement.removeEventListener('timeupdate', updatePlaybackPosition);
         audioElement.removeEventListener('ended', () => setIsPlaying(false));
       }
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
     };
   }, []);
 
   useEffect(() => {
     if (audioBlob) {
-      const url = URL.createObjectURL(audioBlob);
-      setAudioUrl(url);
-      return () => {
-        URL.revokeObjectURL(url);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (audioRef.current && e.target) {
+          audioRef.current.src = e.target.result as string;
+        }
       };
+      reader.readAsDataURL(audioBlob);
     }
   }, [audioBlob]);
 
+  const isRecordingSupported = () => {
+    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  };
+
   const startRecording = async () => {
+    if (!isRecordingSupported()) {
+      setErrorMessage('La grabación de audio no está soportada en este dispositivo.');
+      return;
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      analyserRef.current = audioContext.createAnalyser();
+      const source = audioContext.createMediaStreamSource(stream);
+      source.connect(analyserRef.current);
+
+      const options = { mimeType: 'audio/webm;codecs=opus' };
+      try {
+        mediaRecorderRef.current = new MediaRecorder(stream, options);
+      } catch (e) {
+        console.warn('audio/webm;codecs=opus not supported, trying audio/mp4');
+        mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'audio/mp4' });
+      }
       
       const audioChunks: Blob[] = [];
 
@@ -166,15 +188,24 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
       };
 
       mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        const audioBlob = new Blob(audioChunks, { type: mediaRecorderRef.current?.mimeType || 'audio/wav' });
         setAudioBlob(audioBlob);
         setAudioSource('recorded');
         setIsRecording(false);
         visualizeAudio(audioBlob);
+        console.log('Recording stopped. Audio blob:', audioBlob);
+        console.log('Audio blob type:', audioBlob.type);
+        console.log('Audio blob size:', audioBlob.size);
+      };
+
+      mediaRecorderRef.current.onerror = (event) => {
+        console.error('MediaRecorder error:', event);
+        setErrorMessage('Error durante la grabación. Por favor, intenta de nuevo.');
       };
 
       mediaRecorderRef.current.start();
       setIsRecording(true);
+      drawWaveform();
     } catch (error) {
       console.error('Error accessing microphone:', error);
       setErrorMessage('No se pudo acceder al micrófono. Por favor, verifica los permisos e intenta de nuevo.');
@@ -185,20 +216,77 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
     }
   };
 
-  const togglePlayback = () => {
+  const drawWaveform = () => {
+    if (!canvasRef.current || !analyserRef.current) return;
+
+    const canvas = canvasRef.current;
+    const canvasCtx = canvas.getContext('2d');
+    if (!canvasCtx) return;
+
+    const WIDTH = canvas.width;
+    const HEIGHT = canvas.height;
+
+    analyserRef.current.fftSize = 2048;
+    const bufferLength = analyserRef.current.fftSize;
+    const dataArray = new Uint8Array(bufferLength);
+
+    canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+
+    const draw = () => {
+      animationFrameRef.current = requestAnimationFrame(draw);
+
+      analyserRef.current!.getByteTimeDomainData(dataArray);
+
+      canvasCtx.fillStyle = theme.colors.waveformBackground;
+      canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+
+      canvasCtx.lineWidth = 2;
+      canvasCtx.strokeStyle = theme.colors.waveform;
+      canvasCtx.beginPath();
+
+      const sliceWidth = WIDTH * 1.0 / bufferLength;
+      let x = 0;
+
+      for (let i = 0; i < bufferLength; i++) {
+        const v = dataArray[i] / 128.0;
+        const y = v * HEIGHT / 2;
+
+        if (i === 0) {
+          canvasCtx.moveTo(x, y);
+        } else {
+          canvasCtx.lineTo(x, y);
+        }
+
+        x += sliceWidth;
+      }
+
+      canvasCtx.lineTo(canvas.width, canvas.height / 2);
+      canvasCtx.stroke();
+    };
+
+    draw();
+  };
+
+  const togglePlayback = async () => {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
+        setIsPlaying(false);
       } else {
-        audioRef.current.play().catch(e => {
-          console.error("Error playing audio:", e);
-          setErrorMessage('Error al reproducir el audio. Por favor, intenta de nuevo.');
-        });
+        try {
+          await audioRef.current.play();
+          setIsPlaying(true);
+        } catch (error) {
+          console.error('Error playing audio:', error);
+          setErrorMessage('Error al reproducir el audio. Toca la pantalla e intenta de nuevo.');
+        }
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -217,6 +305,9 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
       setAudioBlob(file);
       setAudioSource('uploaded');
       await visualizeAudio(file);
+      console.log('File selected:', file);
+      console.log('File type:', file.type);
+      console.log('File size:', file.size);
     }
   };
 
@@ -282,29 +373,28 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
     if (audioBlob) {
       setIsLoading(true);
       try {
-        const file = new File([audioBlob], 'audio_expense.wav', { type: 'audio/wav' });
+        const file = new File([audioBlob], 'audio_expense.webm', { type: audioBlob.type });
+        console.log('Uploading file:', file);
+        console.log('File type:', file.type);
+        console.log('File size:', file.size);
+
         const response = await uploadExpenseFile(file);
-        // Response was succcessful 2xx
         onUploadComplete(response.data.expense);
       } catch (error) {
         console.error('Error al cargar el audio:', error);
         if (axios.isAxiosError(error)) {
           if (error.response) {
-            // El servidor respondió con un status fuera del rango 2xx
             if (error.response.status === 422) {
               setErrorMessage("No se registró ningún gasto. El archivo se procesó correctamente, pero no se pudo identificar ningún gasto válido.");
             } else {
               setErrorMessage('Error en la respuesta del servidor: ' + error.response.data.message);
             }
           } else if (error.request) {
-            // La petición fue hecha pero no se recibió respuesta
             setErrorMessage('No se recibió respuesta del servidor. Por favor, intenta de nuevo.');
           } else {
-            // Algo sucedió al configurar la petición que provocó un Error
             setErrorMessage('Error al preparar la solicitud. Por favor, intenta de nuevo.');
           }
         } else {
-          // Error no relacionado con Axios
           setErrorMessage('Ocurrió un error inesperado. Por favor, intenta de nuevo.');
         }
       } finally {
@@ -360,7 +450,6 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
       )}
       <audio 
         ref={audioRef}
-        src={audioUrl || ''}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
       />
