@@ -62,13 +62,18 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
       date
     };
 
-    const result = await dispatch(createExpense(expenseData));
-    if (createExpense.fulfilled.match(result)) {
+    try {
+      const result = await dispatch(createExpense(expenseData));
+      if (createExpense.fulfilled.match(result)) {
         console.log("Expense submitted:", result.payload); 
         onSubmit(result.payload);
-    } else {
-      // Handle error
-      console.error("Failed to create expense:", result.error);
+      } else {
+        console.error("Failed to create expense:", result.error);
+        setErrorMessage(result.error.message || "Error al crear el gasto"); 
+      }
+    } catch (error) {
+      console.error("Error inesperado:", error);
+      setErrorMessage("Error inesperado al crear el gasto");
     }
   };
 
@@ -131,3 +136,7 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
 };
 
 export default ManualExpenseForm;
+
+function setErrorMessage(arg0: string) {
+  throw new Error('Function not implemented.');
+}
