@@ -49,7 +49,7 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
     const selectedCategory = categories.find(cat => cat.id === categoryId);
     const selectedSubcategory = subcategories.find(sub => sub.id === subcategoryId);
 
-    if (!selectedCategory || !selectedSubcategory) {
+    if (!selectedCategory) {
       // Handle error
       return;
     }
@@ -58,7 +58,7 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
       description,
       amount: parseFloat(amount),
       category: selectedCategory.name,
-      subcategory: selectedSubcategory ? selectedSubcategory.name : 'Sin subcategoría',
+      subcategory: subcategoryId ? subcategories.find(sub => sub.id === subcategoryId)?.name || 'Sin subcategoría' : 'Sin subcategoría',
       date
     };
 
@@ -108,7 +108,6 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
       <Select
         value={subcategoryId}
         onChange={(e) => setSubcategoryId(e.target.value)}
-        required
         disabled={!categoryId}
       >
         <option value="">Selecciona una subcategoría</option>
