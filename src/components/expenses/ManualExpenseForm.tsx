@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import { createExpense } from '../../store/slices/expensesSlice';
@@ -39,6 +39,11 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
   const [subcategoryId, setSubcategoryId] = useState('');
   const [date, setDate] = useState('');
 
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    setDate(today);
+  }, []);
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const selectedCategory = categories.find(cat => cat.id === categoryId);
@@ -53,7 +58,7 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
       description,
       amount: parseFloat(amount),
       category: selectedCategory.name,
-      subcategory: selectedSubcategory.name,
+      subcategory: selectedSubcategory ? selectedSubcategory.name : 'Sin subcategoría',
       date
     };
 

@@ -73,7 +73,9 @@ interface ErrorModalProps {
 const ErrorModal: React.FC<ErrorModalProps> = ({ isOpen, onClose, message }) => {
   if (!isOpen) return null;
 
-  console.log("Error received and processing in ErrorModal:", message);
+  console.log("Error received in ErrorModal:", message);
+  console.log("Error type:", typeof message);
+  console.log("Error stringified:", JSON.stringify(message));
 
   return (
     <ModalOverlay onClick={onClose}>

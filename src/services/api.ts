@@ -14,9 +14,16 @@ export const uploadExpenseFile = (file: File) => {
   const formData = new FormData();
   formData.append('file', file);
 
-  return api.post<{ message: string; expense: Expense }>('/expenses/upload', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  });
+  try {
+    const response = api.post<{ message: string; expense: Expense }>('/expenses/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    console.log('API response:', response);
+    return response;
+  } catch (error) {
+    console.error('API error:', error);
+    throw error;
+  }
 };
 
 // This function will be used internally from expensesSlice.ts

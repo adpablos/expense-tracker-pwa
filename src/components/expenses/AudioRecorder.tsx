@@ -377,25 +377,30 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
         console.log('Uploading file:', file);
         console.log('File type:', file.type);
         console.log('File size:', file.size);
-
+  
         const response = await uploadExpenseFile(file);
+        console.log('Server response:', response);
         onUploadComplete(response.data.expense);
       } catch (error) {
         console.error('Error al cargar el audio:', error);
         if (axios.isAxiosError(error)) {
           if (error.response) {
+            console.log('Error response:', error.response);
             if (error.response.status === 422) {
               setErrorMessage("No se registró ningún gasto. El archivo se procesó correctamente, pero no se pudo identificar ningún gasto válido.");
             } else {
-              setErrorMessage('Error en la respuesta del servidor: ' + error.response.data.message);
+              setErrorMessage(`Error en la respuesta del servidor: ${error.response.status} - ${error.response.data.message || 'Mensaje no disponible'}`);
             }
           } else if (error.request) {
+            console.log('Error request:', error.request);
             setErrorMessage('No se recibió respuesta del servidor. Por favor, intenta de nuevo.');
           } else {
-            setErrorMessage('Error al preparar la solicitud. Por favor, intenta de nuevo.');
+            console.log('Error message:', error.message);
+            setErrorMessage(`Error al preparar la solicitud: ${error.message}`);
           }
         } else {
-          setErrorMessage('Ocurrió un error inesperado. Por favor, intenta de nuevo.');
+          console.log('Unexpected error:', error);
+          setErrorMessage(`Ocurrió un error inesperado: ${error instanceof Error ? error.message : 'Error desconocido'}`);
         }
       } finally {
         setIsLoading(false);
