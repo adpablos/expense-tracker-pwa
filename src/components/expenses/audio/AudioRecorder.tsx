@@ -86,7 +86,7 @@ const Timer = styled.div`
 
 const WaveformContainer = styled.div`
   width: 100%;
-  height: 150px;
+  height: 100%;
   background-color: ${theme.colors.waveformBackground};
   border-radius: 10px;
   overflow: hidden;
@@ -119,43 +119,44 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackPosition, setPlaybackPosition] = useState(0);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [audioDuration, setAudioDuration] = useState(0);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioBufferRef = useRef<AudioBuffer | null>(null);
+  const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const startTimeRef = useRef<number>(0);
 
   useEffect(() => {
+    audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
     return () => {
-      if (audioUrl) {
-        URL.revokeObjectURL(audioUrl);
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
       }
     };
-  }, [audioUrl]);
+  }, []);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let interval: NodeJS.Timeout;
     if (isRecording) {
-      timer = setInterval(() => {
+      interval = setInterval(() => {
         setRecordingTime((prevTime) => prevTime + 1);
       }, 1000);
     }
     return () => {
-      if (timer) clearInterval(timer);
+      if (interval) {
+        clearInterval(interval);
+      }
     };
   }, [isRecording]);
 
-  const toggleRecording = async () => {
-    if (isRecording) {
-      stopRecording();
-    } else {
-      await startRecording();
+  useEffect(() => {
+    if (audioBlob && audioBufferRef.current) {
+      visualizeAudio(audioBufferRef.current);
     }
-  };
+  }, [audioBlob]);
 
   const startRecording = async () => {
     try {
@@ -163,25 +164,16 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
       streamRef.current = stream;
       mediaRecorderRef.current = new MediaRecorder(stream);
       
+      const audioChunks: Blob[] = [];
       mediaRecorderRef.current.ondataavailable = (event) => {
         if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
+          audioChunks.push(event.data);
         }
       };
 
       mediaRecorderRef.current.onstop = async () => {
-        const newAudioChunk = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-        if (audioBlob) {
-          const combinedBlob = new Blob([audioBlob, newAudioChunk], { type: 'audio/wav' });
-          setAudioBlob(combinedBlob);
-          await visualizeAudio(combinedBlob);
-          updateAudioUrl(combinedBlob);
-        } else {
-          setAudioBlob(newAudioChunk);
-          await visualizeAudio(newAudioChunk);
-          updateAudioUrl(newAudioChunk);
-        }
-        audioChunksRef.current = [];
+        const newAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        await combineAudioBlobs(newAudioBlob);
       };
 
       mediaRecorderRef.current.start();
@@ -199,56 +191,180 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
     }
   };
 
-  const updateAudioUrl = (blob: Blob) => {
-    if (audioUrl) {
-      URL.revokeObjectURL(audioUrl);
+  const combineAudioBlobs = async (newBlob: Blob) => {
+    const audioContext = audioContextRef.current!;
+    
+    const [existingBuffer, newBuffer] = await Promise.all([
+      audioBlob ? audioContext.decodeAudioData(await audioBlob.arrayBuffer()) : null,
+      audioContext.decodeAudioData(await newBlob.arrayBuffer())
+    ]);
+  
+    let combinedBuffer: AudioBuffer;
+    if (existingBuffer) {
+      const combinedLength = existingBuffer.length + newBuffer.length;
+      combinedBuffer = audioContext.createBuffer(
+        existingBuffer.numberOfChannels,
+        combinedLength,
+        existingBuffer.sampleRate
+      );
+  
+      for (let channel = 0; channel < existingBuffer.numberOfChannels; channel++) {
+        const combinedChannelData = combinedBuffer.getChannelData(channel);
+        combinedChannelData.set(existingBuffer.getChannelData(channel), 0);
+        combinedChannelData.set(newBuffer.getChannelData(channel), existingBuffer.length);
+      }
+    } else {
+      combinedBuffer = newBuffer;
     }
-    const newAudioUrl = URL.createObjectURL(blob);
-    setAudioUrl(newAudioUrl);
-    if (audioRef.current) {
-      audioRef.current.src = newAudioUrl;
+  
+    audioBufferRef.current = combinedBuffer;
+    const combinedBlob = await audioBufferToWav(combinedBuffer);
+    setAudioBlob(combinedBlob);
+  
+    // Forzamos un re-render después de actualizar el estado
+    setTimeout(() => {
+      visualizeAudio(combinedBuffer);
+    }, 0);
+  };
+
+  const audioBufferToWav = async (buffer: AudioBuffer): Promise<Blob> => {
+    const wavFile = await new Promise<Blob>((resolve) => {
+      const numberOfChannels = buffer.numberOfChannels;
+      const sampleRate = buffer.sampleRate;
+      const length = buffer.length * numberOfChannels * 2;
+      const arrayBuffer = new ArrayBuffer(44 + length);
+      const view = new DataView(arrayBuffer);
+
+      // Write WAV header
+      writeString(view, 0, 'RIFF');
+      view.setUint32(4, 36 + length, true);
+      writeString(view, 8, 'WAVE');
+      writeString(view, 12, 'fmt ');
+      view.setUint32(16, 16, true);
+      view.setUint16(20, 1, true);
+      view.setUint16(22, numberOfChannels, true);
+      view.setUint32(24, sampleRate, true);
+      view.setUint32(28, sampleRate * numberOfChannels * 2, true);
+      view.setUint16(32, numberOfChannels * 2, true);
+      view.setUint16(34, 16, true);
+      writeString(view, 36, 'data');
+      view.setUint32(40, length, true);
+
+      // Write audio data
+      const offset = 44;
+      for (let i = 0; i < buffer.length; i++) {
+        for (let channel = 0; channel < numberOfChannels; channel++) {
+          const sample = buffer.getChannelData(channel)[i];
+          view.setInt16(offset + (i * numberOfChannels + channel) * 2, sample * 0x7fff, true);
+        }
+      }
+
+      resolve(new Blob([arrayBuffer], { type: 'audio/wav' }));
+    });
+
+    return wavFile;
+  };
+
+  const writeString = (view: DataView, offset: number, string: string) => {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
+    }
+  };
+
+  const visualizeAudio = (audioBuffer: AudioBuffer) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+  
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+  
+    const width = canvas.width;
+    const height = canvas.height;
+    const data = audioBuffer.getChannelData(0);
+    const step = Math.ceil(data.length / width);
+  
+    ctx.fillStyle = theme.colors.waveformBackground;
+    ctx.fillRect(0, 0, width, height);
+  
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = theme.colors.primary;
+    ctx.beginPath();
+  
+    const centerY = height / 2;
+    const amplitudeScale = height * 0.8; // Increased scale for more prominent waves
+  
+    for (let i = 0; i < width; i++) {
+      const sliceStart = step * i;
+      const sliceEnd = sliceStart + step;
+      const slice = data.slice(sliceStart, sliceEnd);
+      const average = slice.reduce((sum, value) => sum + Math.abs(value), 0) / slice.length;
+      const scaledAverage = average * amplitudeScale;
+  
+      ctx.moveTo(i, centerY + scaledAverage);
+      ctx.lineTo(i, centerY - scaledAverage);
+    }
+  
+    ctx.stroke();
+  };
+
+  const togglePlayback = () => {
+    if (isPlaying) {
+      stopPlayback();
+    } else {
+      startPlayback();
+    }
+  };
+
+  const startPlayback = () => {
+    if (!audioBufferRef.current || !audioContextRef.current) return;
+
+    sourceNodeRef.current = audioContextRef.current.createBufferSource();
+    sourceNodeRef.current.buffer = audioBufferRef.current;
+    sourceNodeRef.current.connect(audioContextRef.current.destination);
+
+    sourceNodeRef.current.start();
+    setIsPlaying(true);
+    startTimeRef.current = audioContextRef.current.currentTime;
+    animatePlayback();
+  };
+
+  const stopPlayback = () => {
+    if (sourceNodeRef.current) {
+      sourceNodeRef.current.stop();
+      sourceNodeRef.current.disconnect();
+      sourceNodeRef.current = null;
+    }
+    setIsPlaying(false);
+    setPlaybackPosition(0);
+    cancelAnimationFrame(animationFrameRef.current!);
+  };
+
+  const animatePlayback = () => {
+    if (!audioBufferRef.current || !audioContextRef.current || !canvasRef.current) return;
+
+    const currentTime = audioContextRef.current.currentTime - startTimeRef.current;
+    const duration = audioBufferRef.current.duration;
+    const progress = currentTime / duration;
+    const canvasWidth = canvasRef.current.width;
+
+    setPlaybackPosition(progress * canvasWidth);
+
+    if (currentTime < duration) {
+      animationFrameRef.current = requestAnimationFrame(animatePlayback);
+    } else {
+      stopPlayback();
     }
   };
 
   const discardRecording = () => {
     stopRecording();
+    stopPlayback();
     setRecordingTime(0);
     setAudioBlob(null);
-    audioChunksRef.current = [];
-    setPlaybackPosition(0);
+    audioBufferRef.current = null;
     if (canvasRef.current) {
       const ctx = canvasRef.current.getContext('2d');
       ctx?.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-    }
-    if (audioRef.current) {
-      audioRef.current.src = '';
-    }
-    if (audioUrl) {
-      URL.revokeObjectURL(audioUrl);
-      setAudioUrl(null);
-    }
-  };
-
-  const togglePlayback = () => {
-    if (audioRef.current && audioUrl) {
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-        cancelAnimationFrame(animationFrameRef.current!);
-      } else {
-        audioRef.current.play();
-        setIsPlaying(true);
-        updatePlaybackPosition();
-      }
-    }
-  };
-
-  const updatePlaybackPosition = () => {
-    if (audioRef.current && canvasRef.current) {
-      const progress = audioRef.current.currentTime / audioRef.current.duration;
-      const canvasWidth = canvasRef.current.width;
-      setPlaybackPosition(progress * canvasWidth);
-      animationFrameRef.current = requestAnimationFrame(updatePlaybackPosition);
     }
   };
 
@@ -264,43 +380,6 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
     }
   };
 
-  const visualizeAudio = async (audioBlob: Blob) => {
-    const audioContext = new AudioContext();
-    const arrayBuffer = await audioBlob.arrayBuffer();
-    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-    
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const width = canvas.width;
-    const height = canvas.height;
-    const data = audioBuffer.getChannelData(0);
-    const step = Math.ceil(data.length / width);
-
-    ctx.fillStyle = theme.colors.waveformBackground;
-    ctx.fillRect(0, 0, width, height);
-
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = theme.colors.primary;
-    ctx.beginPath();
-
-    for (let i = 0; i < width; i++) {
-      const sliceStart = step * i;
-      const sliceEnd = sliceStart + step;
-      const slice = data.slice(sliceStart, sliceEnd);
-      const average = slice.reduce((sum, value) => sum + Math.abs(value), 0) / slice.length;
-      const scaledAverage = average * height * 0.8;
-
-      ctx.moveTo(i, height / 2 + scaledAverage / 2);
-      ctx.lineTo(i, height / 2 - scaledAverage / 2);
-    }
-
-    ctx.stroke();
-  };
-
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -313,17 +392,17 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
         <>
           <MainButton
             isRecording={isRecording}
-            onClick={toggleRecording}
+            onClick={isRecording ? stopRecording : startRecording}
           >
             {isRecording ? <FaPause color="white" size={40} /> : <FaMicrophone color="white" size={40} />}
           </MainButton>
-          {isRecording && <Timer>{formatTime(recordingTime)}</Timer>}
+          <Timer>{formatTime(recordingTime)}</Timer>
         </>
       ) : (
         <>
           <MainButton
             isRecording={false}
-            onClick={toggleRecording}
+            onClick={startRecording}
           >
             <FaMicrophone color="white" size={40} />
           </MainButton>
@@ -344,10 +423,6 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
           </ControlsContainer>
         </>
       )}
-      <audio 
-        ref={audioRef} 
-        onEnded={() => setIsPlaying(false)} 
-      />
     </RecorderContainer>
   );
 };
