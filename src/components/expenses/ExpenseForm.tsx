@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { FaFileAlt, FaMicrophone, FaImage, FaArrowLeft } from 'react-icons/fa';
 import AudioRecorder from './audio/AudioRecorder';
@@ -6,6 +6,11 @@ import ImageUploader from './ImageUploader';
 import ManualExpenseForm from './ManualExpenseForm';
 import { Expense } from '../../types';
 import { theme } from '../../styles/theme';
+import SuccessModal from '../common/SuccessModal';
+import ErrorModal from '../common/ErrorModal';
+import { AppDispatch } from '../../store';
+import { useDispatch } from 'react-redux';
+import { fetchCategories } from '../../store/slices/categoriesSlice';
 
 const FormContainer = styled.div`
   max-width: 500px;
@@ -66,12 +71,20 @@ const BackButton = styled.button`
 type InputMethod = 'manual' | 'audio' | 'image' | null;
 
 const ExpenseForm: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const [inputMethod, setInputMethod] = useState<InputMethod>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [submittedExpense, setSubmittedExpense] = useState<Expense | null>(null);
+
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
   const handleExpenseSubmit = (expense: Expense) => {
-    console.log("Expense submitted:", expense);
-    // Here you would typically dispatch an action to update your Redux store
-    // and possibly navigate to a success screen or back to the main expense list
+    console.log("Expense received in ExpenseForm:", expense); 
+    setSubmittedExpense(expense);
+    setSuccessModalOpen(true);
     setInputMethod(null);
   };
 
@@ -115,6 +128,19 @@ const ExpenseForm: React.FC = () => {
         </BackButton>
       )}
       {renderContent()}
+      <SuccessModal
+        isOpen={successModalOpen}
+        onClose={() => {
+          setSuccessModalOpen(false);
+          setSubmittedExpense(null);
+        }}
+        expense={submittedExpense}
+      />
+      <ErrorModal
+        isOpen={!!errorMessage}
+        onClose={() => setErrorMessage(null)}
+        message={errorMessage || ''}
+      />
     </FormContainer>
   );
 };
