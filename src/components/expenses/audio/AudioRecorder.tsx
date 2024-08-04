@@ -291,7 +291,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
     ctx.beginPath();
   
     const centerY = height / 2;
-    const amplitudeScale = height * 0.8; // Increased scale for more prominent waves
+    const amplitudeScale = height * 2;
   
     for (let i = 0; i < width; i++) {
       const sliceStart = step * i;
