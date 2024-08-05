@@ -5,6 +5,7 @@ import { theme } from '../../../styles/theme';
 import { Expense } from '../../../types';
 import { uploadExpenseFile } from '../../../services/api';
 import LoadingOverlay from '../../common/LoadingOverlay';
+import { convertApiExpenseToExpense } from '../../../utils/expenseUtils';
 
 const pulse = keyframes`
   0% {
@@ -376,7 +377,8 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
         setIsLoading(true);
         const file = new File([audioBlob], 'audio_expense.wav', { type: 'audio/wav' });
         const response = await uploadExpenseFile(file);
-        onUploadComplete(response.data.expense);
+        const convertedExpense = convertApiExpenseToExpense(response.data.expense);
+        onUploadComplete(convertedExpense);
       } catch (error) {
         console.error('Error uploading audio:', error);
       } finally {

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Expense, ExpenseInput } from '../types';
+import { Expense, ExpenseInput, ExpenseFromAPI, ExpensesAPIResponse } from '../types';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL;
 
@@ -7,24 +7,40 @@ const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
 });
 
-export const getCategories = () => api.get('/categories');
-export const getSubcategories = () => api.get('/subcategories');
+const handleError = (error: any) => {
+  console.error('API error:', error);
+  throw error;
+};
+
+export const getCategories = () => api.get('/categories').catch(handleError);
+export const getSubcategories = () => api.get('/subcategories').catch(handleError);
+
+export const getExpenses = (params: { 
+  page?: number; 
+  limit?: number; 
+  search?: string; 
+  startDate?: string; 
+  endDate?: string; 
+  [key: string]: any 
+}) => 
+  api.get<ExpensesAPIResponse>('/expenses', { params }).catch(handleError);
+
+export const apiCreateExpense = (expenseData: ExpenseInput) => 
+  api.post<ExpenseFromAPI>('/expenses', expenseData).catch(handleError);
+
+export const updateExpense = (id: string, expenseData: Partial<ExpenseInput>) => 
+  api.put<ExpenseFromAPI>(`/expenses/${id}`, expenseData).catch(handleError);
+
+export const deleteExpense = (id: string) => 
+  api.delete(`/expenses/${id}`).catch(handleError);
 
 export const uploadExpenseFile = (file: File) => {
   const formData = new FormData();
   formData.append('file', file);
 
-  try {
-    const response = api.post<{ message: string; expense: Expense }>('/expenses/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-    console.log('API response:', response);
-    return response;
-  } catch (error) {
-    console.error('API error:', error);
-    throw error;
-  }
+  return api.post<{ message: string; expense: ExpenseFromAPI }>('/expenses/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }).catch(handleError);
 };
 
-// This function will be used internally from expensesSlice.ts
-export const apiCreateExpense = (expenseData: ExpenseInput) => api.post<Expense>('/expenses', expenseData);
+export default api;

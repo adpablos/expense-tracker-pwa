@@ -8,6 +8,7 @@ import SubmitButton from '../common/SubmitButton';
 import ErrorModal from '../common/ErrorModal';
 import LoadingOverlay from '../common/LoadingOverlay';
 import axios from 'axios';
+import { convertApiExpenseToExpense } from '../../utils/expenseUtils';
 
 const Container = styled.div`
   display: flex;
@@ -88,8 +89,9 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onUploadComplete }) => {
       setIsLoading(true);
       try {
         const response = await uploadExpenseFile(selectedFile);
-        // Response was succcessful 2xx
-        onUploadComplete(response.data.expense);
+        // Response was successful 2xx
+        const convertedExpense = convertApiExpenseToExpense(response.data.expense);
+        onUploadComplete(convertedExpense);
       } catch (error) {
         console.error('Error al cargar el audio:', error);
         if (axios.isAxiosError(error)) {
