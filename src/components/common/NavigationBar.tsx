@@ -1,41 +1,50 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import styled from 'styled-components';
-import { FaHome } from 'react-icons/fa';
-import { theme } from '../../styles/theme';
+import { FaHome, FaPlus, FaList } from 'react-icons/fa';
 
-const NavBar = styled.nav`
+const Navigation = styled.nav`
   display: flex;
-  justify-content: center;
-  padding: 1rem;
-  background-color: ${theme.colors.backgroundLight};
-  margin-bottom: 1rem;
+  gap: 10px;
 `;
 
-const NavButton = styled.button`
-  background: none;
-  border: none;
-  color: ${theme.colors.primary};
-  font-size: 1.5rem;
-  cursor: pointer;
+const StyledNavLink = styled(NavLink)`
   display: flex;
   align-items: center;
-  transition: color 0.3s ease;
+  padding: 10px;
+  color: #007bff;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.3s;
 
   &:hover {
-    color: ${theme.colors.primaryHover};
+    background-color: #f0f0f0;
+  }
+
+  &.active {
+    color: #0056b3;
+    font-weight: bold;
+  }
+
+  svg {
+    margin-right: 5px;
   }
 `;
 
-interface NavigationBarProps {
-  onHome: () => void;
-}
-
-const NavigationBar: React.FC<NavigationBarProps> = ({ onHome }) => (
-  <NavBar>
-    <NavButton onClick={onHome} aria-label="Volver al inicio">
-      <FaHome />
-    </NavButton>
-  </NavBar>
-);
+const NavigationBar: React.FC = () => {
+  return (
+    <Navigation>
+      <StyledNavLink to="/" end>
+        <FaHome /> Home
+      </StyledNavLink>
+      <StyledNavLink to="/add">
+        <FaPlus /> Add Expense
+      </StyledNavLink>
+      <StyledNavLink to="/list">
+        <FaList /> View Expenses
+      </StyledNavLink>
+    </Navigation>
+  );
+};
 
 export default NavigationBar;

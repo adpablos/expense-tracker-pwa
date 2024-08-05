@@ -1,31 +1,72 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { apiCreateExpense } from '../../services/api';
-import { Expense, ExpenseInput } from '../../types';
-
+import { Expense, ExpenseInput, ExpenseFromAPI, ExpensesAPIResponse } from '../../types';
+import { convertApiExpenseToExpense } from '../../utils/expenseUtils';
+import * as api from '../../services/api';
 
 interface ExpensesState {
   items: Expense[];
+  recentItems: Expense[];
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
+  totalPages: number;
 }
 
 const initialState: ExpensesState = {
   items: [],
+  recentItems: [],
   status: 'idle',
-  error: null
+  error: null,
+  totalPages: 0,
 };
+
+interface FetchExpensesParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export const fetchExpenses = createAsyncThunk<ExpensesAPIResponse, FetchExpensesParams>(
+  'expenses/fetchExpenses',
+  async (params) => {
+    const response = await api.getExpenses(params);
+    return response.data;
+  }
+);
 
 export const createExpense = createAsyncThunk<Expense, ExpenseInput>(
   'expenses/createExpense',
   async (expenseData, { rejectWithValue }) => {
     try {
-      console.log('Enviando datos al backend:', expenseData);
-      const response = await apiCreateExpense(expenseData);
-      console.log('Respuesta del backend:', response.data);
-      return response.data;
+      const response = await api.apiCreateExpense(expenseData);
+      return convertApiExpenseToExpense(response.data);
     } catch (err) {
-      console.error('Error al crear gasto:', err);
       return rejectWithValue((err as any).message || 'Error al crear gasto');
+    }
+  }
+);
+
+export const updateExpense = createAsyncThunk<Expense, { id: string; expenseData: Partial<ExpenseInput> }>(
+  'expenses/updateExpense',
+  async ({ id, expenseData }, { rejectWithValue }) => {
+    try {
+      const response = await api.updateExpense(id, expenseData);
+      return convertApiExpenseToExpense(response.data);
+    } catch (err) {
+      return rejectWithValue((err as any).message || 'Error al actualizar gasto');
+    }
+  }
+);
+
+export const deleteExpense = createAsyncThunk<string, string>(
+  'expenses/deleteExpense',
+  async (id, { rejectWithValue }) => {
+    try {
+      await api.deleteExpense(id);
+      return id;
+    } catch (err) {
+      return rejectWithValue((err as any).message || 'Error al eliminar gasto');
     }
   }
 );
@@ -36,19 +77,34 @@ const expensesSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(createExpense.pending, (state) => {
+      .addCase(fetchExpenses.pending, (state) => {
         state.status = 'loading';
-        console.log('Creando gasto...');
       })
-      .addCase(createExpense.fulfilled, (state, action: PayloadAction<Expense>) => {
+      .addCase(fetchExpenses.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.items.push(action.payload);
-        console.log('Gasto creado con éxito:', action.payload);
+        const convertedExpenses = action.payload.expenses.map(convertApiExpenseToExpense);
+        if (action.meta.arg.limit && (!action.meta.arg.page || action.meta.arg.page === 1)) {
+          state.recentItems = convertedExpenses;
+        } else {
+          state.items = convertedExpenses;
+        }
+        state.totalPages = action.payload.totalPages;
       })
-      .addCase(createExpense.rejected, (state, action) => {
+      .addCase(fetchExpenses.rejected, (state, action) => {
         state.status = 'failed';
-        state.error = action.payload as string || 'Error desconocido';
-        console.error('Error al crear gasto:', action.payload);
+        state.error = action.error.message || 'Unknown error occurred';
+      })
+      .addCase(createExpense.fulfilled, (state, action) => {
+        state.items.push(action.payload);
+      })
+      .addCase(updateExpense.fulfilled, (state, action) => {
+        const index = state.items.findIndex(expense => expense.id === action.payload.id);
+        if (index !== -1) {
+          state.items[index] = action.payload;
+        }
+      })
+      .addCase(deleteExpense.fulfilled, (state, action) => {
+        state.items = state.items.filter(expense => expense.id !== action.payload);
       });
   },
 });

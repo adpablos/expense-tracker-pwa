@@ -12,16 +12,34 @@ export interface Subcategory {
   categoryId: string;
 }
 
-export interface ExpenseInput {
+export interface ExpenseBase {
   description: string;
-  amount: number;
   category: string;
   subcategory: string;
   date: string;
 }
 
-export interface Expense extends ExpenseInput {
+export interface ExpenseInput extends ExpenseBase {
+  amount: number;
+}
+
+export interface ExpenseFromAPI extends ExpenseBase {
   id: string;
+  amount: string;  // Amount is a string in the API response
+}
+
+export interface Expense extends ExpenseBase {
+  id: string;
+  amount: number;  // Amount is converted to a number for use in the app
+}
+
+export interface ExpensesAPIResponse {
+  expenses: ExpenseFromAPI[];
+  totalPages: number;
+  // Añadimos los campos faltantes según el error
+  page: number;
+  nextPage: number | null;
+  totalItems: number;
 }
 
 export interface UploadExpenseResponse {
