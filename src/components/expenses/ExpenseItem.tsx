@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
-import { FaEdit, FaTrash, FaSave, FaTimes } from 'react-icons/fa';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 import { Expense } from '../../types';
 import { theme } from '../../styles/theme';
+import { formatAmount } from '../../utils/expenseUtils';
 
 const TableRow = styled.tr`
   &:nth-child(even) {
@@ -19,109 +20,42 @@ const ActionButton = styled.button`
   border: none;
   cursor: pointer;
   margin-right: ${theme.padding.small};
-  color: ${theme.colors.primary};
+  transition: color 0.3s;
 
   &:hover {
-    color: ${theme.colors.primaryHover};
+    opacity: 0.8;
   }
 `;
 
-const Input = styled.input`
-  width: 100%;
-  padding: ${theme.padding.small};
-  border: 1px solid ${theme.colors.border};
-  border-radius: ${theme.borderRadius};
+const EditButton = styled(ActionButton)`
+  color: ${theme.colors.primary};
+`;
+
+const DeleteButton = styled(ActionButton)`
+  color: ${theme.colors.error};
 `;
 
 interface ExpenseItemProps {
   expense: Expense;
-  onDelete: (id: string) => void;
+  onDelete: (expense: Expense) => void;
   onEdit: (expense: Expense) => void;
 }
 
 const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense, onDelete, onEdit }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedExpense, setEditedExpense] = useState(expense);
-
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
-
-  const handleSave = () => {
-    onEdit(editedExpense);
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setEditedExpense(expense);
-    setIsEditing(false);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setEditedExpense(prev => ({ ...prev, [name]: value }));
-  };
-
-  if (isEditing) {
-    return (
-      <TableRow>
-        <TableCell>
-          <Input
-            type="date"
-            name="date"
-            value={editedExpense.date}
-            onChange={handleChange}
-          />
-        </TableCell>
-        <TableCell>
-          <Input
-            type="text"
-            name="description"
-            value={editedExpense.description}
-            onChange={handleChange}
-          />
-        </TableCell>
-        <TableCell>
-          <Input
-            type="number"
-            name="amount"
-            value={editedExpense.amount}
-            onChange={handleChange}
-          />
-        </TableCell>
-        <TableCell>
-          <Input
-            type="text"
-            name="category"
-            value={editedExpense.category}
-            onChange={handleChange}
-          />
-        </TableCell>
-        <TableCell>
-          <ActionButton onClick={handleSave} aria-label="Guardar cambios">
-            <FaSave />
-          </ActionButton>
-          <ActionButton onClick={handleCancel} aria-label="Cancelar edición">
-            <FaTimes />
-          </ActionButton>
-        </TableCell>
-      </TableRow>
-    );
-  }
-
   return (
     <TableRow>
-      <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
+      <TableCell>{new Date(expense.date).toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' })}</TableCell>
       <TableCell>{expense.description}</TableCell>
-      <TableCell>${expense.amount.toFixed(2)}</TableCell>
+      <TableCell>{formatAmount(expense.amount)}€</TableCell>
       <TableCell>{expense.category}</TableCell>
+      <TableCell>{expense.subcategory}</TableCell>
       <TableCell>
-        <ActionButton onClick={handleEdit} aria-label="Editar gasto">
+        <EditButton onClick={() => onEdit(expense)} aria-label="Editar gasto">
           <FaEdit />
-        </ActionButton>
-        <ActionButton onClick={() => onDelete(expense.id)} aria-label="Eliminar gasto">
+        </EditButton>
+        <DeleteButton onClick={() => onDelete(expense)} aria-label="Eliminar gasto">
           <FaTrash />
-        </ActionButton>
+        </DeleteButton>
       </TableCell>
     </TableRow>
   );

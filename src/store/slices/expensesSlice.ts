@@ -95,16 +95,25 @@ const expensesSlice = createSlice({
         state.error = action.error.message || 'Unknown error occurred';
       })
       .addCase(createExpense.fulfilled, (state, action) => {
-        state.items.push(action.payload);
+        state.items.unshift(action.payload);
+        if (state.recentItems.length >= 5) {
+          state.recentItems.pop();
+        }
+        state.recentItems.unshift(action.payload);
       })
       .addCase(updateExpense.fulfilled, (state, action) => {
         const index = state.items.findIndex(expense => expense.id === action.payload.id);
         if (index !== -1) {
           state.items[index] = action.payload;
         }
+        const recentIndex = state.recentItems.findIndex(expense => expense.id === action.payload.id);
+        if (recentIndex !== -1) {
+          state.recentItems[recentIndex] = action.payload;
+        }
       })
       .addCase(deleteExpense.fulfilled, (state, action) => {
         state.items = state.items.filter(expense => expense.id !== action.payload);
+        state.recentItems = state.recentItems.filter(expense => expense.id !== action.payload);
       });
   },
 });

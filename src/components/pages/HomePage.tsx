@@ -3,61 +3,89 @@ import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { FaPlus, FaList } from 'react-icons/fa';
 import RecentExpenses from '../expenses/RecentExpenses';
+import { theme } from '../../styles/theme';
 
 const HomeContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: ${theme.padding.large};
+  padding: ${theme.padding.medium};
 `;
 
 const WelcomeSection = styled.section`
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: ${theme.padding.large};
+`;
+
+const Title = styled.h1`
+  color: ${theme.colors.primary};
+  font-size: ${theme.fontSize.large};
+  margin-bottom: ${theme.padding.small};
+`;
+
+const Subtitle = styled.p`
+  color: ${theme.colors.textLight};
+  font-size: ${theme.fontSize.medium};
 `;
 
 const ActionButtonsContainer = styled.div`
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: ${theme.padding.medium};
 `;
 
 const ActionButton = styled(Link)`
   display: flex;
   align-items: center;
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
+  padding: ${theme.padding.small} ${theme.padding.medium};
+  background-color: ${theme.colors.primary};
+  color: ${theme.colors.background};
   text-decoration: none;
-  border-radius: 5px;
-  transition: background-color 0.3s;
+  border-radius: ${theme.borderRadius};
+  transition: background-color ${theme.transition};
+  font-size: ${theme.fontSize.medium};
 
   &:hover {
-    background-color: #0056b3;
+    background-color: ${theme.colors.primaryHover};
   }
 
   svg {
-    margin-right: 10px;
+    margin-right: ${theme.padding.small};
   }
+`;
+
+const RecentExpensesSection = styled.section`
+  margin-top: ${theme.padding.large};
+`;
+
+const SectionTitle = styled.h2`
+  color: ${theme.colors.text};
+  font-size: ${theme.fontSize.large};
+  margin-bottom: ${theme.padding.medium};
+  text-align: center;
 `;
 
 const HomePage: React.FC = () => {
   return (
     <HomeContainer>
       <WelcomeSection>
-        <h2>Welcome to Your Expense Tracker</h2>
-        <p>Manage your expenses easily and efficiently.</p>
+        <Title>Bienvenido a tu Gestor de Gastos</Title>
+        <Subtitle>Gestiona tus gastos de forma fácil y eficiente.</Subtitle>
       </WelcomeSection>
       
       <ActionButtonsContainer>
         <ActionButton to="/add">
-          <FaPlus /> Add New Expense
+          <FaPlus /> Añadir Nuevo Gasto
         </ActionButton>
         <ActionButton to="/list">
-          <FaList /> View All Expenses
+          <FaList /> Ver Todos los Gastos
         </ActionButton>
       </ActionButtonsContainer>
       
-      <RecentExpenses />
+      <RecentExpensesSection>
+        <SectionTitle>Gastos Recientes</SectionTitle>
+        <RecentExpenses />
+      </RecentExpensesSection>
     </HomeContainer>
   );
 };

@@ -4,27 +4,15 @@ import styled from 'styled-components';
 import { fetchExpenses, deleteExpense, updateExpense } from '../../store/slices/expensesSlice';
 import { RootState, AppDispatch } from '../../store';
 import { Expense } from '../../types';
-import ExpenseItem from './ExpenseItem';
+import ExpenseTable from './ExpenseTable';
 import ExpenseFilters from './ExpenseFilters';
 import Pagination from '../common/Pagination';
-import { formatAmount } from '../../utils/expenseUtils';
+import DeleteConfirmationModal from './DeleteConfirmationModal';
+import EditExpenseModal from './EditExpenseModal';
 import { theme } from '../../styles/theme';
 
 const ListContainer = styled.div`
   padding: ${theme.padding.medium};
-`;
-
-const ExpenseTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: ${theme.padding.medium};
-`;
-
-const TableHeader = styled.th`
-  background-color: ${theme.colors.primary};
-  color: ${theme.colors.background};
-  padding: ${theme.padding.small};
-  text-align: left;
 `;
 
 const ExpenseList: React.FC = () => {
@@ -32,23 +20,34 @@ const ExpenseList: React.FC = () => {
   const { items: expenses, status, error, totalPages } = useSelector((state: RootState) => state.expenses);
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({
-    search: '',
     startDate: '',
     endDate: ''
   });
+  const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   useEffect(() => {
     dispatch(fetchExpenses({ page: currentPage, ...filters }));
   }, [dispatch, currentPage, filters]);
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este gasto?')) {
-      dispatch(deleteExpense(id));
+  const handleDelete = (expense: Expense) => {
+    setExpenseToDelete(expense);
+  };
+
+  const confirmDelete = () => {
+    if (expenseToDelete) {
+      dispatch(deleteExpense(expenseToDelete.id));
+      setExpenseToDelete(null);
     }
   };
 
-  const handleEdit = (updatedExpense: Expense) => {
+  const handleEdit = (expense: Expense) => {
+    setEditingExpense(expense);
+  };
+
+  const handleUpdate = (updatedExpense: Expense) => {
     dispatch(updateExpense({ id: updatedExpense.id, expenseData: updatedExpense }));
+    setEditingExpense(null);
   };
 
   const handleFilterChange = (newFilters: typeof filters) => {
@@ -65,33 +64,30 @@ const ExpenseList: React.FC = () => {
 
   return (
     <ListContainer>
-      <ExpenseFilters onFilterChange={handleFilterChange} />
-      <ExpenseTable>
-        <thead>
-          <tr>
-            <TableHeader>Fecha</TableHeader>
-            <TableHeader>Descripción</TableHeader>
-            <TableHeader>Monto</TableHeader>
-            <TableHeader>Categoría</TableHeader>
-            <TableHeader>Acciones</TableHeader>
-          </tr>
-        </thead>
-        <tbody>
-          {expenses.map((expense: Expense) => (
-            <ExpenseItem
-              key={expense.id}
-              expense={expense}
-              onDelete={handleDelete}
-              onEdit={handleEdit}
-            />
-          ))}
-        </tbody>
-      </ExpenseTable>
+      <ExpenseFilters onFilterChange={handleFilterChange} currentFilters={filters} />
+      <ExpenseTable
+        expenses={expenses}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
+      <DeleteConfirmationModal
+        isOpen={!!expenseToDelete}
+        expense={expenseToDelete}
+        onConfirm={confirmDelete}
+        onCancel={() => setExpenseToDelete(null)}
+      />
+      {editingExpense && (
+        <EditExpenseModal
+          expense={editingExpense}
+          onSave={handleUpdate}
+          onCancel={() => setEditingExpense(null)}
+        />
+      )}
     </ListContainer>
   );
 };

@@ -1,3 +1,4 @@
+// src/styles/theme.ts
 export const theme = {
   colors: {
     primary: '#007bff',
@@ -6,12 +7,16 @@ export const theme = {
     secondaryHover: '#5a6268',
     background: '#f8f9fa',
     backgroundLight: '#ffffff',
+    backgroundHover: '#e9ecef',
     text: '#333333',
     textLight: '#6c757d',
     border: '#ced4da',
     success: '#28a745',
     successHover: '#218838',
     error: '#dc3545',
+    errorHover: '#c82333',
+    warning: '#ffc107',
+    warningHover: '#e0a800',
     disabled: '#e9ecef',
     waveform: '#007bff',
     waveformBackground: '#e9ecef',
