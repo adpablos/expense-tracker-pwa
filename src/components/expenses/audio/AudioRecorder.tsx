@@ -4,6 +4,7 @@ import { FaMicrophone, FaPause, FaPlay, FaTrash, FaPaperPlane } from 'react-icon
 import { theme } from '../../../styles/theme';
 import { Expense } from '../../../types';
 import { uploadExpenseFile } from '../../../services/api';
+import LoadingOverlay from '../../common/LoadingOverlay';
 
 const pulse = keyframes`
   0% {
@@ -119,6 +120,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackPosition, setPlaybackPosition] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -371,11 +373,14 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
   const handleUpload = async () => {
     if (audioBlob) {
       try {
+        setIsLoading(true);
         const file = new File([audioBlob], 'audio_expense.wav', { type: 'audio/wav' });
         const response = await uploadExpenseFile(file);
         onUploadComplete(response.data.expense);
       } catch (error) {
         console.error('Error uploading audio:', error);
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -388,6 +393,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
 
   return (
     <RecorderContainer>
+      {isLoading && <LoadingOverlay message="Procesando audio..." />}
       {isRecording || !audioBlob ? (
         <>
           <MainButton
