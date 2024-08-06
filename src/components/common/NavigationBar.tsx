@@ -1,7 +1,8 @@
+// src/components/common/NavigationBar.tsx
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import styled from 'styled-components';
-import { FaHome, FaPlus, FaList } from 'react-icons/fa';
+import { FaHome, FaList } from 'react-icons/fa';
 
 const Navigation = styled.nav`
   display: flex;
@@ -35,13 +36,10 @@ const NavigationBar: React.FC = () => {
   return (
     <Navigation>
       <StyledNavLink to="/" end>
-        <FaHome /> Home
-      </StyledNavLink>
-      <StyledNavLink to="/add">
-        <FaPlus /> Add Expense
+        <FaHome /> Inicio
       </StyledNavLink>
       <StyledNavLink to="/list">
-        <FaList /> View Expenses
+        <FaList /> Ver Gastos
       </StyledNavLink>
     </Navigation>
   );

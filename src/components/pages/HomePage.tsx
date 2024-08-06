@@ -1,7 +1,8 @@
+// src/components/pages/HomePage.tsx
 import React from 'react';
-import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { FaPlus, FaList } from 'react-icons/fa';
+import ExpenseForm from '../expenses/ExpenseForm';
+import MonthlyExpensesChart from '../expenses/MonthlyExpensesChart';
 import RecentExpenses from '../expenses/RecentExpenses';
 import { theme } from '../../styles/theme';
 
@@ -12,10 +13,6 @@ const HomeContainer = styled.div`
   padding: ${theme.padding.medium};
 `;
 
-const WelcomeSection = styled.section`
-  text-align: center;
-  margin-bottom: ${theme.padding.large};
-`;
 
 const Title = styled.h1`
   color: ${theme.colors.primary};
@@ -23,69 +20,34 @@ const Title = styled.h1`
   margin-bottom: ${theme.padding.small};
 `;
 
-const Subtitle = styled.p`
-  color: ${theme.colors.textLight};
-  font-size: ${theme.fontSize.medium};
-`;
-
-const ActionButtonsContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: ${theme.padding.medium};
-`;
-
-const ActionButton = styled(Link)`
-  display: flex;
-  align-items: center;
-  padding: ${theme.padding.small} ${theme.padding.medium};
-  background-color: ${theme.colors.primary};
-  color: ${theme.colors.background};
-  text-decoration: none;
+const Section = styled.section`
+  background-color: ${theme.colors.backgroundLight};
   border-radius: ${theme.borderRadius};
-  transition: background-color ${theme.transition};
-  font-size: ${theme.fontSize.medium};
-
-  &:hover {
-    background-color: ${theme.colors.primaryHover};
-  }
-
-  svg {
-    margin-right: ${theme.padding.small};
-  }
-`;
-
-const RecentExpensesSection = styled.section`
-  margin-top: ${theme.padding.large};
+  padding: ${theme.padding.medium};
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const SectionTitle = styled.h2`
   color: ${theme.colors.text};
-  font-size: ${theme.fontSize.large};
+  font-size: ${theme.fontSize.medium};
   margin-bottom: ${theme.padding.medium};
-  text-align: center;
 `;
 
 const HomePage: React.FC = () => {
   return (
     <HomeContainer>
-      <WelcomeSection>
-        <Title>Bienvenido a tu Gestor de Gastos</Title>
-        <Subtitle>Gestiona tus gastos de forma fácil y eficiente.</Subtitle>
-      </WelcomeSection>
-      
-      <ActionButtonsContainer>
-        <ActionButton to="/add">
-          <FaPlus /> Añadir Nuevo Gasto
-        </ActionButton>
-        <ActionButton to="/list">
-          <FaList /> Ver Todos los Gastos
-        </ActionButton>
-      </ActionButtonsContainer>
-      
-      <RecentExpensesSection>
+      <Title>Gestor de Gastos</Title>
+      <Section>
+        <SectionTitle>Registrar Nuevo Gasto</SectionTitle>
+        <ExpenseForm />
+      </Section>
+      <Section>
+        <MonthlyExpensesChart />
+      </Section>
+      <Section>
         <SectionTitle>Gastos Recientes</SectionTitle>
         <RecentExpenses />
-      </RecentExpensesSection>
+      </Section>
     </HomeContainer>
   );
 };
