@@ -5,6 +5,7 @@ import { FaEdit, FaTrash } from 'react-icons/fa';
 import { Expense } from '../../types';
 import { formatAmount } from '../../utils/expenseUtils';
 import { theme } from '../../styles/theme';
+import { format } from 'date-fns';
 
 const Card = styled.div`
   background-color: ${theme.colors.backgroundLight};
@@ -21,7 +22,7 @@ const CardHeader = styled.div`
   margin-bottom: ${theme.padding.small};
 `;
 
-const Date = styled.span`
+const ExpenseDate = styled.span`
   font-weight: bold;
 `;
 
@@ -64,7 +65,7 @@ const ExpenseCard: React.FC<ExpenseCardProps> = ({ expense, onEdit, onDelete }) 
   return (
     <Card>
       <CardHeader>
-        <Date>{expense.date}</Date>
+        <ExpenseDate>{format(new Date(expense.date), 'yyyy-MM-dd')}</ExpenseDate>
         <Amount>{formatAmount(expense.amount)}€</Amount>
       </CardHeader>
       <Description>{expense.description}</Description>

@@ -7,27 +7,33 @@ import { RootState, AppDispatch } from '../../store';
 import { ExpenseInput, Expense } from '../../types';
 import { theme } from '../../styles/theme';
 import { fetchCategories } from '../../store/slices/categoriesSlice';
-import DatePicker from "react-datepicker";
+import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { format } from 'date-fns';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { StyledInput, StyledSelect, StyledDatePicker } from '../../styles/formStyles';
+import LoadingOverlay from '../common/LoadingOverlay';
+import { es } from 'date-fns/locale'; 
+import { format } from 'date-fns';
 
+// Register the locale with react-datepicker
+registerLocale('es', es);
 
 const FormContainer = styled.div`
-  max-width: 400px;
   width: 100%;
+  max-width: 400px;
   margin: 0 auto;
-  padding: ${theme.padding.medium};
+  padding: ${theme.padding.small};
+
+  @media (min-width: 768px) {
+    padding: ${theme.padding.medium};
+  }
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: ${theme.padding.medium};
+  gap: ${theme.padding.small};
   width: 100%;
-  max-width: 400px; // Ajusta esto según tus necesidades
-  margin: 0 auto;
 `;
 
 const Input = styled.input`
@@ -86,6 +92,7 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { categories, subcategories } = useSelector((state: RootState) => state.categories);
   const { error, handleError, clearError } = useErrorHandler();
+  const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     description: '',
@@ -120,12 +127,14 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
+    setIsLoading(true);
 
     const selectedCategory = categories.find(cat => cat.id === formData.categoryId);
     const selectedSubcategory = subcategories.find(sub => sub.id === formData.subcategoryId);
 
     if (!selectedCategory) {
       handleError("Por favor, selecciona una categoría válida.");
+      setIsLoading(false);
       return;
     }
 
@@ -140,11 +149,13 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
     try {
       const result = await dispatch(createExpense(expenseData));
       if (createExpense.fulfilled.match(result)) {
+        setIsLoading(false);
         onSubmit(result.payload);
       } else {
         throw new Error(result.error.message || "Error al crear el gasto");
       }
     } catch (error) {
+      setIsLoading(false);
       handleError(error instanceof Error ? error.message : "Error inesperado al crear el gasto");
     }
   };
@@ -164,7 +175,9 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
         />
         <StyledInput
           name="amount"
-          type="text"
+          type="number"
+          inputMode="decimal"
+          pattern="[0-9]*"
           value={formData.amount}
           onChange={handleAmountChange}
           placeholder="Cantidad"
@@ -210,6 +223,7 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
         <SubmitButton type="submit">
           Registrar gasto
         </SubmitButton>
+        {isLoading && <LoadingOverlay message="Procesando gasto..." />}
       </Form>
     </FormContainer>
   );
