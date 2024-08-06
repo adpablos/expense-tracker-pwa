@@ -52,6 +52,10 @@ const IconButton = styled.button`
 const ChartContainer = styled.div`
   height: 300px;
   margin-top: ${theme.padding.medium};
+  
+  @media (max-width: 768px) {
+    height: 250px;
+  }
 `;
 
 const TotalExpenses = styled.div`
@@ -59,9 +63,10 @@ const TotalExpenses = styled.div`
   font-size: 1.2rem;
   margin-top: ${theme.padding.medium};
   padding: ${theme.padding.medium};
-  background-color: ${theme.colors.primary};
-  color: ${theme.colors.background};
+  background-color: ${theme.colors.backgroundLight};
+  color: ${theme.colors.text};
   border-radius: ${theme.borderRadius};
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const LoadingMessage = styled.p`
@@ -167,7 +172,7 @@ const MonthlyExpensesChart: React.FC = () => {
                                     cx="50%"
                                     cy="50%"
                                     labelLine={false}
-                                    outerRadius={120}
+                                    outerRadius="80%"
                                     fill="#8884d8"
                                     dataKey="value"
                                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
@@ -180,7 +185,11 @@ const MonthlyExpensesChart: React.FC = () => {
                             </PieChart>
                         </ResponsiveContainer>
                     </ChartContainer>
-                    <TotalExpenses>Total gastado este mes: {totalExpenses.toFixed(2)}€</TotalExpenses>
+                    <TotalExpenses>
+                        <strong>Total gastado este mes:</strong>
+                        <br />
+                        <span style={{ fontSize: '1.5em', color: theme.colors.primary }}>${totalExpenses.toFixed(2)}</span>
+                    </TotalExpenses>
                 </>
             ) : (
                 <NoDataMessage>No hay gastos registrados para este mes.</NoDataMessage>

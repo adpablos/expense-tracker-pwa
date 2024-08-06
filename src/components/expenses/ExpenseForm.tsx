@@ -8,7 +8,10 @@ import AudioRecorder from './audio/AudioRecorder';
 import ImageUploader from './ImageUploader';
 import SuccessModal from '../common/SuccessModal';
 import ErrorModal from '../common/ErrorModal';
-import { Expense } from '../../types';
+import { Expense, ExpenseInput } from '../../types';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../../store';
+import { createExpense } from '../../store/slices/expensesSlice';
 
 const FormContainer = styled.div`
   display: flex;
@@ -60,10 +63,21 @@ const ExpenseForm: React.FC = () => {
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [submittedExpense, setSubmittedExpense] = useState<Expense | null>(null);
+  const dispatch = useDispatch<AppDispatch>();
 
-  const handleExpenseSubmit = (expense: Expense) => {
-    setSubmittedExpense(expense);
-    setSuccessModalOpen(true);
+  const handleExpenseSubmit = async (expense: ExpenseInput) => {
+    try {
+      const resultAction = await dispatch(createExpense(expense));
+      if (createExpense.fulfilled.match(resultAction)) {
+        setSubmittedExpense(resultAction.payload);
+        setSuccessModalOpen(true);
+      } else {
+        throw new Error('Failed to create expense');
+      }
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occurred');
+      setErrorModalOpen(true);
+    }
     setInputMethod(null);
   };
 
@@ -75,13 +89,21 @@ const ExpenseForm: React.FC = () => {
   const renderContent = () => {
     switch (inputMethod) {
       case 'manual':
-        return <ManualExpenseForm onSubmit={() => { }} />;
+        return <ManualExpenseForm onSubmit={handleExpenseSubmit} />;
       case 'audio':
-        return <AudioRecorder onUploadComplete={() => { }} onError={() => { }} />;
+        return <AudioRecorder onUploadComplete={handleExpenseSubmit} onError={handleExpenseError} />;
       case 'image':
-        return <ImageUploader onUploadComplete={() => { }} />;
+        return <ImageUploader onUploadComplete={handleExpenseSubmit} />;
       default:
         return null;
+    }
+  };
+
+  const toggleInputMethod = (method: InputMethod) => {
+    if (inputMethod === method) {
+      setInputMethod(null);
+    } else {
+      setInputMethod(method);
     }
   };
 
@@ -90,21 +112,21 @@ const ExpenseForm: React.FC = () => {
       <OptionContainer>
         <OptionButton
           isSelected={inputMethod === 'manual'}
-          onClick={() => setInputMethod('manual')}
+          onClick={() => toggleInputMethod('manual')}
         >
           <FaFileAlt />
           Manual
         </OptionButton>
         <OptionButton
           isSelected={inputMethod === 'audio'}
-          onClick={() => setInputMethod('audio')}
+          onClick={() => toggleInputMethod('audio')}
         >
           <FaMicrophone />
           Audio
         </OptionButton>
         <OptionButton
           isSelected={inputMethod === 'image'}
-          onClick={() => setInputMethod('image')}
+          onClick={() => toggleInputMethod('image')}
         >
           <FaImage />
           Imagen

@@ -7,10 +7,20 @@ import { theme } from '../../styles/theme';
 
 const HomeContainer = styled.div`
   max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   padding: ${theme.padding.large};
+  
+  @media (max-width: 768px) {
+    padding: ${theme.padding.medium} ${theme.padding.small};
+  }
 `;
 
+const ContentWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${theme.padding.large};
+`;
 
 const Title = styled.h1`
   color: ${theme.colors.primary};
@@ -22,29 +32,35 @@ const Title = styled.h1`
 const Section = styled.section`
   background-color: ${theme.colors.backgroundLight};
   border-radius: ${theme.borderRadius};
-  padding: ${theme.padding.large};
+  padding: ${theme.padding.medium};
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin-bottom: ${theme.padding.large};
+  
+  @media (min-width: 768px) {
+    flex: 1;
+  }
 `;
 
 const SectionTitle = styled.h2`
   color: ${theme.colors.text};
   font-size: 1.5rem;
   margin-bottom: ${theme.padding.medium};
+  text-align: center;
 `;
 
 const HomePage: React.FC = () => {
   return (
     <HomeContainer>
       <Title>Gestor de Gastos</Title>
-      <Section>
-        <SectionTitle>Registrar Nuevo Gasto</SectionTitle>
-        <ExpenseForm />
-      </Section>
-      <Section>
-        <SectionTitle>Distribución de gastos por categoría este mes</SectionTitle>
-        <MonthlyExpensesChart />
-      </Section>
+      <ContentWrapper>
+        <Section>
+          <SectionTitle>Registrar Nuevo Gasto</SectionTitle>
+          <ExpenseForm />
+        </Section>
+        <Section>
+          <SectionTitle>Distribución de gastos por categoría este mes</SectionTitle>
+          <MonthlyExpensesChart />
+        </Section>
+      </ContentWrapper>
     </HomeContainer>
   );
 };
