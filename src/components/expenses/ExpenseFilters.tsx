@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+// src/components/expenses/ExpenseFilters.tsx
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { FaFilter, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 import { theme } from '../../styles/theme';
+import { FilterValues } from '../../types/filters';
 
 const FilterContainer = styled.div`
   margin-bottom: ${theme.padding.medium};
@@ -56,58 +60,58 @@ const FilterButton = styled.button`
   }
 `;
 
-interface FilterValues {
-  startDate: string;
-  endDate: string;
-}
-
 interface ExpenseFiltersProps {
-  onFilterChange: (filters: FilterValues) => void;
-  currentFilters: FilterValues;
-}
-
-const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({ onFilterChange, currentFilters }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [filters, setFilters] = useState<FilterValues>(currentFilters);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
+    onFilterChange: (filters: FilterValues) => void;
+    currentFilters: FilterValues;
+  }
+  
+  const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({ onFilterChange, currentFilters }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [filters, setFilters] = useState<FilterValues>(currentFilters);
+  
+    const handleDateChange = (date: Date | null, name: 'startDate' | 'endDate') => {
+      setFilters(prev => ({ ...prev, [name]: date }));
+    };
+  
+    const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      onFilterChange(filters);
+    };
+  
+    return (
+      <FilterContainer>
+        <FilterToggle onClick={() => setIsOpen(!isOpen)}>
+          <FaFilter style={{ marginRight: '0.5rem' }} />
+          {isOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
+          {isOpen ? <FaChevronUp style={{ marginLeft: '0.5rem' }} /> : <FaChevronDown style={{ marginLeft: '0.5rem' }} />}
+        </FilterToggle>
+        <FilterContent isOpen={isOpen}>
+          <FilterForm onSubmit={handleSubmit}>
+            <DatePicker
+              selected={filters.startDate}
+              onChange={(date: Date | null) => handleDateChange(date, 'startDate')}
+              selectsStart
+              startDate={filters.startDate || undefined}
+              endDate={filters.endDate || undefined}
+              dateFormat="yyyy/MM/dd"
+              placeholderText="Fecha inicio"
+              locale="es"
+            />
+            <DatePicker
+              selected={filters.endDate}
+              onChange={(date: Date | null) => handleDateChange(date, 'endDate')}
+              selectsEnd
+              startDate={filters.startDate || undefined}
+              endDate={filters.endDate || undefined}
+              dateFormat="yyyy/MM/dd"
+              placeholderText="Fecha fin"
+              locale="es"
+            />
+            <FilterButton type="submit">Aplicar filtros</FilterButton>
+          </FilterForm>
+        </FilterContent>
+      </FilterContainer>
+    );
   };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onFilterChange(filters);
-  };
-
-  return (
-    <FilterContainer>
-      <FilterToggle onClick={() => setIsOpen(!isOpen)}>
-        <FaFilter style={{ marginRight: '0.5rem' }} />
-        {isOpen ? 'Ocultar filtros' : 'Mostrar filtros'}
-        {isOpen ? <FaChevronUp style={{ marginLeft: '0.5rem' }} /> : <FaChevronDown style={{ marginLeft: '0.5rem' }} />}
-      </FilterToggle>
-      <FilterContent isOpen={isOpen}>
-        <FilterForm onSubmit={handleSubmit}>
-          <FilterInput
-            type="date"
-            name="startDate"
-            value={filters.startDate}
-            onChange={handleInputChange}
-            placeholder="Fecha inicio"
-          />
-          <FilterInput
-            type="date"
-            name="endDate"
-            value={filters.endDate}
-            onChange={handleInputChange}
-            placeholder="Fecha fin"
-          />
-          <FilterButton type="submit">Aplicar filtros</FilterButton>
-        </FilterForm>
-      </FilterContent>
-    </FilterContainer>
-  );
-};
-
-export default ExpenseFilters;
+  
+  export default ExpenseFilters;
