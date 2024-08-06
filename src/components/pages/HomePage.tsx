@@ -31,7 +31,6 @@ const SectionTitle = styled.h2`
   color: ${theme.colors.text};
   font-size: 1.5rem;
   margin-bottom: ${theme.padding.medium};
-  text-align: center;
 `;
 
 const HomePage: React.FC = () => {
