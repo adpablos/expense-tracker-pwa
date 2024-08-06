@@ -89,11 +89,11 @@ const ExpenseForm: React.FC = () => {
   const renderContent = () => {
     switch (inputMethod) {
       case 'manual':
-        return <ManualExpenseForm onSubmit={handleExpenseSubmit} />;
+        return <ManualExpenseForm onSubmit={() => { }} />;
       case 'audio':
         return <AudioRecorder onUploadComplete={handleExpenseSubmit} onError={handleExpenseError} />;
       case 'image':
-        return <ImageUploader onUploadComplete={handleExpenseSubmit} />;
+        return <ImageUploader onUploadComplete={() => { }} />;
       default:
         return null;
     }
