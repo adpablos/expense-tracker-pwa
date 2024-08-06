@@ -13,6 +13,7 @@ const HomeContainer = styled.div`
   padding: ${theme.padding.medium};
 `;
 
+
 const Title = styled.h1`
   color: ${theme.colors.primary};
   font-size: ${theme.fontSize.large};
