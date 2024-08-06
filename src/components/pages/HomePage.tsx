@@ -11,6 +11,7 @@ const HomeContainer = styled.div`
   padding: ${theme.padding.large};
 `;
 
+
 const Title = styled.h1`
   color: ${theme.colors.primary};
   font-size: 2rem;
