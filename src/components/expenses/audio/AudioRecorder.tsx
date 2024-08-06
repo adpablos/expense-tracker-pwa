@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 import { FaMicrophone, FaPause, FaPlay, FaTrash, FaPaperPlane } from 'react-icons/fa';
 import { theme } from '../../../styles/theme';
@@ -6,6 +6,9 @@ import { Expense } from '../../../types';
 import { uploadExpenseFile } from '../../../services/api';
 import LoadingOverlay from '../../common/LoadingOverlay';
 import { convertApiExpenseToExpense } from '../../../utils/expenseUtils';
+
+const CANVAS_WIDTH = 800;
+const CANVAS_HEIGHT = 150;
 
 const pulse = keyframes`
   0% {
@@ -27,10 +30,7 @@ const RecorderContainer = styled.div`
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
-  box-sizing: border-box;
   background-color: ${theme.colors.backgroundLight};
-  border-radius: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;
 
 const MainButton = styled.button<{ isRecording: boolean }>`
@@ -88,7 +88,7 @@ const Timer = styled.div`
 
 const WaveformContainer = styled.div`
   width: 100%;
-  height: 100%;
+  height: ${CANVAS_HEIGHT}px;
   background-color: ${theme.colors.waveformBackground};
   border-radius: 10px;
   overflow: hidden;
@@ -113,24 +113,27 @@ const PlaybackPosition = styled.div`
 
 interface AudioRecorderProps {
   onUploadComplete: (expense: Expense) => void;
+  onError: (message: string) => void;
 }
 
-const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
+const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete, onError }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [playbackPosition, setPlaybackPosition] = useState(0);
+  const [playbackProgress, setPlaybackProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioBufferRef = useRef<AudioBuffer | null>(null);
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+
   const startTimeRef = useRef<number>(0);
+  const pausedTimeRef = useRef<number>(0);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   useEffect(() => {
     audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -141,181 +144,90 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
     };
   }, []);
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isRecording) {
-      interval = setInterval(() => {
-        setRecordingTime((prevTime) => prevTime + 1);
-      }, 1000);
-    }
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
-  }, [isRecording]);
-
-  useEffect(() => {
-    if (audioBlob && audioBufferRef.current) {
-      visualizeAudio(audioBufferRef.current);
-    }
-  }, [audioBlob]);
-
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
       mediaRecorderRef.current = new MediaRecorder(stream);
       
-      const audioChunks: Blob[] = [];
       mediaRecorderRef.current.ondataavailable = (event) => {
         if (event.data.size > 0) {
-          audioChunks.push(event.data);
+          audioChunksRef.current.push(event.data);
         }
       };
 
-      mediaRecorderRef.current.onstop = async () => {
-        const newAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        await combineAudioBlobs(newAudioBlob);
+      mediaRecorderRef.current.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
+        setAudioBlob(audioBlob);
+        processAudioBlob(audioBlob);
       };
 
       mediaRecorderRef.current.start();
       setIsRecording(true);
+      startTimeRef.current = audioContextRef.current!.currentTime;
     } catch (error) {
       console.error('Error accessing microphone:', error);
     }
   };
 
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+    if (isRecording) {
+      intervalId = setInterval(() => {
+        setRecordingTime((prevTime) => prevTime + 1);
+      }, 1000);
+    }
+    return () => clearInterval(intervalId);
+  }, [isRecording]);
+
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
-      streamRef.current?.getTracks().forEach(track => track.stop());
       setIsRecording(false);
     }
   };
 
-  const combineAudioBlobs = async (newBlob: Blob) => {
-    const audioContext = audioContextRef.current!;
-    
-    const [existingBuffer, newBuffer] = await Promise.all([
-      audioBlob ? audioContext.decodeAudioData(await audioBlob.arrayBuffer()) : null,
-      audioContext.decodeAudioData(await newBlob.arrayBuffer())
-    ]);
-  
-    let combinedBuffer: AudioBuffer;
-    if (existingBuffer) {
-      const combinedLength = existingBuffer.length + newBuffer.length;
-      combinedBuffer = audioContext.createBuffer(
-        existingBuffer.numberOfChannels,
-        combinedLength,
-        existingBuffer.sampleRate
-      );
-  
-      for (let channel = 0; channel < existingBuffer.numberOfChannels; channel++) {
-        const combinedChannelData = combinedBuffer.getChannelData(channel);
-        combinedChannelData.set(existingBuffer.getChannelData(channel), 0);
-        combinedChannelData.set(newBuffer.getChannelData(channel), existingBuffer.length);
-      }
-    } else {
-      combinedBuffer = newBuffer;
-    }
-  
-    audioBufferRef.current = combinedBuffer;
-    const combinedBlob = await audioBufferToWav(combinedBuffer);
-    setAudioBlob(combinedBlob);
-  
-    // Forzamos un re-render después de actualizar el estado
-    setTimeout(() => {
-      visualizeAudio(combinedBuffer);
-    }, 0);
-  };
-
-  const audioBufferToWav = async (buffer: AudioBuffer): Promise<Blob> => {
-    const wavFile = await new Promise<Blob>((resolve) => {
-      const numberOfChannels = buffer.numberOfChannels;
-      const sampleRate = buffer.sampleRate;
-      const length = buffer.length * numberOfChannels * 2;
-      const arrayBuffer = new ArrayBuffer(44 + length);
-      const view = new DataView(arrayBuffer);
-
-      // Write WAV header
-      writeString(view, 0, 'RIFF');
-      view.setUint32(4, 36 + length, true);
-      writeString(view, 8, 'WAVE');
-      writeString(view, 12, 'fmt ');
-      view.setUint32(16, 16, true);
-      view.setUint16(20, 1, true);
-      view.setUint16(22, numberOfChannels, true);
-      view.setUint32(24, sampleRate, true);
-      view.setUint32(28, sampleRate * numberOfChannels * 2, true);
-      view.setUint16(32, numberOfChannels * 2, true);
-      view.setUint16(34, 16, true);
-      writeString(view, 36, 'data');
-      view.setUint32(40, length, true);
-
-      // Write audio data
-      const offset = 44;
-      for (let i = 0; i < buffer.length; i++) {
-        for (let channel = 0; channel < numberOfChannels; channel++) {
-          const sample = buffer.getChannelData(channel)[i];
-          view.setInt16(offset + (i * numberOfChannels + channel) * 2, sample * 0x7fff, true);
-        }
-      }
-
-      resolve(new Blob([arrayBuffer], { type: 'audio/wav' }));
-    });
-
-    return wavFile;
-  };
-
-  const writeString = (view: DataView, offset: number, string: string) => {
-    for (let i = 0; i < string.length; i++) {
-      view.setUint8(offset + i, string.charCodeAt(i));
-    }
+  const processAudioBlob = async (blob: Blob) => {
+    const arrayBuffer = await blob.arrayBuffer();
+    const audioBuffer = await audioContextRef.current!.decodeAudioData(arrayBuffer);
+    audioBufferRef.current = audioBuffer;
+    visualizeAudio(audioBuffer);
   };
 
   const visualizeAudio = (audioBuffer: AudioBuffer) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-  
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-  
+
     const width = canvas.width;
     const height = canvas.height;
     const data = audioBuffer.getChannelData(0);
     const step = Math.ceil(data.length / width);
-  
+
+    ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = theme.colors.waveformBackground;
     ctx.fillRect(0, 0, width, height);
-  
+
     ctx.lineWidth = 2;
     ctx.strokeStyle = theme.colors.primary;
     ctx.beginPath();
-  
+
     const centerY = height / 2;
-    const amplitudeScale = height * 2;
-  
+    const amplitudeScale = height * 0.8;
+
     for (let i = 0; i < width; i++) {
       const sliceStart = step * i;
       const sliceEnd = sliceStart + step;
       const slice = data.slice(sliceStart, sliceEnd);
       const average = slice.reduce((sum, value) => sum + Math.abs(value), 0) / slice.length;
       const scaledAverage = average * amplitudeScale;
-  
+
       ctx.moveTo(i, centerY + scaledAverage);
       ctx.lineTo(i, centerY - scaledAverage);
     }
-  
-    ctx.stroke();
-  };
 
-  const togglePlayback = () => {
-    if (isPlaying) {
-      stopPlayback();
-    } else {
-      startPlayback();
-    }
+    ctx.stroke();
   };
 
   const startPlayback = () => {
@@ -325,49 +237,47 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
     sourceNodeRef.current.buffer = audioBufferRef.current;
     sourceNodeRef.current.connect(audioContextRef.current.destination);
 
-    sourceNodeRef.current.start();
+    const offset = pausedTimeRef.current;
+    sourceNodeRef.current.start(0, offset);
     setIsPlaying(true);
-    startTimeRef.current = audioContextRef.current.currentTime;
+    startTimeRef.current = audioContextRef.current.currentTime - offset;
+
     animatePlayback();
   };
 
-  const stopPlayback = () => {
-    if (sourceNodeRef.current) {
-      sourceNodeRef.current.stop();
-      sourceNodeRef.current.disconnect();
-      sourceNodeRef.current = null;
-    }
-    setIsPlaying(false);
-    setPlaybackPosition(0);
-    cancelAnimationFrame(animationFrameRef.current!);
-  };
-
   const animatePlayback = () => {
-    if (!audioBufferRef.current || !audioContextRef.current || !canvasRef.current) return;
+    if (!audioBufferRef.current || !audioContextRef.current) return;
 
     const currentTime = audioContextRef.current.currentTime - startTimeRef.current;
     const duration = audioBufferRef.current.duration;
-    const progress = currentTime / duration;
-    const canvasWidth = canvasRef.current.width;
+    const progress = Math.min(currentTime / duration, 1);
 
-    setPlaybackPosition(progress * canvasWidth);
+    setPlaybackProgress(progress);
 
-    if (currentTime < duration) {
+    if (progress < 1) {
       animationFrameRef.current = requestAnimationFrame(animatePlayback);
     } else {
       stopPlayback();
     }
   };
 
-  const discardRecording = () => {
-    stopRecording();
-    stopPlayback();
-    setRecordingTime(0);
-    setAudioBlob(null);
-    audioBufferRef.current = null;
-    if (canvasRef.current) {
-      const ctx = canvasRef.current.getContext('2d');
-      ctx?.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+  const stopPlayback = () => {
+    if (sourceNodeRef.current) {
+      sourceNodeRef.current.stop();
+      sourceNodeRef.current.disconnect();
+    }
+    setIsPlaying(false);
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+  };
+
+  const togglePlayback = () => {
+    if (isPlaying) {
+      pausedTimeRef.current = audioContextRef.current!.currentTime - startTimeRef.current;
+      stopPlayback();
+    } else {
+      startPlayback();
     }
   };
 
@@ -381,9 +291,24 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
         onUploadComplete(convertedExpense);
       } catch (error) {
         console.error('Error uploading audio:', error);
+        onError('Error al subir el audio. Por favor, inténtalo de nuevo.');
       } finally {
         setIsLoading(false);
       }
+    }
+  };
+
+  const discardRecording = () => {
+    stopPlayback();
+    setAudioBlob(null);
+    audioBufferRef.current = null;
+    setRecordingTime(0);
+    setPlaybackProgress(0);
+    pausedTimeRef.current = 0;
+    audioChunksRef.current = [];
+    if (canvasRef.current) {
+      const ctx = canvasRef.current.getContext('2d');
+      ctx?.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     }
   };
 
@@ -416,7 +341,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete }) => {
           </MainButton>
           <WaveformContainer>
             <Waveform ref={canvasRef} />
-            <PlaybackPosition style={{ left: `${playbackPosition}px` }} />
+            <PlaybackPosition style={{ left: `${playbackProgress * 100}%` }} />
           </WaveformContainer>
           <ControlsContainer>
             <ActionButton onClick={togglePlayback} color={theme.colors.primary}>
