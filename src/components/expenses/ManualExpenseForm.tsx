@@ -1,3 +1,4 @@
+// src/components/expenses/ManualExpenseForm.tsx
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -5,7 +6,8 @@ import { createExpense } from '../../store/slices/expensesSlice';
 import { RootState, AppDispatch } from '../../store';
 import { Category, Subcategory, ExpenseInput, Expense } from '../../types';
 import { theme } from '../../styles/theme';
-import SubmitButton from '../common/SubmitButton';
+import { fetchCategories } from '../../store/slices/categoriesSlice';
+
 
 const Form = styled.form`
   display: flex;
@@ -14,15 +16,32 @@ const Form = styled.form`
 `;
 
 const Input = styled.input`
-  padding: ${theme.padding.small};
+  padding: ${theme.padding.medium};
   border: 1px solid ${theme.colors.border};
   border-radius: ${theme.borderRadius};
+  font-size: 1rem;
 `;
 
 const Select = styled.select`
-  padding: ${theme.padding.small};
+  padding: ${theme.padding.medium};
   border: 1px solid ${theme.colors.border};
   border-radius: ${theme.borderRadius};
+  font-size: 1rem;
+`;
+
+const SubmitButton = styled.button`
+  padding: ${theme.padding.medium};
+  background-color: ${theme.colors.primary};
+  color: ${theme.colors.background};
+  border: none;
+  border-radius: ${theme.borderRadius};
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: ${theme.colors.primaryHover};
+  }
 `;
 
 interface ManualExpenseFormProps {
@@ -39,6 +58,10 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
   const [subcategoryId, setSubcategoryId] = useState('');
   const [date, setDate] = useState('');
 
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
+  
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     setDate(today);
@@ -137,6 +160,9 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
 
 export default ManualExpenseForm;
 
-function setErrorMessage(arg0: string) {
-  throw new Error('Function not implemented.');
+function setErrorMessage(errorMessage: string) {
+  // Implement the logic to handle the error message
+  console.error(errorMessage);
+  // Additional logic if needed
 }
+

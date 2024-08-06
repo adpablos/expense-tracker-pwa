@@ -1,46 +1,34 @@
-import React, { useEffect, useState } from 'react';
+// src/components/expenses/ExpenseForm.tsx
+import React, { useState } from 'react';
 import styled from 'styled-components';
-import { FaFileAlt, FaMicrophone, FaImage, FaArrowLeft } from 'react-icons/fa';
+import { FaFileAlt, FaMicrophone, FaImage } from 'react-icons/fa';
+import { theme } from '../../styles/theme';
+import ManualExpenseForm from './ManualExpenseForm';
 import AudioRecorder from './audio/AudioRecorder';
 import ImageUploader from './ImageUploader';
-import ManualExpenseForm from './ManualExpenseForm';
-import { Expense } from '../../types';
-import { theme } from '../../styles/theme';
 import SuccessModal from '../common/SuccessModal';
 import ErrorModal from '../common/ErrorModal';
-import { AppDispatch } from '../../store';
-import { useDispatch } from 'react-redux';
-import { fetchCategories } from '../../store/slices/categoriesSlice';
+import { Expense } from '../../types';
 
 const FormContainer = styled.div`
-  max-width: 500px;
-  margin: 0 auto;
-  padding: ${theme.padding.medium};
-  background-color: ${theme.colors.background};
-  border-radius: ${theme.borderRadius};
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-`;
-
-const Title = styled.h2`
-  color: ${theme.colors.text};
-  text-align: center;
-  margin-bottom: 1.5rem;
-  font-size: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: ${theme.padding.large};
 `;
 
 const OptionContainer = styled.div`
   display: flex;
-  justify-content: space-around;
-  margin-bottom: 2rem;
+  justify-content: center;
+  gap: ${theme.padding.medium};
 `;
 
-const OptionButton = styled.button`
+const OptionButton = styled.button<{ isSelected: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1rem;
-  background-color: ${theme.colors.background};
-  color: ${theme.colors.primary};
+  padding: ${theme.padding.medium};
+  background-color: ${props => props.isSelected ? theme.colors.primary : theme.colors.background};
+  color: ${props => props.isSelected ? theme.colors.background : theme.colors.primary};
   border: 2px solid ${theme.colors.primary};
   border-radius: ${theme.borderRadius};
   cursor: pointer;
@@ -52,82 +40,81 @@ const OptionButton = styled.button`
   }
 
   svg {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+    margin-bottom: ${theme.padding.small};
   }
 `;
 
-const BackButton = styled.button`
-  background: none;
-  border: none;
-  color: ${theme.colors.primary};
-  cursor: pointer;
-  font-size: 1rem;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
+const ContentContainer = styled.div`
+  background-color: ${theme.colors.backgroundLight};
+  border-radius: ${theme.borderRadius};
+  padding: ${theme.padding.large};
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 `;
 
-type InputMethod = 'manual' | 'audio' | 'image' | null;
+type InputMethod = 'manual' | 'audio' | 'image';
 
 const ExpenseForm: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const [inputMethod, setInputMethod] = useState<InputMethod>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [inputMethod, setInputMethod] = useState<InputMethod | null>(null);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [submittedExpense, setSubmittedExpense] = useState<Expense | null>(null);
 
-  useEffect(() => {
-    dispatch(fetchCategories());
-  }, [dispatch]);
-
   const handleExpenseSubmit = (expense: Expense) => {
-    console.log("Expense received in ExpenseForm:", expense); 
     setSubmittedExpense(expense);
     setSuccessModalOpen(true);
     setInputMethod(null);
   };
 
+  const handleExpenseError = (message: string) => {
+    setErrorMessage(message);
+    setErrorModalOpen(true);
+  };
+
   const renderContent = () => {
     switch (inputMethod) {
       case 'manual':
-        return <ManualExpenseForm onSubmit={handleExpenseSubmit} />;
+        return <ManualExpenseForm onSubmit={() => { }} />;
       case 'audio':
-        return <AudioRecorder onUploadComplete={handleExpenseSubmit} />;
+        return <AudioRecorder onUploadComplete={() => { }} onError={() => { }} />;
       case 'image':
-        return <ImageUploader onUploadComplete={handleExpenseSubmit} />;
+        return <ImageUploader onUploadComplete={() => { }} />;
       default:
-        return (
-          <>
-            <Title>¿Cómo quieres registrar tu gasto?</Title>
-            <OptionContainer>
-              <OptionButton onClick={() => setInputMethod('manual')}>
-                <FaFileAlt />
-                Manual
-              </OptionButton>
-              <OptionButton onClick={() => setInputMethod('audio')}>
-                <FaMicrophone />
-                Audio
-              </OptionButton>
-              <OptionButton onClick={() => setInputMethod('image')}>
-                <FaImage />
-                Imagen
-              </OptionButton>
-            </OptionContainer>
-          </>
-        );
+        return null;
     }
   };
 
   return (
     <FormContainer>
+      <OptionContainer>
+        <OptionButton
+          isSelected={inputMethod === 'manual'}
+          onClick={() => setInputMethod('manual')}
+        >
+          <FaFileAlt />
+          Manual
+        </OptionButton>
+        <OptionButton
+          isSelected={inputMethod === 'audio'}
+          onClick={() => setInputMethod('audio')}
+        >
+          <FaMicrophone />
+          Audio
+        </OptionButton>
+        <OptionButton
+          isSelected={inputMethod === 'image'}
+          onClick={() => setInputMethod('image')}
+        >
+          <FaImage />
+          Imagen
+        </OptionButton>
+      </OptionContainer>
       {inputMethod && (
-        <BackButton onClick={() => setInputMethod(null)}>
-          <FaArrowLeft style={{ marginRight: '0.5rem' }} />
-          Volver
-        </BackButton>
+        <ContentContainer>
+          {renderContent()}
+        </ContentContainer>
       )}
-      {renderContent()}
       <SuccessModal
         isOpen={successModalOpen}
         onClose={() => {
@@ -137,9 +124,12 @@ const ExpenseForm: React.FC = () => {
         expense={submittedExpense}
       />
       <ErrorModal
-        isOpen={!!errorMessage}
-        onClose={() => setErrorMessage(null)}
-        message={errorMessage || ''}
+        isOpen={errorModalOpen}
+        onClose={() => {
+          setErrorModalOpen(false);
+          setErrorMessage('');
+        }}
+        message={errorMessage}
       />
     </FormContainer>
   );

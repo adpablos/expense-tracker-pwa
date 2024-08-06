@@ -3,33 +3,34 @@ import React from 'react';
 import styled from 'styled-components';
 import ExpenseForm from '../expenses/ExpenseForm';
 import MonthlyExpensesChart from '../expenses/MonthlyExpensesChart';
-import RecentExpenses from '../expenses/RecentExpenses';
 import { theme } from '../../styles/theme';
 
 const HomeContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${theme.padding.large};
-  padding: ${theme.padding.medium};
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: ${theme.padding.large};
 `;
 
 const Title = styled.h1`
   color: ${theme.colors.primary};
-  font-size: ${theme.fontSize.large};
-  margin-bottom: ${theme.padding.small};
+  font-size: 2rem;
+  margin-bottom: ${theme.padding.large};
+  text-align: center;
 `;
 
 const Section = styled.section`
   background-color: ${theme.colors.backgroundLight};
   border-radius: ${theme.borderRadius};
-  padding: ${theme.padding.medium};
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: ${theme.padding.large};
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: ${theme.padding.large};
 `;
 
 const SectionTitle = styled.h2`
   color: ${theme.colors.text};
-  font-size: ${theme.fontSize.medium};
+  font-size: 1.5rem;
   margin-bottom: ${theme.padding.medium};
+  text-align: center;
 `;
 
 const HomePage: React.FC = () => {
@@ -41,11 +42,8 @@ const HomePage: React.FC = () => {
         <ExpenseForm />
       </Section>
       <Section>
+        <SectionTitle>Distribución de gastos por categoría este mes</SectionTitle>
         <MonthlyExpensesChart />
-      </Section>
-      <Section>
-        <SectionTitle>Gastos Recientes</SectionTitle>
-        <RecentExpenses />
       </Section>
     </HomeContainer>
   );
