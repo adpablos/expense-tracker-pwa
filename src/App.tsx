@@ -7,6 +7,7 @@ import NavigationBar from './components/common/NavigationBar';
 import ExpenseForm from './components/expenses/ExpenseForm';
 import ExpenseList from './components/expenses/ExpenseList';
 import HomePage from './components/pages/HomePage';
+import GlobalStyle from './styles/globalStyles';
 
 const AppContainer = styled.div`
   max-width: 1200px;
@@ -36,6 +37,7 @@ const MainContent = styled.main`
 const App: React.FC = () => {
   return (
     <Router>
+      <GlobalStyle />
       <AppContainer>
         <Header>
           <Title>Expense Tracker</Title>
