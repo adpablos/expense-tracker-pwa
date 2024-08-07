@@ -1,4 +1,3 @@
-// src/components/expenses/ExpenseForm.tsx
 import React, { useState } from 'react';
 import { FaFileAlt, FaMicrophone, FaImage } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
@@ -7,7 +6,6 @@ import styled from 'styled-components';
 
 import { AppDispatch } from '../../store';
 import { createExpense } from '../../store/slices/expensesSlice';
-import { theme } from '../../styles/theme';
 import { Expense, ExpenseInput } from '../../types';
 import ErrorModal from '../common/ErrorModal';
 import SuccessModal from '../common/SuccessModal';
@@ -19,44 +17,45 @@ import ManualExpenseForm from './ManualExpenseForm';
 const FormContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: ${theme.padding.large};
+  gap: ${({ theme }) => theme.space.large};
 `;
 
 const OptionContainer = styled.div`
   display: flex;
   justify-content: center;
-  gap: ${theme.padding.medium};
+  gap: ${({ theme }) => theme.space.medium};
 `;
 
 const OptionButton = styled.button<{ isSelected: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: ${theme.padding.medium};
-  background-color: ${(props) =>
-    props.isSelected ? theme.colors.primary : theme.colors.background};
-  color: ${(props) => (props.isSelected ? theme.colors.background : theme.colors.primary)};
-  border: 2px solid ${theme.colors.primary};
-  border-radius: ${theme.borderRadius};
+  padding: ${({ theme }) => theme.space.medium};
+  background-color: ${({ theme, isSelected }) =>
+    isSelected ? theme.colors.primary : theme.colors.background};
+  color: ${({ theme, isSelected }) =>
+    isSelected ? theme.colors.background : theme.colors.primary};
+  border: 2px solid ${({ theme }) => theme.colors.primary};
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all ${({ theme }) => theme.transitions.default};
 
   &:hover {
-    background-color: ${theme.colors.primary};
-    color: ${theme.colors.background};
+    background-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.background};
   }
 
   svg {
-    font-size: 1.5rem;
-    margin-bottom: ${theme.padding.small};
+    font-size: ${({ theme }) => theme.fontSizes.xlarge};
+    margin-bottom: ${({ theme }) => theme.space.small};
   }
 `;
 
 const ContentContainer = styled.div`
-  background-color: ${theme.colors.backgroundLight};
-  border-radius: ${theme.borderRadius};
-  padding: ${theme.padding.large};
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: ${({ theme }) => theme.colors.backgroundLight};
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  padding: ${({ theme }) => theme.space.large};
+  box-shadow: ${({ theme }) => theme.shadows.medium};
 `;
 
 type InputMethod = 'manual' | 'audio' | 'image';

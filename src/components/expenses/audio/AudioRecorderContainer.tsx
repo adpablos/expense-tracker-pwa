@@ -13,11 +13,11 @@ const Container = styled.div`
   padding: ${theme.padding.large};
   background-color: ${theme.colors.backgroundLight};
   border-radius: ${theme.borderRadius};
-  box-shadow: ${theme.boxShadow};
+  box-shadow: ${theme.shadows.medium};
 `;
 
 const StatusText = styled.p`
-  font-size: ${theme.fontSize.medium};
+  font-size: ${theme.fontSizes.medium};
   color: ${theme.colors.text};
   margin: 0;
 `;

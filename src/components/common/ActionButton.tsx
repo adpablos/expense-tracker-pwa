@@ -15,9 +15,9 @@ const Button = styled.button<{ isActive?: boolean }>`
   border: none;
   background-color: ${(props) => (props.isActive ? theme.colors.error : theme.colors.primary)};
   color: ${theme.colors.backgroundLight};
-  font-size: ${theme.fontSize.large};
+  font-size: ${theme.fontSizes.large};
   cursor: pointer;
-  transition: all ${theme.transition};
+  transition: all ${theme.transitions.default};
 
   &:hover {
     transform: scale(1.05);
