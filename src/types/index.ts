@@ -41,8 +41,3 @@ export interface ExpensesAPIResponse {
   nextPage: number | null;
   totalItems: number;
 }
-
-export interface UploadExpenseResponse {
-  message: string;
-  expense: Expense;
-}
