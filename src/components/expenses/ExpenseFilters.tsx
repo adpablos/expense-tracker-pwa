@@ -1,4 +1,3 @@
-// src/components/expenses/ExpenseFilters.tsx
 import React, { useState } from 'react';
 import DatePicker from 'react-datepicker';
 import { FaFilter, FaChevronDown, FaChevronUp } from 'react-icons/fa';
@@ -6,11 +5,12 @@ import { FaFilter, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import styled from 'styled-components';
 
 import 'react-datepicker/dist/react-datepicker.css';
-import { theme } from '../../styles/theme';
 import { FilterValues } from '../../types/filters';
+// eslint-disable-next-line import/no-named-as-default
+import Button from '../common/Button';
 
 const FilterContainer = styled.div`
-  margin-bottom: ${theme.padding.medium};
+  margin-bottom: ${({ theme }) => theme.space.medium};
 `;
 
 const FilterToggle = styled.button`
@@ -18,10 +18,10 @@ const FilterToggle = styled.button`
   align-items: center;
   background: none;
   border: none;
-  color: ${theme.colors.primary};
+  color: ${({ theme }) => theme.colors.primary};
   cursor: pointer;
   font-size: 1rem;
-  padding: ${theme.padding.small};
+  padding: ${({ theme }) => theme.space.small};
 
   &:hover {
     text-decoration: underline;
@@ -30,30 +30,16 @@ const FilterToggle = styled.button`
 
 const FilterContent = styled.div<{ isOpen: boolean }>`
   display: ${(props) => (props.isOpen ? 'block' : 'none')};
-  padding: ${theme.padding.medium};
-  background-color: ${theme.colors.backgroundLight};
-  border-radius: ${theme.borderRadius};
-  margin-top: ${theme.padding.small};
+  padding: ${({ theme }) => theme.space.medium};
+  background-color: ${({ theme }) => theme.colors.backgroundLight};
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  margin-top: ${({ theme }) => theme.space.small};
 `;
 
 const FilterForm = styled.form`
   display: flex;
-  gap: ${theme.padding.small};
+  gap: ${({ theme }) => theme.space.small};
   flex-wrap: wrap;
-`;
-
-const FilterButton = styled.button`
-  padding: ${theme.padding.small} ${theme.padding.medium};
-  background-color: ${theme.colors.primary};
-  color: ${theme.colors.background};
-  border: none;
-  border-radius: ${theme.borderRadius};
-  cursor: pointer;
-  transition: background-color 0.3s;
-
-  &:hover {
-    background-color: ${theme.colors.primaryHover};
-  }
 `;
 
 interface ExpenseFiltersProps {
@@ -107,7 +93,9 @@ const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({ onFilterChange, current
             placeholderText="Fecha fin"
             locale="es"
           />
-          <FilterButton type="submit">Aplicar filtros</FilterButton>
+          <Button variant="primary" type="submit">
+            Aplicar filtros
+          </Button>
         </FilterForm>
       </FilterContent>
     </FilterContainer>

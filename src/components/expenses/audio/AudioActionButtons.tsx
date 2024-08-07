@@ -5,7 +5,7 @@ import { FaMicrophone, FaPause, FaTrash, FaPlay, FaCheck } from 'react-icons/fa'
 import styled from 'styled-components';
 
 import { theme } from '../../../styles/theme';
-import ActionButton from '../../common/ActionButton';
+import ActionButton from '../../common/Button';
 
 const RecordingCircle = styled.div`
   display: flex;

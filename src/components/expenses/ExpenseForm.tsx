@@ -7,6 +7,8 @@ import styled from 'styled-components';
 import { AppDispatch } from '../../store';
 import { createExpense } from '../../store/slices/expensesSlice';
 import { Expense, ExpenseInput } from '../../types';
+// eslint-disable-next-line import/no-named-as-default
+import Button from '../common/Button';
 import ErrorModal from '../common/ErrorModal';
 import SuccessModal from '../common/SuccessModal';
 
@@ -24,31 +26,6 @@ const OptionContainer = styled.div`
   display: flex;
   justify-content: center;
   gap: ${({ theme }) => theme.space.medium};
-`;
-
-const OptionButton = styled.button<{ isSelected: boolean }>`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: ${({ theme }) => theme.space.medium};
-  background-color: ${({ theme, isSelected }) =>
-    isSelected ? theme.colors.primary : theme.colors.background};
-  color: ${({ theme, isSelected }) =>
-    isSelected ? theme.colors.background : theme.colors.primary};
-  border: 2px solid ${({ theme }) => theme.colors.primary};
-  border-radius: ${({ theme }) => theme.borderRadius.medium};
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.default};
-
-  &:hover {
-    background-color: ${({ theme }) => theme.colors.primary};
-    color: ${({ theme }) => theme.colors.background};
-  }
-
-  svg {
-    font-size: ${({ theme }) => theme.fontSizes.xlarge};
-    margin-bottom: ${({ theme }) => theme.space.small};
-  }
 `;
 
 const ContentContainer = styled.div`
@@ -115,27 +92,27 @@ const ExpenseForm: React.FC = () => {
   return (
     <FormContainer>
       <OptionContainer>
-        <OptionButton
-          isSelected={inputMethod === 'manual'}
+        <Button
+          variant={inputMethod === 'manual' ? 'primary' : 'secondary'}
           onClick={() => toggleInputMethod('manual')}
+          isRound
         >
           <FaFileAlt />
-          Manual
-        </OptionButton>
-        <OptionButton
-          isSelected={inputMethod === 'audio'}
+        </Button>
+        <Button
+          variant={inputMethod === 'audio' ? 'primary' : 'secondary'}
           onClick={() => toggleInputMethod('audio')}
+          isRound
         >
           <FaMicrophone />
-          Audio
-        </OptionButton>
-        <OptionButton
-          isSelected={inputMethod === 'image'}
+        </Button>
+        <Button
+          variant={inputMethod === 'image' ? 'primary' : 'secondary'}
           onClick={() => toggleInputMethod('image')}
+          isRound
         >
           <FaImage />
-          Imagen
-        </OptionButton>
+        </Button>
       </OptionContainer>
       {inputMethod && <ContentContainer>{renderContent()}</ContentContainer>}
       <SuccessModal

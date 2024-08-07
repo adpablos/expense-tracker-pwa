@@ -3,44 +3,38 @@ import { FaEdit, FaTrash } from 'react-icons/fa';
 // eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
 
-import { theme } from '../../styles/theme';
 import { Expense } from '../../types';
 import { formatAmount } from '../../utils/expenseUtils';
+// eslint-disable-next-line import/no-named-as-default
+import Button from '../common/Button';
 
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  margin-top: ${theme.padding.medium};
+  margin-top: ${({ theme }) => theme.space.medium};
 `;
 
 const TableHeader = styled.th`
-  background-color: ${theme.colors.primary};
-  color: ${theme.colors.background};
-  padding: ${theme.padding.small};
+  background-color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.background};
+  padding: ${({ theme }) => theme.space.small};
   text-align: left;
 `;
 
 const TableRow = styled.tr`
   &:nth-child(even) {
-    background-color: ${theme.colors.backgroundLight};
+    background-color: ${({ theme }) => theme.colors.backgroundLight};
   }
 `;
 
 const TableCell = styled.td`
-  padding: ${theme.padding.small};
-  border-bottom: 1px solid ${theme.colors.border};
+  padding: ${({ theme }) => theme.space.small};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
-const ActionButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  margin-right: ${theme.padding.small};
-  transition: opacity 0.3s;
-
-  &:hover {
-    opacity: 0.7;
-  }
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.space.xsmall};
 `;
 
 interface ExpenseTableProps {
@@ -52,7 +46,9 @@ interface ExpenseTableProps {
 const ExpenseTable: React.FC<ExpenseTableProps> = ({ expenses, onEdit, onDelete }) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+    return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(
+      date.getDate()
+    ).padStart(2, '0')}`;
   };
 
   return (
@@ -76,12 +72,26 @@ const ExpenseTable: React.FC<ExpenseTableProps> = ({ expenses, onEdit, onDelete 
             <TableCell>{expense.category}</TableCell>
             <TableCell>{expense.subcategory}</TableCell>
             <TableCell>
-              <ActionButton onClick={() => onEdit(expense)} aria-label="Editar gasto">
-                <FaEdit color={theme.colors.primary} />
-              </ActionButton>
-              <ActionButton onClick={() => onDelete(expense)} aria-label="Eliminar gasto">
-                <FaTrash color={theme.colors.error} />
-              </ActionButton>
+              <ButtonContainer>
+                <Button
+                  variant="primary"
+                  onClick={() => onEdit(expense)}
+                  isRound
+                  size="small"
+                  aria-label="Editar gasto"
+                >
+                  <FaEdit />
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={() => onDelete(expense)}
+                  isRound
+                  size="small"
+                  aria-label="Eliminar gasto"
+                >
+                  <FaTrash />
+                </Button>
+              </ButtonContainer>
             </TableCell>
           </TableRow>
         ))}

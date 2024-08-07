@@ -3,38 +3,24 @@ import { FaEdit, FaTrash } from 'react-icons/fa';
 // eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
 
-import { theme } from '../../styles/theme';
 import { Expense } from '../../types';
 import { formatAmount } from '../../utils/expenseUtils';
+// eslint-disable-next-line import/no-named-as-default
+import Button from '../common/Button';
 
 const TableRow = styled.tr`
   &:nth-child(even) {
-    background-color: ${theme.colors.backgroundLight};
+    background-color: ${({ theme }) => theme.colors.backgroundLight};
   }
 `;
 
 const TableCell = styled.td`
-  padding: ${theme.padding.small};
+  padding: ${({ theme }) => theme.space.small};
 `;
 
-const ActionButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  margin-right: ${theme.padding.small};
-  transition: color 0.3s;
-
-  &:hover {
-    opacity: 0.8;
-  }
-`;
-
-const EditButton = styled(ActionButton)`
-  color: ${theme.colors.primary};
-`;
-
-const DeleteButton = styled(ActionButton)`
-  color: ${theme.colors.error};
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.space.xsmall};
 `;
 
 interface ExpenseItemProps {
@@ -58,12 +44,14 @@ const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense, onDelete, onEdit }) 
       <TableCell>{expense.category}</TableCell>
       <TableCell>{expense.subcategory}</TableCell>
       <TableCell>
-        <EditButton onClick={() => onEdit(expense)} aria-label="Editar gasto">
-          <FaEdit />
-        </EditButton>
-        <DeleteButton onClick={() => onDelete(expense)} aria-label="Eliminar gasto">
-          <FaTrash />
-        </DeleteButton>
+        <ButtonContainer>
+          <Button variant="primary" onClick={() => onEdit(expense)} isRound size="small">
+            <FaEdit />
+          </Button>
+          <Button variant="danger" onClick={() => onDelete(expense)} isRound size="small">
+            <FaTrash />
+          </Button>
+        </ButtonContainer>
       </TableCell>
     </TableRow>
   );

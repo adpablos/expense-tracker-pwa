@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaMicrophone, FaPause, FaPlay, FaTrash, FaPaperPlane } from 'react-icons/fa';
-// eslint-disable-next-line import/no-named-as-default
 import styled, { keyframes, css } from 'styled-components';
 
 import { uploadExpenseFile } from '../../../services/api';
 import { theme } from '../../../styles/theme';
 import { Expense } from '../../../types';
 import { convertApiExpenseToExpense } from '../../../utils/expenseUtils';
+// eslint-disable-next-line import/no-named-as-default
+import Button from '../../common/Button';
 import LoadingOverlay from '../../common/LoadingOverlay';
 
 const CANVAS_HEIGHT = 150;
@@ -31,20 +32,12 @@ const RecorderContainer = styled.div`
   width: 100%;
   max-width: 500px;
   margin: 0 auto;
-  background-color: ${theme.colors.backgroundLight};
+  background-color: ${({ theme }) => theme.colors.backgroundLight};
 `;
 
-const MainButton = styled.button<{ isRecording: boolean }>`
+const MainButton = styled(Button)<{ isRecording: boolean }>`
   width: 120px;
   height: 120px;
-  border-radius: 50%;
-  background-color: ${(props) => (props.isRecording ? theme.colors.error : theme.colors.primary)};
-  border: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
   ${(props) =>
     props.isRecording &&
     css`
@@ -65,34 +58,17 @@ const ControlsContainer = styled.div`
   width: 100%;
 `;
 
-const ActionButton = styled.button<{ color?: string }>`
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background-color: ${(props) => props.color || theme.colors.primary};
-  border: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: scale(1.1);
-  }
-`;
-
 const Timer = styled.div`
   font-size: 1.5rem;
   margin-top: 20px;
-  color: ${theme.colors.text};
+  color: ${({ theme }) => theme.colors.text};
   font-weight: bold;
 `;
 
 const WaveformContainer = styled.div`
   width: 100%;
   height: ${CANVAS_HEIGHT}px;
-  background-color: ${theme.colors.waveformBackground};
+  background-color: ${({ theme }) => theme.colors.waveformBackground};
   border-radius: 10px;
   overflow: hidden;
   margin: 20px 0;
@@ -110,8 +86,8 @@ const PlaybackPosition = styled.div`
   top: 0;
   bottom: 0;
   width: 2px;
-  background-color: ${theme.colors.primary};
-  box-shadow: 0 0 5px ${theme.colors.primary};
+  background-color: ${({ theme }) => theme.colors.primary};
+  box-shadow: 0 0 5px ${({ theme }) => theme.colors.primary};
 `;
 
 interface WindowWithWebkit extends Window {
@@ -332,8 +308,10 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete, onError
       {isRecording || !audioBlob ? (
         <>
           <MainButton
-            isRecording={isRecording}
+            variant={isRecording ? 'danger' : 'primary'}
             onClick={isRecording ? stopRecording : startRecording}
+            isRecording={isRecording}
+            isRound
           >
             {isRecording ? (
               <FaPause color="white" size={40} />
@@ -345,7 +323,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete, onError
         </>
       ) : (
         <>
-          <MainButton isRecording={false} onClick={startRecording}>
+          <MainButton variant="primary" onClick={startRecording} isRecording={false} isRound>
             <FaMicrophone color="white" size={40} />
           </MainButton>
           <WaveformContainer>
@@ -353,15 +331,15 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete, onError
             <PlaybackPosition style={{ left: `${playbackProgress * 100}%` }} />
           </WaveformContainer>
           <ControlsContainer>
-            <ActionButton onClick={togglePlayback} color={theme.colors.primary}>
+            <Button variant="primary" onClick={togglePlayback} isRound>
               {isPlaying ? <FaPause color="white" size={24} /> : <FaPlay color="white" size={24} />}
-            </ActionButton>
-            <ActionButton onClick={discardRecording} color={theme.colors.error}>
+            </Button>
+            <Button variant="danger" onClick={discardRecording} isRound>
               <FaTrash color="white" size={24} />
-            </ActionButton>
-            <ActionButton onClick={handleUpload} color={theme.colors.success}>
+            </Button>
+            <Button variant="success" onClick={handleUpload} isRound>
               <FaPaperPlane color="white" size={24} />
-            </ActionButton>
+            </Button>
           </ControlsContainer>
         </>
       )}
