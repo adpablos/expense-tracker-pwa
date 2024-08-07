@@ -1,17 +1,20 @@
 // src/components/expenses/ExpenseForm.tsx
 import React, { useState } from 'react';
-import styled from 'styled-components';
 import { FaFileAlt, FaMicrophone, FaImage } from 'react-icons/fa';
-import { theme } from '../../styles/theme';
-import ManualExpenseForm from './ManualExpenseForm';
-import AudioRecorder from './audio/AudioRecorder';
-import ImageUploader from './ImageUploader';
-import SuccessModal from '../common/SuccessModal';
-import ErrorModal from '../common/ErrorModal';
-import { Expense, ExpenseInput } from '../../types';
 import { useDispatch } from 'react-redux';
+// eslint-disable-next-line import/no-named-as-default
+import styled from 'styled-components';
+
 import { AppDispatch } from '../../store';
 import { createExpense } from '../../store/slices/expensesSlice';
+import { theme } from '../../styles/theme';
+import { Expense, ExpenseInput } from '../../types';
+import ErrorModal from '../common/ErrorModal';
+import SuccessModal from '../common/SuccessModal';
+
+import AudioRecorder from './audio/AudioRecorder';
+import ImageUploader from './ImageUploader';
+import ManualExpenseForm from './ManualExpenseForm';
 
 const FormContainer = styled.div`
   display: flex;
@@ -30,8 +33,9 @@ const OptionButton = styled.button<{ isSelected: boolean }>`
   flex-direction: column;
   align-items: center;
   padding: ${theme.padding.medium};
-  background-color: ${props => props.isSelected ? theme.colors.primary : theme.colors.background};
-  color: ${props => props.isSelected ? theme.colors.background : theme.colors.primary};
+  background-color: ${(props) =>
+    props.isSelected ? theme.colors.primary : theme.colors.background};
+  color: ${(props) => (props.isSelected ? theme.colors.background : theme.colors.primary)};
   border: 2px solid ${theme.colors.primary};
   border-radius: ${theme.borderRadius};
   cursor: pointer;
@@ -91,9 +95,11 @@ const ExpenseForm: React.FC = () => {
       case 'manual':
         return <ManualExpenseForm onSubmit={handleExpenseSubmit} />;
       case 'audio':
-        return <AudioRecorder onUploadComplete={handleExpenseSubmit} onError={handleExpenseError} />;
+        return (
+          <AudioRecorder onUploadComplete={handleExpenseSubmit} onError={handleExpenseError} />
+        );
       case 'image':
-        return <ImageUploader onUploadComplete={() => { }} />;
+        return <ImageUploader onUploadComplete={() => {}} />;
       default:
         return null;
     }
@@ -132,11 +138,7 @@ const ExpenseForm: React.FC = () => {
           Imagen
         </OptionButton>
       </OptionContainer>
-      {inputMethod && (
-        <ContentContainer>
-          {renderContent()}
-        </ContentContainer>
-      )}
+      {inputMethod && <ContentContainer>{renderContent()}</ContentContainer>}
       <SuccessModal
         isOpen={successModalOpen}
         onClose={() => {

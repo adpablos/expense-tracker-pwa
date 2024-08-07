@@ -1,6 +1,16 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import {
+  FaCheckCircle,
+  FaFileAlt,
+  FaDollarSign,
+  FaTag,
+  FaLayerGroup,
+  FaCalendarAlt,
+  FaTimes,
+} from 'react-icons/fa';
+// eslint-disable-next-line import/no-named-as-default
 import styled, { keyframes } from 'styled-components';
-import { FaCheckCircle, FaFileAlt, FaDollarSign, FaTag, FaLayerGroup, FaCalendarAlt, FaTimes } from 'react-icons/fa';
+
 import { theme } from '../../styles/theme';
 import { Expense } from '../../types';
 
@@ -31,7 +41,7 @@ const ModalContent = styled.div`
   max-width: 90%;
   width: 400px;
   animation: ${fadeIn} 0.3s ease-out;
-  position: relative;  // Añadido para posicionar el botón de cierre
+  position: relative; // Añadido para posicionar el botón de cierre
 `;
 
 const CloseButton = styled.button`
@@ -96,65 +106,79 @@ const DetailValue = styled.span`
   flex: 1;
 `;
 
-
 interface SuccessModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    expense: Expense | null;
+  isOpen: boolean;
+  onClose: () => void;
+  expense: Expense | null;
 }
 
 const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, expense }) => {
   if (!isOpen || !expense) return null;
 
   const formatDate = (dateString: string) => {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('es-ES', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          timeZone: 'UTC'  // Esto asegura que no haya ajustes por zona horaria
-      });
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      timeZone: 'UTC', // Esto asegura que no haya ajustes por zona horaria
+    });
   };
 
   return (
-      <ModalOverlay onClick={onClose}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-              <CloseButton onClick={onClose}>
-                  <FaTimes />
-              </CloseButton>
-              <IconContainer>
-                  <FaCheckCircle />
-              </IconContainer>
-              <Message>Gasto registrado con éxito</Message>
-              <ExpenseDetails>
-                  <DetailItem>
-                      <DetailIcon><FaFileAlt /></DetailIcon>
-                      <DetailLabel>Descripción:</DetailLabel>
-                      <DetailValue>{expense.description}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                      <DetailIcon><FaDollarSign /></DetailIcon>
-                      <DetailLabel>Cantidad:</DetailLabel>
-                      <DetailValue>${typeof expense.amount === 'string' ? parseFloat(expense.amount).toFixed(2) : expense.amount.toFixed(2)}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                      <DetailIcon><FaTag /></DetailIcon>
-                      <DetailLabel>Categoría:</DetailLabel>
-                      <DetailValue>{expense.category}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                      <DetailIcon><FaLayerGroup /></DetailIcon>
-                      <DetailLabel>Subcategoría:</DetailLabel>
-                      <DetailValue>{expense.subcategory}</DetailValue>
-                  </DetailItem>
-                  <DetailItem>
-                      <DetailIcon><FaCalendarAlt /></DetailIcon>
-                      <DetailLabel>Fecha:</DetailLabel>
-                      <DetailValue>{formatDate(expense.date)}</DetailValue>
-                  </DetailItem>
-              </ExpenseDetails>
-          </ModalContent>
-      </ModalOverlay>
+    <ModalOverlay onClick={onClose}>
+      <ModalContent onClick={(e) => e.stopPropagation()}>
+        <CloseButton onClick={onClose}>
+          <FaTimes />
+        </CloseButton>
+        <IconContainer>
+          <FaCheckCircle />
+        </IconContainer>
+        <Message>Gasto registrado con éxito</Message>
+        <ExpenseDetails>
+          <DetailItem>
+            <DetailIcon>
+              <FaFileAlt />
+            </DetailIcon>
+            <DetailLabel>Descripción:</DetailLabel>
+            <DetailValue>{expense.description}</DetailValue>
+          </DetailItem>
+          <DetailItem>
+            <DetailIcon>
+              <FaDollarSign />
+            </DetailIcon>
+            <DetailLabel>Cantidad:</DetailLabel>
+            <DetailValue>
+              $
+              {typeof expense.amount === 'string'
+                ? parseFloat(expense.amount).toFixed(2)
+                : expense.amount.toFixed(2)}
+            </DetailValue>
+          </DetailItem>
+          <DetailItem>
+            <DetailIcon>
+              <FaTag />
+            </DetailIcon>
+            <DetailLabel>Categoría:</DetailLabel>
+            <DetailValue>{expense.category}</DetailValue>
+          </DetailItem>
+          <DetailItem>
+            <DetailIcon>
+              <FaLayerGroup />
+            </DetailIcon>
+            <DetailLabel>Subcategoría:</DetailLabel>
+            <DetailValue>{expense.subcategory}</DetailValue>
+          </DetailItem>
+          <DetailItem>
+            <DetailIcon>
+              <FaCalendarAlt />
+            </DetailIcon>
+            <DetailLabel>Fecha:</DetailLabel>
+            <DetailValue>{formatDate(expense.date)}</DetailValue>
+          </DetailItem>
+        </ExpenseDetails>
+      </ModalContent>
+    </ModalOverlay>
   );
 };
 

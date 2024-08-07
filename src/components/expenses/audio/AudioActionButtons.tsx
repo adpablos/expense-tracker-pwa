@@ -1,10 +1,11 @@
 // src/components/expenses/audio/AudioActionButtons.tsx
 import React from 'react';
 import { FaMicrophone, FaPause, FaTrash, FaPlay, FaCheck } from 'react-icons/fa';
-import ActionButton from '../../common/ActionButton';
+// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
+
 import { theme } from '../../../styles/theme';
-import WaveAnimation from './WaveAnimation';
+import ActionButton from '../../common/ActionButton';
 
 const RecordingCircle = styled.div`
   display: flex;
@@ -60,7 +61,7 @@ const AudioActionButtons: React.FC<AudioActionButtonsProps> = ({
   formattedRecordingTime,
 }) => (
   <div>
-    {(isRecording || isPaused || audioBlob) ? (
+    {isRecording || isPaused || audioBlob ? (
       <RecordingCircle>
         {isRecording && (
           <>

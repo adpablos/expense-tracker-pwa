@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
-import { fetchExpenses, deleteExpense, updateExpense } from '../../store/slices/expensesSlice';
+
 import { RootState, AppDispatch } from '../../store';
-import { Expense } from '../../types';
-import ExpenseTable from './ExpenseTable';
-import EditExpenseModal from './EditExpenseModal';
-import DeleteConfirmationModal from './DeleteConfirmationModal';
+import { fetchExpenses, deleteExpense, updateExpense } from '../../store/slices/expensesSlice';
 import { theme } from '../../styles/theme';
+import { Expense } from '../../types';
+
+// eslint-disable-next-line import/no-named-as-default
+import DeleteConfirmationModal from './DeleteConfirmationModal';
+import EditExpenseModal from './EditExpenseModal';
+import ExpenseTable from './ExpenseTable';
 
 const RecentExpensesContainer = styled.section`
   margin-top: ${theme.padding.large};
@@ -45,18 +49,15 @@ const RecentExpenses: React.FC = () => {
   };
 
   if (status === 'loading') return <p>Cargando gastos recientes...</p>;
-  if (status === 'failed') return <p>Error al cargar los gastos recientes. Por favor, intente de nuevo más tarde.</p>;
+  if (status === 'failed')
+    return <p>Error al cargar los gastos recientes. Por favor, intente de nuevo más tarde.</p>;
 
   return (
     <RecentExpensesContainer>
       {recentExpenses.length === 0 ? (
         <p>No se encontraron gastos recientes.</p>
       ) : (
-        <ExpenseTable
-          expenses={recentExpenses}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+        <ExpenseTable expenses={recentExpenses} onEdit={handleEdit} onDelete={handleDelete} />
       )}
       {editingExpense && (
         <EditExpenseModal

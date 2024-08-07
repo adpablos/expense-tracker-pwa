@@ -1,13 +1,14 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import styled, { keyframes, css } from 'styled-components';
+import React, { useState, useRef, useEffect } from 'react';
 import { FaMicrophone, FaPause, FaPlay, FaTrash, FaPaperPlane } from 'react-icons/fa';
+// eslint-disable-next-line import/no-named-as-default
+import styled, { keyframes, css } from 'styled-components';
+
+import { uploadExpenseFile } from '../../../services/api';
 import { theme } from '../../../styles/theme';
 import { Expense } from '../../../types';
-import { uploadExpenseFile } from '../../../services/api';
-import LoadingOverlay from '../../common/LoadingOverlay';
 import { convertApiExpenseToExpense } from '../../../utils/expenseUtils';
+import LoadingOverlay from '../../common/LoadingOverlay';
 
-const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 150;
 
 const pulse = keyframes`
@@ -37,16 +38,18 @@ const MainButton = styled.button<{ isRecording: boolean }>`
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background-color: ${props => props.isRecording ? theme.colors.error : theme.colors.primary};
+  background-color: ${(props) => (props.isRecording ? theme.colors.error : theme.colors.primary)};
   border: none;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  ${props => props.isRecording && css`
-    animation: ${pulse} 2s infinite;
-  `}
+  ${(props) =>
+    props.isRecording &&
+    css`
+      animation: ${pulse} 2s infinite;
+    `}
 
   &:hover {
     transform: scale(1.1);
@@ -66,7 +69,7 @@ const ActionButton = styled.button<{ color?: string }>`
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background-color: ${props => props.color || theme.colors.primary};
+  background-color: ${(props) => props.color || theme.colors.primary};
   border: none;
   display: flex;
   justify-content: center;
@@ -111,6 +114,10 @@ const PlaybackPosition = styled.div`
   box-shadow: 0 0 5px ${theme.colors.primary};
 `;
 
+interface WindowWithWebkit extends Window {
+  webkitAudioContext?: typeof AudioContext;
+}
+
 interface AudioRecorderProps {
   onUploadComplete: (expense: Expense) => void;
   onError: (message: string) => void;
@@ -136,7 +143,8 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete, onError
   const audioChunksRef = useRef<Blob[]>([]);
 
   useEffect(() => {
-    audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    audioContextRef.current = new (window.AudioContext ||
+      (window as WindowWithWebkit).webkitAudioContext)();
     return () => {
       if (audioContextRef.current) {
         audioContextRef.current.close();
@@ -148,7 +156,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete, onError
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
-      
+
       mediaRecorderRef.current.ondataavailable = (event) => {
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
@@ -327,16 +335,17 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete, onError
             isRecording={isRecording}
             onClick={isRecording ? stopRecording : startRecording}
           >
-            {isRecording ? <FaPause color="white" size={40} /> : <FaMicrophone color="white" size={40} />}
+            {isRecording ? (
+              <FaPause color="white" size={40} />
+            ) : (
+              <FaMicrophone color="white" size={40} />
+            )}
           </MainButton>
           <Timer>{formatTime(recordingTime)}</Timer>
         </>
       ) : (
         <>
-          <MainButton
-            isRecording={false}
-            onClick={startRecording}
-          >
+          <MainButton isRecording={false} onClick={startRecording}>
             <FaMicrophone color="white" size={40} />
           </MainButton>
           <WaveformContainer>

@@ -1,6 +1,8 @@
 // src/components/common/ActionButton.tsx
 import React from 'react';
+// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
+
 import { theme } from '../../styles/theme';
 
 const Button = styled.button<{ isActive?: boolean }>`
@@ -11,7 +13,7 @@ const Button = styled.button<{ isActive?: boolean }>`
   height: 60px;
   border-radius: 50%;
   border: none;
-  background-color: ${props => props.isActive ? theme.colors.error : theme.colors.primary};
+  background-color: ${(props) => (props.isActive ? theme.colors.error : theme.colors.primary)};
   color: ${theme.colors.backgroundLight};
   font-size: ${theme.fontSize.large};
   cursor: pointer;
@@ -19,7 +21,8 @@ const Button = styled.button<{ isActive?: boolean }>`
 
   &:hover {
     transform: scale(1.05);
-    background-color: ${props => props.isActive ? theme.colors.error : theme.colors.primaryHover};
+    background-color: ${(props) =>
+      props.isActive ? theme.colors.error : theme.colors.primaryHover};
   }
 
   &:disabled {

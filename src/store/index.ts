@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
-import expensesReducer from './slices/expensesSlice';
+
 import categoriesReducer from './slices/categoriesSlice';
+import expensesReducer from './slices/expensesSlice';
 
 export const store = configureStore({
   reducer: {

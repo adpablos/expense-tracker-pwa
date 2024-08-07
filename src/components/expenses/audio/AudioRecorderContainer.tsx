@@ -1,6 +1,8 @@
 // src/components/expenses/AudioRecorderContainer.tsx
 import React from 'react';
+// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
+
 import { theme } from '../../../styles/theme';
 
 const Container = styled.div`
@@ -28,8 +30,6 @@ interface AudioRecorderContainerProps {
 }
 
 const AudioRecorderContainer: React.FC<AudioRecorderContainerProps> = ({
-  isRecording,
-  recordingTime,
   statusText,
   children,
 }) => (

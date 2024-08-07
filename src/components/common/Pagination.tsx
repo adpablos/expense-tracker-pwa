@@ -1,5 +1,7 @@
 import React from 'react';
+// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
+
 import { theme } from '../../styles/theme';
 
 const PaginationContainer = styled.div`
@@ -12,8 +14,8 @@ const PaginationContainer = styled.div`
 const PageButton = styled.button<{ isActive?: boolean }>`
   padding: ${theme.padding.small} ${theme.padding.medium};
   margin: 0 ${theme.padding.small};
-  background-color: ${props => props.isActive ? theme.colors.primary : theme.colors.background};
-  color: ${props => props.isActive ? theme.colors.background : theme.colors.text};
+  background-color: ${(props) => (props.isActive ? theme.colors.primary : theme.colors.background)};
+  color: ${(props) => (props.isActive ? theme.colors.background : theme.colors.text)};
   border: 1px solid ${theme.colors.border};
   border-radius: ${theme.borderRadius};
   cursor: pointer;
@@ -46,13 +48,10 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
 
   return (
     <PaginationContainer>
-      <PageButton 
-        onClick={() => onPageChange(currentPage - 1)} 
-        disabled={currentPage === 1}
-      >
+      <PageButton onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1}>
         Anterior
       </PageButton>
-      {pageNumbers.map(number => (
+      {pageNumbers.map((number) => (
         <PageButton
           key={number}
           onClick={() => onPageChange(number)}
@@ -61,8 +60,8 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPage
           {number}
         </PageButton>
       ))}
-      <PageButton 
-        onClick={() => onPageChange(currentPage + 1)} 
+      <PageButton
+        onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
       >
         Siguiente

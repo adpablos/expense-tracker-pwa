@@ -1,6 +1,8 @@
 // src/components/common/WaveformContainer.tsx
 import React from 'react';
+// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
+
 import { theme } from '../../styles/theme';
 
 const Container = styled.div<{ isVisible: boolean }>`
@@ -9,7 +11,7 @@ const Container = styled.div<{ isVisible: boolean }>`
   background-color: ${theme.colors.waveformBackground};
   border-radius: ${theme.borderRadius};
   overflow: hidden;
-  display: ${props => (props.isVisible ? 'block' : 'none')};
+  display: ${(props) => (props.isVisible ? 'block' : 'none')};
   position: relative;
 `;
 
@@ -33,7 +35,11 @@ interface WaveformContainerProps {
   playbackPosition: number;
 }
 
-const WaveformContainer: React.FC<WaveformContainerProps> = ({ canvasRef, isVisible, playbackPosition }) => (
+const WaveformContainer: React.FC<WaveformContainerProps> = ({
+  canvasRef,
+  isVisible,
+  playbackPosition,
+}) => (
   <Container isVisible={isVisible}>
     <Waveform ref={canvasRef} width={800} height={100} />
     <PlaybackPosition style={{ left: `${playbackPosition}px` }} />

@@ -1,11 +1,13 @@
 // src/components/expenses/ExpenseCard.tsx
+import { format } from 'date-fns';
 import React from 'react';
-import styled from 'styled-components';
 import { FaEdit, FaTrash } from 'react-icons/fa';
+// eslint-disable-next-line import/no-named-as-default
+import styled from 'styled-components';
+
+import { theme } from '../../styles/theme';
 import { Expense } from '../../types';
 import { formatAmount } from '../../utils/expenseUtils';
-import { theme } from '../../styles/theme';
-import { format } from 'date-fns';
 
 const Card = styled.div`
   background-color: ${theme.colors.backgroundLight};
@@ -49,7 +51,7 @@ const ActionButton = styled.button`
   cursor: pointer;
   margin-left: ${theme.padding.small};
   color: ${theme.colors.primary};
-  
+
   &:last-child {
     color: ${theme.colors.error};
   }

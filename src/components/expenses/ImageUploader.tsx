@@ -1,14 +1,16 @@
+import { isAxiosError } from 'axios';
 import React, { useState } from 'react';
-import styled from 'styled-components';
 import { FaUpload, FaImage } from 'react-icons/fa';
+// eslint-disable-next-line import/no-named-as-default
+import styled from 'styled-components';
+
 import { uploadExpenseFile } from '../../services/api';
-import { Expense } from '../../types';
 import { theme } from '../../styles/theme';
-import SubmitButton from '../common/SubmitButton';
+import { Expense } from '../../types';
+import { convertApiExpenseToExpense } from '../../utils/expenseUtils';
 import ErrorModal from '../common/ErrorModal';
 import LoadingOverlay from '../common/LoadingOverlay';
-import axios from 'axios';
-import { convertApiExpenseToExpense } from '../../utils/expenseUtils';
+import SubmitButton from '../common/SubmitButton';
 
 const Container = styled.div`
   display: flex;
@@ -94,11 +96,13 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onUploadComplete }) => {
         onUploadComplete(convertedExpense);
       } catch (error) {
         console.error('Error al cargar el audio:', error);
-        if (axios.isAxiosError(error)) {
+        if (isAxiosError(error)) {
           if (error.response) {
             // El servidor respondió con un status fuera del rango 2xx
             if (error.response.status === 422) {
-              setErrorMessage("No se registró ningún gasto. El archivo se procesó correctamente, pero no se pudo identificar ningún gasto válido.");
+              setErrorMessage(
+                'No se registró ningún gasto. El archivo se procesó correctamente, pero no se pudo identificar ningún gasto válido.'
+              );
             } else {
               setErrorMessage('Error en la respuesta del servidor: ' + error.response.data.message);
             }
@@ -129,12 +133,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onUploadComplete }) => {
           <FaImage size={48} color={theme.colors.primary} />
         )}
       </PreviewContainer>
-      <FileInput
-        type="file"
-        accept="image/*"
-        onChange={handleFileSelect}
-        id="imageInput"
-      />
+      <FileInput type="file" accept="image/*" onChange={handleFileSelect} id="imageInput" />
       <label htmlFor="imageInput">
         <SelectImageButton as="span">
           <FaUpload /> Seleccionar imagen

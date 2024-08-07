@@ -1,5 +1,6 @@
 // src/components/expenses/audio/WaveAnimation.tsx
 import React from 'react';
+// eslint-disable-next-line import/no-named-as-default
 import styled, { keyframes } from 'styled-components';
 
 const wave = keyframes`
@@ -11,7 +12,7 @@ const wave = keyframes`
 const Wave = styled.div`
   position: absolute;
   border-radius: 50%;
-  background-color: rgba(0, 123, 255, 0.5); 
+  background-color: rgba(0, 123, 255, 0.5);
   animation: ${wave} 1.5s linear infinite;
 `;
 

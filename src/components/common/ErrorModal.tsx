@@ -1,6 +1,8 @@
 import React from 'react';
-import styled from 'styled-components';
 import { FaExclamationTriangle } from 'react-icons/fa';
+// eslint-disable-next-line import/no-named-as-default
+import styled from 'styled-components';
+
 import { theme } from '../../styles/theme';
 
 const ModalOverlay = styled.div`
@@ -29,12 +31,6 @@ const ModalContent = styled.div`
 const IconContainer = styled.div`
   color: ${theme.colors.error};
   font-size: 3rem;
-  margin-bottom: 1rem;
-`;
-
-const Message = styled.p`
-  color: ${theme.colors.text};
-  font-size: 1.2rem;
   margin-bottom: 1rem;
 `;
 
@@ -73,9 +69,9 @@ interface ErrorModalProps {
 const ErrorModal: React.FC<ErrorModalProps> = ({ isOpen, onClose, message }) => {
   if (!isOpen) return null;
 
-  console.log("Error received in ErrorModal:", message);
-  console.log("Error type:", typeof message);
-  console.log("Error stringified:", JSON.stringify(message));
+  console.log('Error received in ErrorModal:', message);
+  console.log('Error type:', typeof message);
+  console.log('Error stringified:', JSON.stringify(message));
 
   return (
     <ModalOverlay onClick={onClose}>

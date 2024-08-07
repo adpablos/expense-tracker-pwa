@@ -1,8 +1,9 @@
 // src/components/common/NavigationBar.tsx
 import React from 'react';
-import { NavLink } from 'react-router-dom';
-import styled from 'styled-components';
 import { FaHome, FaList } from 'react-icons/fa';
+import { NavLink } from 'react-router-dom';
+// eslint-disable-next-line import/no-named-as-default
+import styled from 'styled-components';
 
 const Navigation = styled.nav`
   display: flex;

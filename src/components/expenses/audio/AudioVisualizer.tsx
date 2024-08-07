@@ -1,8 +1,9 @@
 // src/components/expenses/AudioVisualizer.tsx
 import React from 'react';
+// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
+
 import { theme } from '../../../styles/theme';
-import WaveAnimation from './WaveAnimation';
 
 const WaveformContainer = styled.div<{ isVisible: boolean }>`
   width: 100%;
@@ -10,7 +11,7 @@ const WaveformContainer = styled.div<{ isVisible: boolean }>`
   background-color: ${theme.colors.waveformBackground};
   border-radius: ${theme.borderRadius};
   overflow: hidden;
-  display: ${props => (props.isVisible ? 'block' : 'none')};
+  display: ${(props) => (props.isVisible ? 'block' : 'none')};
   position: relative;
 `;
 
@@ -26,7 +27,12 @@ interface AudioVisualizerProps {
   isPaused: boolean;
 }
 
-const AudioVisualizer: React.FC<AudioVisualizerProps> = ({ canvasRef, audioBlob, isRecording, isPaused }) => {
+const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
+  canvasRef,
+  audioBlob,
+  isRecording,
+  isPaused,
+}) => {
   return (
     <WaveformContainer isVisible={audioBlob !== null || isRecording || isPaused}>
       <Waveform ref={canvasRef} width={800} height={100} />

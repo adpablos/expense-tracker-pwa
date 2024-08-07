@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
+
 import NavigationBar from './components/common/NavigationBar';
 import ExpenseForm from './components/expenses/ExpenseForm';
 import ExpenseList from './components/expenses/ExpenseList';

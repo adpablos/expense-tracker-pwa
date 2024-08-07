@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
+// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
-import { Expense } from '../../types';
-import { theme } from '../../styles/theme';
+
 import { RootState } from '../../store';
+import { theme } from '../../styles/theme';
+import { Expense } from '../../types';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -66,11 +68,12 @@ const Button = styled.button<{ isPrimary?: boolean }>`
   font-weight: bold;
   transition: background-color 0.3s;
 
-  background-color: ${props => props.isPrimary ? theme.colors.primary : theme.colors.error};
+  background-color: ${(props) => (props.isPrimary ? theme.colors.primary : theme.colors.error)};
   color: ${theme.colors.background};
 
   &:hover {
-    background-color: ${props => props.isPrimary ? theme.colors.primaryHover : theme.colors.errorHover};
+    background-color: ${(props) =>
+      props.isPrimary ? theme.colors.primaryHover : theme.colors.errorHover};
   }
 `;
 
@@ -94,7 +97,7 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onSave, on
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setEditedExpense(prev => ({ ...prev, [name]: value }));
+    setEditedExpense((prev) => ({ ...prev, [name]: value }));
 
     if (name === 'amount') {
       validateAmount(value);
@@ -119,7 +122,7 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onSave, on
 
   return (
     <ModalOverlay onClick={onCancel}>
-      <ModalContent onClick={e => e.stopPropagation()}>
+      <ModalContent onClick={(e) => e.stopPropagation()}>
         <Title>Editar Gasto</Title>
         <Form onSubmit={handleSubmit}>
           <Input
@@ -136,39 +139,34 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onSave, on
             placeholder="Cantidad"
           />
           {amountError && <ErrorMessage>{amountError}</ErrorMessage>}
-          <Select
-            name="category"
-            value={editedExpense.category}
-            onChange={handleChange}
-          >
-            {categories.map(category => (
+          <Select name="category" value={editedExpense.category} onChange={handleChange}>
+            {categories.map((category) => (
               <option key={category.id} value={category.name}>
                 {category.name}
               </option>
             ))}
           </Select>
-          <Select
-            name="subcategory"
-            value={editedExpense.subcategory}
-            onChange={handleChange}
-          >
+          <Select name="subcategory" value={editedExpense.subcategory} onChange={handleChange}>
             {subcategories
-              .filter(sub => sub.categoryId === categories.find(cat => cat.name === editedExpense.category)?.id)
-              .map(subcategory => (
+              .filter(
+                (sub) =>
+                  sub.categoryId ===
+                  categories.find((cat) => cat.name === editedExpense.category)?.id
+              )
+              .map((subcategory) => (
                 <option key={subcategory.id} value={subcategory.name}>
                   {subcategory.name}
                 </option>
               ))}
           </Select>
-          <Input
-            name="date"
-            type="date"
-            value={editedExpense.date}
-            onChange={handleChange}
-          />
+          <Input name="date" type="date" value={editedExpense.date} onChange={handleChange} />
           <ButtonContainer>
-            <Button type="button" onClick={onCancel}>Cancelar</Button>
-            <Button type="submit" isPrimary>Guardar</Button>
+            <Button type="button" onClick={onCancel}>
+              Cancelar
+            </Button>
+            <Button type="submit" isPrimary>
+              Guardar
+            </Button>
           </ButtonContainer>
         </Form>
       </ModalContent>

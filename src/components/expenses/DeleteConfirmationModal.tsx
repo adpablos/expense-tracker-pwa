@@ -1,6 +1,8 @@
 import React from 'react';
-import styled from 'styled-components';
 import { FaExclamationTriangle } from 'react-icons/fa';
+// eslint-disable-next-line import/no-named-as-default
+import styled from 'styled-components';
+
 import { theme } from '../../styles/theme';
 import { Expense } from '../../types';
 
@@ -57,12 +59,13 @@ const Button = styled.button<{ isPrimary?: boolean }>`
   font-weight: bold;
   transition: background-color 0.3s;
 
-  background-color: ${props => props.isPrimary ? theme.colors.error : theme.colors.background};
-  color: ${props => props.isPrimary ? theme.colors.background : theme.colors.text};
-  border: 1px solid ${props => props.isPrimary ? theme.colors.error : theme.colors.border};
+  background-color: ${(props) => (props.isPrimary ? theme.colors.error : theme.colors.background)};
+  color: ${(props) => (props.isPrimary ? theme.colors.background : theme.colors.text)};
+  border: 1px solid ${(props) => (props.isPrimary ? theme.colors.error : theme.colors.border)};
 
   &:hover {
-    background-color: ${props => props.isPrimary ? theme.colors.errorHover : theme.colors.backgroundHover};
+    background-color: ${(props) =>
+      props.isPrimary ? theme.colors.errorHover : theme.colors.backgroundHover};
   }
 `;
 
@@ -77,19 +80,24 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
   isOpen,
   expense,
   onConfirm,
-  onCancel
+  onCancel,
 }) => {
   if (!isOpen || !expense) return null;
 
   return (
     <ModalOverlay onClick={onCancel}>
-      <ModalContent onClick={e => e.stopPropagation()}>
+      <ModalContent onClick={(e) => e.stopPropagation()}>
         <Icon />
         <Title>Confirmar eliminación</Title>
-        <Message>¿Estás seguro de que quieres eliminar el gasto "{expense.description}"?</Message>
+        <Message>
+          ¿Estás seguro de que quieres eliminar el gasto `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`
+          {expense.description}`&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`?
+        </Message>
         <ButtonContainer>
           <Button onClick={onCancel}>Cancelar</Button>
-          <Button isPrimary onClick={onConfirm}>Eliminar</Button>
+          <Button isPrimary onClick={onConfirm}>
+            Eliminar
+          </Button>
         </ButtonContainer>
       </ModalContent>
     </ModalOverlay>

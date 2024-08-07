@@ -1,9 +1,11 @@
 import React from 'react';
-import styled from 'styled-components';
 import { FaEdit, FaTrash } from 'react-icons/fa';
+// eslint-disable-next-line import/no-named-as-default
+import styled from 'styled-components';
+
+import { theme } from '../../styles/theme';
 import { Expense } from '../../types';
 import { formatAmount } from '../../utils/expenseUtils';
-import { theme } from '../../styles/theme';
 
 const Table = styled.table`
   width: 100%;

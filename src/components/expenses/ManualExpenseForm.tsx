@@ -1,19 +1,21 @@
 // src/components/expenses/ManualExpenseForm.tsx
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import styled from 'styled-components';
-import { createExpense } from '../../store/slices/expensesSlice';
-import { RootState, AppDispatch } from '../../store';
-import { ExpenseInput, Expense } from '../../types';
-import { theme } from '../../styles/theme';
-import { fetchCategories } from '../../store/slices/categoriesSlice';
-import DatePicker, { registerLocale } from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import { useErrorHandler } from '../../hooks/useErrorHandler';
-import { StyledInput, StyledSelect, StyledDatePicker } from '../../styles/formStyles';
-import LoadingOverlay from '../common/LoadingOverlay';
-import { es } from 'date-fns/locale'; 
 import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import React, { useState, useEffect } from 'react';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import { useDispatch, useSelector } from 'react-redux';
+// eslint-disable-next-line import/no-named-as-default
+import styled from 'styled-components';
+
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { RootState, AppDispatch } from '../../store';
+import { fetchCategories } from '../../store/slices/categoriesSlice';
+import { createExpense } from '../../store/slices/expensesSlice';
+import { StyledInput, StyledSelect, StyledDatePicker } from '../../styles/formStyles';
+import { theme } from '../../styles/theme';
+import { ExpenseInput, Expense } from '../../types';
+import 'react-datepicker/dist/react-datepicker.css';
+import LoadingOverlay from '../common/LoadingOverlay';
 
 // Register the locale with react-datepicker
 registerLocale('es', es);
@@ -36,14 +38,6 @@ const Form = styled.form`
   width: 100%;
 `;
 
-const Input = styled.input`
-  width: 100%;
-  padding: ${theme.padding.medium};
-  border: 1px solid ${theme.colors.border};
-  border-radius: ${theme.borderRadius};
-  font-size: 1rem;
-`;
-
 const SubmitButton = styled.button`
   padding: ${theme.padding.medium};
   background-color: ${theme.colors.primary};
@@ -57,25 +51,6 @@ const SubmitButton = styled.button`
   &:hover {
     background-color: ${theme.colors.primaryHover};
   }
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: ${theme.padding.medium};
-  border: 1px solid ${theme.colors.border};
-  border-radius: ${theme.borderRadius};
-  font-size: 1rem;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23333' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 12px;
-  box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  max-width: 100%;
-  min-width: 100%;
-  display: block;
 `;
 
 const ErrorMessage = styled.div`
@@ -108,19 +83,19 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (/^\d*\.?\d{0,2}$/.test(value) || value === '') {
-      setFormData(prev => ({ ...prev, amount: value }));
+      setFormData((prev) => ({ ...prev, amount: value }));
     }
   };
 
   const handleDateChange = (date: Date | null) => {
     if (date) {
-      setFormData(prev => ({ ...prev, date }));
+      setFormData((prev) => ({ ...prev, date }));
     }
   };
 
@@ -129,11 +104,11 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
     clearError();
     setIsLoading(true);
 
-    const selectedCategory = categories.find(cat => cat.id === formData.categoryId);
-    const selectedSubcategory = subcategories.find(sub => sub.id === formData.subcategoryId);
+    const selectedCategory = categories.find((cat) => cat.id === formData.categoryId);
+    const selectedSubcategory = subcategories.find((sub) => sub.id === formData.subcategoryId);
 
     if (!selectedCategory) {
-      handleError("Por favor, selecciona una categoría válida.");
+      handleError('Por favor, selecciona una categoría válida.');
       setIsLoading(false);
       return;
     }
@@ -143,7 +118,7 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
       amount: parseFloat(formData.amount),
       category: selectedCategory.name,
       subcategory: selectedSubcategory?.name || 'Sin subcategoría',
-      date: format(formData.date, 'yyyy-MM-dd')
+      date: format(formData.date, 'yyyy-MM-dd'),
     };
 
     try {
@@ -152,15 +127,17 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
         setIsLoading(false);
         onSubmit(result.payload);
       } else {
-        throw new Error(result.error.message || "Error al crear el gasto");
+        throw new Error(result.error.message || 'Error al crear el gasto');
       }
     } catch (error) {
       setIsLoading(false);
-      handleError(error instanceof Error ? error.message : "Error inesperado al crear el gasto");
+      handleError(error instanceof Error ? error.message : 'Error inesperado al crear el gasto');
     }
   };
 
-  const filteredSubcategories = subcategories.filter(sub => sub.categoryId === formData.categoryId);
+  const filteredSubcategories = subcategories.filter(
+    (sub) => sub.categoryId === formData.categoryId
+  );
 
   return (
     <FormContainer>
@@ -188,7 +165,7 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
           value={formData.categoryId}
           onChange={handleInputChange}
           required
-          title={categories.find(cat => cat.id === formData.categoryId)?.name || ''}
+          title={categories.find((cat) => cat.id === formData.categoryId)?.name || ''}
         >
           <option value="">Selecciona una categoría</option>
           {categories.map((category) => (
@@ -202,7 +179,7 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
           value={formData.subcategoryId}
           onChange={handleInputChange}
           disabled={!formData.categoryId}
-          title={subcategories.find(sub => sub.id === formData.subcategoryId)?.name || ''}
+          title={subcategories.find((sub) => sub.id === formData.subcategoryId)?.name || ''}
         >
           <option value="">Selecciona una subcategoría</option>
           {filteredSubcategories.map((subcategory) => (
@@ -220,9 +197,7 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
           />
         </StyledDatePicker>
         {error && <ErrorMessage>{error}</ErrorMessage>}
-        <SubmitButton type="submit">
-          Registrar gasto
-        </SubmitButton>
+        <SubmitButton type="submit">Registrar gasto</SubmitButton>
         {isLoading && <LoadingOverlay message="Procesando gasto..." />}
       </Form>
     </FormContainer>

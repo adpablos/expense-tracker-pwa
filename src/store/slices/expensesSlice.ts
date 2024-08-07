@@ -1,7 +1,8 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Expense, ExpenseInput, ExpenseFromAPI, ExpensesAPIResponse } from '../../types';
-import { convertApiExpenseToExpense } from '../../utils/expenseUtils';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+
 import * as api from '../../services/api';
+import { Expense, ExpenseInput, ExpensesAPIResponse } from '../../types';
+import { convertApiExpenseToExpense } from '../../utils/expenseUtils';
 
 interface ExpensesState {
   items: Expense[];
@@ -25,7 +26,12 @@ interface FetchExpensesParams {
   search?: string;
   startDate?: string;
   endDate?: string;
+  [key: string]: string | number | undefined;
 }
+
+type ApiError = {
+  message: string;
+};
 
 export const fetchExpenses = createAsyncThunk<ExpensesAPIResponse, FetchExpensesParams>(
   'expenses/fetchExpenses',
@@ -42,22 +48,22 @@ export const createExpense = createAsyncThunk<Expense, ExpenseInput>(
       const response = await api.apiCreateExpense(expenseData);
       return convertApiExpenseToExpense(response.data);
     } catch (err) {
-      return rejectWithValue((err as any).message || 'Error al crear gasto');
+      return rejectWithValue((err as ApiError).message || 'Error al crear gasto');
     }
   }
 );
 
-export const updateExpense = createAsyncThunk<Expense, { id: string; expenseData: Partial<ExpenseInput> }>(
-  'expenses/updateExpense',
-  async ({ id, expenseData }, { rejectWithValue }) => {
-    try {
-      const response = await api.updateExpense(id, expenseData);
-      return convertApiExpenseToExpense(response.data);
-    } catch (err) {
-      return rejectWithValue((err as any).message || 'Error al actualizar gasto');
-    }
+export const updateExpense = createAsyncThunk<
+  Expense,
+  { id: string; expenseData: Partial<ExpenseInput> }
+>('expenses/updateExpense', async ({ id, expenseData }, { rejectWithValue }) => {
+  try {
+    const response = await api.updateExpense(id, expenseData);
+    return convertApiExpenseToExpense(response.data);
+  } catch (err) {
+    return rejectWithValue((err as ApiError).message || 'Error al actualizar gasto');
   }
-);
+});
 
 export const deleteExpense = createAsyncThunk<string, string>(
   'expenses/deleteExpense',
@@ -66,7 +72,7 @@ export const deleteExpense = createAsyncThunk<string, string>(
       await api.deleteExpense(id);
       return id;
     } catch (err) {
-      return rejectWithValue((err as any).message || 'Error al eliminar gasto');
+      return rejectWithValue((err as ApiError).message || 'Error al eliminar gasto');
     }
   }
 );
@@ -102,18 +108,20 @@ const expensesSlice = createSlice({
         state.recentItems.unshift(action.payload);
       })
       .addCase(updateExpense.fulfilled, (state, action) => {
-        const index = state.items.findIndex(expense => expense.id === action.payload.id);
+        const index = state.items.findIndex((expense) => expense.id === action.payload.id);
         if (index !== -1) {
           state.items[index] = action.payload;
         }
-        const recentIndex = state.recentItems.findIndex(expense => expense.id === action.payload.id);
+        const recentIndex = state.recentItems.findIndex(
+          (expense) => expense.id === action.payload.id
+        );
         if (recentIndex !== -1) {
           state.recentItems[recentIndex] = action.payload;
         }
       })
       .addCase(deleteExpense.fulfilled, (state, action) => {
-        state.items = state.items.filter(expense => expense.id !== action.payload);
-        state.recentItems = state.recentItems.filter(expense => expense.id !== action.payload);
+        state.items = state.items.filter((expense) => expense.id !== action.payload);
+        state.recentItems = state.recentItems.filter((expense) => expense.id !== action.payload);
       });
   },
 });

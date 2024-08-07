@@ -1,16 +1,18 @@
 // src/components/pages/HomePage.tsx
 import React from 'react';
+// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
+
+import { theme } from '../../styles/theme';
 import ExpenseForm from '../expenses/ExpenseForm';
 import MonthlyExpensesChart from '../expenses/MonthlyExpensesChart';
-import { theme } from '../../styles/theme';
 
 const HomeContainer = styled.div`
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
   padding: ${theme.padding.large};
-  
+
   @media (max-width: 768px) {
     padding: ${theme.padding.medium} ${theme.padding.small};
   }
@@ -34,7 +36,7 @@ const Section = styled.section`
   border-radius: ${theme.borderRadius};
   padding: ${theme.padding.medium};
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  
+
   @media (min-width: 768px) {
     flex: 1;
   }
