@@ -8,6 +8,7 @@ import { fetchExpenses, deleteExpense, updateExpense } from '../../store/slices/
 import { Margin, FlexContainer } from '../../styles/utilities';
 import { Expense } from '../../types';
 import { FilterValues } from '../../types/filters';
+import ErrorModal from '../common/ErrorModal';
 import Pagination from '../common/Pagination';
 import { Container, Row, Col } from '../layout/Grid';
 
@@ -44,6 +45,7 @@ const ExpenseList: React.FC = () => {
   const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null);
   const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -55,8 +57,8 @@ const ExpenseList: React.FC = () => {
     dispatch(
       fetchExpenses({
         page: currentPage,
-        startDate: filters.startDate?.toISOString().split('T')[0],
-        endDate: filters.endDate?.toISOString().split('T')[0],
+        startDate: filters.startDate ?? undefined,
+        endDate: filters.endDate ?? undefined,
       })
     );
   }, [dispatch, currentPage, filters]);
@@ -65,10 +67,17 @@ const ExpenseList: React.FC = () => {
     setExpenseToDelete(expense);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (expenseToDelete) {
-      dispatch(deleteExpense(expenseToDelete.id));
-      setExpenseToDelete(null);
+      try {
+        await dispatch(deleteExpense(expenseToDelete.id)).unwrap();
+        setExpenseToDelete(null);
+      } catch (error) {
+        console.error('Failed to delete expense:', error);
+        setErrorMessage(
+          error instanceof Error ? error.message : 'Ha ocurrido un error al eliminar el gasto'
+        );
+      }
     }
   };
 
@@ -85,21 +94,34 @@ const ExpenseList: React.FC = () => {
     });
   };
 
-  const handleUpdate = (updatedExpense: Expense) => {
-    const category = categories.find((cat) => cat.id === updatedExpense.categoryId);
-    const subcategory = subcategories.find((sub) => sub.id === updatedExpense.subcategoryId);
+  const handleUpdate = async (updatedExpense: Expense) => {
+    const category = categories.find((cat) => cat.id === updatedExpense.categoryId) || {
+      id: 'custom',
+      name: updatedExpense.category,
+    };
+    const subcategory = subcategories.find((sub) => sub.id === updatedExpense.subcategoryId) || {
+      id: 'custom',
+      name: updatedExpense.subcategory || 'Sin subcategoría',
+    };
 
-    dispatch(
-      updateExpense({
-        id: updatedExpense.id,
-        expenseData: {
-          ...updatedExpense,
-          category: category?.name || '',
-          subcategory: subcategory?.name || 'Sin subcategoría',
-        },
-      })
-    );
-    setExpenseToEdit(null);
+    try {
+      await dispatch(
+        updateExpense({
+          id: updatedExpense.id,
+          expenseData: {
+            ...updatedExpense,
+            category: category.name,
+            subcategory: subcategory.name,
+          },
+        })
+      ).unwrap();
+      // La modal de éxito se maneja en el EditExpenseModal
+    } catch (error) {
+      console.error('Failed to update expense:', error);
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Ha ocurrido un error al actualizar el gasto'
+      );
+    }
   };
 
   const handleFilterChange = (newFilters: FilterValues) => {
@@ -154,6 +176,11 @@ const ExpenseList: React.FC = () => {
           onCancel={() => setExpenseToEdit(null)}
         />
       )}
+      <ErrorModal
+        isOpen={!!errorMessage}
+        onClose={() => setErrorMessage(null)}
+        message={errorMessage || ''}
+      />
     </ListContainer>
   );
 };

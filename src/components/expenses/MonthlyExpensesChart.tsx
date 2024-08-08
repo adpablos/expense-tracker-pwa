@@ -125,7 +125,7 @@ const MonthlyExpensesChart: React.FC = () => {
           </p>
           <p
             style={{ margin: 0 }}
-          >{`${payload[0].value.toFixed(2)}€ (${(payload[0].payload.percent * 100).toFixed(0)}%)`}</p>
+          >{`$${payload[0].value.toFixed(2)} (${(payload[0].payload.percent * 100).toFixed(0)}%)`}</p>
         </div>
       );
     }

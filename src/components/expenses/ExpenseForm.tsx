@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import { AppDispatch } from '../../store';
 import { createExpense } from '../../store/slices/expensesSlice';
 import { Expense, ExpenseInput } from '../../types';
+import { dateToString, getCurrentUTCDate } from '../../utils/dateUtils';
 import Button from '../common/Button';
 import ErrorModal from '../common/ErrorModal';
 import SuccessModal from '../common/SuccessModal';
@@ -46,7 +47,11 @@ const ExpenseForm: React.FC = () => {
 
   const handleExpenseSubmit = async (expense: ExpenseInput) => {
     try {
-      const resultAction = await dispatch(createExpense(expense));
+      const expenseWithFormattedDate = {
+        ...expense,
+        date: dateToString(expense.date ? new Date(expense.date) : getCurrentUTCDate()),
+      };
+      const resultAction = await dispatch(createExpense(expenseWithFormattedDate));
       if (createExpense.fulfilled.match(resultAction)) {
         setSubmittedExpense(resultAction.payload);
         setSuccessModalOpen(true);

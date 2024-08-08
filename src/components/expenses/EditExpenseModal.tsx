@@ -1,16 +1,20 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaEdit } from 'react-icons/fa';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { RootState } from '../../store';
+import { RootState, AppDispatch } from '../../store';
+import { fetchCategories } from '../../store/slices/categoriesSlice';
 import { Expense } from '../../types';
-import { stringToDate } from '../../utils/expenseUtils';
+import { dateToString, stringToDate } from '../../utils/dateUtils';
 import Button from '../common/Button';
 import DatePicker from '../common/DatePicker';
+import ErrorModal from '../common/ErrorModal';
 import Input from '../common/Input';
+import LoadingOverlay from '../common/LoadingOverlay';
 import Select from '../common/Select';
+import SuccessModal from '../common/SuccessModal';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -67,25 +71,49 @@ const ButtonContainer = styled.div`
 
 interface EditExpenseModalProps {
   expense: Expense;
-  onSave: (updatedExpense: Expense) => void;
+  onSave: (updatedExpense: Expense) => Promise<void>;
   onCancel: () => void;
 }
 
 const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onSave, onCancel }) => {
+  const dispatch = useDispatch<AppDispatch>();
   const [editedExpense, setEditedExpense] = useState<Expense>({ ...expense });
   const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
-    const date = stringToDate(expense.date);
-    return date ? new Date(date.getTime() - date.getTimezoneOffset() * 60000) : null;
+    return stringToDate(expense.date);
   });
   const [amountError, setAmountError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const categories = useSelector((state: RootState) => state.categories.categories);
   const subcategories = useSelector((state: RootState) => state.categories.subcategories);
 
   useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
+  useEffect(() => {
     setEditedExpense({ ...expense });
-    const date = stringToDate(expense.date);
-    setSelectedDate(date ? new Date(date.getTime() - date.getTimezoneOffset() * 60000) : null);
+    setSelectedDate(stringToDate(expense.date));
   }, [expense]);
+
+  useEffect(() => {
+    if (categories.length > 0 && subcategories.length > 0) {
+      const category = categories.find((cat) => cat.name === expense.category) || {
+        id: 'custom',
+        name: expense.category,
+      };
+      const subcategory = subcategories.find(
+        (sub) => sub.name === expense.subcategory && sub.categoryId === category?.id
+      ) || { id: 'custom', name: expense.subcategory, categoryId: category.id };
+
+      setEditedExpense((prev) => ({
+        ...prev,
+        categoryId: category.id,
+        subcategoryId: subcategory.id,
+      }));
+    }
+  }, [categories, subcategories, expense]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -119,8 +147,7 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onSave, on
   const handleDateChange = (date: Date | null) => {
     setSelectedDate(date);
     if (date) {
-      const formattedDate = date.toISOString().split('T')[0];
-      setEditedExpense((prev) => ({ ...prev, date: formattedDate }));
+      setEditedExpense((prev) => ({ ...prev, date: dateToString(date) }));
     }
   };
 
@@ -133,24 +160,43 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onSave, on
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amountError) {
-      onSave(editedExpense);
+      setIsLoading(true);
+      try {
+        await onSave(editedExpense);
+        setShowSuccessModal(true);
+      } catch (error) {
+        setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occurred');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
-  const categoryOptions = categories.map((category) => ({
-    value: category.id,
-    label: category.name,
-  }));
+  const categoryOptions = [
+    ...categories.map((category) => ({
+      value: category.id,
+      label: category.name,
+    })),
+    ...(editedExpense.categoryId === 'custom'
+      ? [{ value: 'custom', label: editedExpense.category }]
+      : []),
+  ];
 
-  const subcategoryOptions = subcategories
-    .filter((sub) => sub.categoryId === editedExpense.categoryId)
-    .map((sub) => ({
-      value: sub.id,
-      label: sub.name,
-    }));
+  const subcategoryOptions = [
+    { value: '', label: 'Sin subcategoría' },
+    ...subcategories
+      .filter((sub) => sub.categoryId === editedExpense.categoryId)
+      .map((sub) => ({
+        value: sub.id,
+        label: sub.name,
+      })),
+    ...(editedExpense.subcategoryId === 'custom'
+      ? [{ value: 'custom', label: editedExpense.subcategory }]
+      : []),
+  ];
 
   return (
     <ModalOverlay onClick={onCancel}>
@@ -202,6 +248,20 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onSave, on
             </Button>
           </ButtonContainer>
         </Form>
+        {isLoading && <LoadingOverlay message="Procesando edición..." />}
+        <SuccessModal
+          isOpen={showSuccessModal}
+          onClose={() => {
+            setShowSuccessModal(false);
+            onCancel();
+          }}
+          expense={editedExpense}
+        />
+        <ErrorModal
+          isOpen={!!errorMessage}
+          onClose={() => setErrorMessage(null)}
+          message={errorMessage || ''}
+        />
       </ModalContent>
     </ModalOverlay>
   );

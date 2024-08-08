@@ -1,5 +1,5 @@
 // src/types/filters.ts
 export interface FilterValues {
-  startDate: Date | null;
-  endDate: Date | null;
+  startDate: string | null;
+  endDate: string | null;
 }

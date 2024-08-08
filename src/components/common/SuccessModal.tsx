@@ -13,7 +13,7 @@ import styled, { keyframes } from 'styled-components';
 
 import { theme } from '../../styles/theme';
 import { Expense } from '../../types';
-import { formatDate } from '../../utils/expenseUtils';
+import { formatDateForDisplay } from '../../utils/dateUtils';
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(-20px); }
@@ -165,7 +165,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, expense })
               <FaCalendarAlt />
             </DetailIcon>
             <DetailLabel>Fecha:</DetailLabel>
-            <DetailValue>{formatDate(expense.date)}</DetailValue>
+            <DetailValue>{formatDateForDisplay(expense.date)}</DetailValue>
           </DetailItem>
         </ExpenseDetails>
       </ModalContent>

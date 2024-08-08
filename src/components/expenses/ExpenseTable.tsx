@@ -4,7 +4,8 @@ import { FaEdit, FaTrash } from 'react-icons/fa';
 import styled from 'styled-components';
 
 import { Expense } from '../../types';
-import { formatAmount, formatDate } from '../../utils/expenseUtils';
+import { formatDateForDisplay } from '../../utils/dateUtils';
+import { formatAmount } from '../../utils/expenseUtils';
 import Button from '../common/Button';
 
 const Table = styled.table`
@@ -58,9 +59,9 @@ const ExpenseTable: React.FC<ExpenseTableProps> = ({ expenses, onEdit, onDelete 
       <tbody>
         {expenses.map((expense: Expense) => (
           <TableRow key={expense.id}>
-            <TableCell>{formatDate(expense.date)}</TableCell>
+            <TableCell>{formatDateForDisplay(expense.date)}</TableCell>
             <TableCell>{expense.description}</TableCell>
-            <TableCell>{formatAmount(expense.amount)}€</TableCell>
+            <TableCell>${formatAmount(expense.amount)}</TableCell>
             <TableCell>{expense.category}</TableCell>
             <TableCell>{expense.subcategory}</TableCell>
             <TableCell>
