@@ -1,62 +1,30 @@
-// src/components/expenses/ManualExpenseForm.tsx
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+/* eslint-disable import/no-named-as-default */
 import React, { useState, useEffect } from 'react';
-import DatePicker, { registerLocale } from 'react-datepicker';
 import { useDispatch, useSelector } from 'react-redux';
-// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
 
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { RootState, AppDispatch } from '../../store';
 import { fetchCategories } from '../../store/slices/categoriesSlice';
 import { createExpense } from '../../store/slices/expensesSlice';
-import { StyledInput, StyledSelect, StyledDatePicker } from '../../styles/formStyles';
-import { theme } from '../../styles/theme';
 import { ExpenseInput, Expense } from '../../types';
-import 'react-datepicker/dist/react-datepicker.css';
+import Button from '../common/Button';
+import DatePicker from '../common/DatePicker';
+import Input from '../common/Input';
 import LoadingOverlay from '../common/LoadingOverlay';
-
-// Register the locale with react-datepicker
-registerLocale('es', es);
+import Select from '../common/Select';
 
 const FormContainer = styled.div`
   width: 100%;
   max-width: 400px;
   margin: 0 auto;
-  padding: ${theme.padding.small};
-
-  @media (min-width: 768px) {
-    padding: ${theme.padding.medium};
-  }
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: ${theme.padding.small};
+  gap: ${({ theme }) => theme.space.small};
   width: 100%;
-`;
-
-const SubmitButton = styled.button`
-  padding: ${theme.padding.medium};
-  background-color: ${theme.colors.primary};
-  color: ${theme.colors.background};
-  border: none;
-  border-radius: ${theme.borderRadius};
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: ${theme.colors.primaryHover};
-  }
-`;
-
-const ErrorMessage = styled.div`
-  color: ${theme.colors.error};
-  margin-top: ${theme.padding.small};
-  font-size: 0.9rem;
 `;
 
 interface ManualExpenseFormProps {
@@ -118,7 +86,7 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
       amount: parseFloat(formData.amount),
       category: selectedCategory.name,
       subcategory: selectedSubcategory?.name || 'Sin subcategoría',
-      date: format(formData.date, 'yyyy-MM-dd'),
+      date: formData.date.toISOString().split('T')[0],
     };
 
     try {
@@ -135,22 +103,29 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
     }
   };
 
-  const filteredSubcategories = subcategories.filter(
-    (sub) => sub.categoryId === formData.categoryId
-  );
+  const categoryOptions = categories.map((category) => ({
+    value: category.id,
+    label: category.name,
+  }));
+
+  const subcategoryOptions = subcategories
+    .filter((sub) => sub.categoryId === formData.categoryId)
+    .map((subcategory) => ({
+      value: subcategory.id,
+      label: subcategory.name,
+    }));
 
   return (
     <FormContainer>
       <Form onSubmit={handleSubmit}>
-        <StyledInput
+        <Input
           name="description"
-          type="text"
           value={formData.description}
           onChange={handleInputChange}
           placeholder="Descripción del gasto"
           required
         />
-        <StyledInput
+        <Input
           name="amount"
           type="number"
           inputMode="decimal"
@@ -160,44 +135,32 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
           placeholder="Cantidad"
           required
         />
-        <StyledSelect
+        <Select
           name="categoryId"
           value={formData.categoryId}
           onChange={handleInputChange}
+          options={categoryOptions}
+          placeholder="Selecciona una categoría"
           required
-          title={categories.find((cat) => cat.id === formData.categoryId)?.name || ''}
-        >
-          <option value="">Selecciona una categoría</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </StyledSelect>
-        <StyledSelect
+        />
+        <Select
           name="subcategoryId"
           value={formData.subcategoryId}
           onChange={handleInputChange}
+          options={subcategoryOptions}
+          placeholder="Selecciona una subcategoría"
           disabled={!formData.categoryId}
-          title={subcategories.find((sub) => sub.id === formData.subcategoryId)?.name || ''}
-        >
-          <option value="">Selecciona una subcategoría</option>
-          {filteredSubcategories.map((subcategory) => (
-            <option key={subcategory.id} value={subcategory.id}>
-              {subcategory.name}
-            </option>
-          ))}
-        </StyledSelect>
-        <StyledDatePicker>
-          <DatePicker
-            selected={formData.date}
-            onChange={handleDateChange}
-            dateFormat="yyyy/MM/dd"
-            locale="es"
-          />
-        </StyledDatePicker>
-        {error && <ErrorMessage>{error}</ErrorMessage>}
-        <SubmitButton type="submit">Registrar gasto</SubmitButton>
+        />
+        <DatePicker
+          selected={formData.date}
+          onChange={handleDateChange}
+          dateFormat="yyyy/MM/dd"
+          placeholderText="Fecha del gasto"
+        />
+        {error && <p>{error}</p>}
+        <Button type="submit" variant="primary">
+          Registrar gasto
+        </Button>
         {isLoading && <LoadingOverlay message="Procesando gasto..." />}
       </Form>
     </FormContainer>

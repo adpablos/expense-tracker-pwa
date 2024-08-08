@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import DatePicker from 'react-datepicker';
 import { FaFilter, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 // eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
@@ -8,6 +7,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { FilterValues } from '../../types/filters';
 // eslint-disable-next-line import/no-named-as-default
 import Button from '../common/Button';
+import DatePicker from '../common/DatePicker';
 
 const FilterContainer = styled.div`
   margin-bottom: ${({ theme }) => theme.space.medium};
@@ -81,7 +81,6 @@ const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({ onFilterChange, current
             endDate={filters.endDate || undefined}
             dateFormat="yyyy/MM/dd"
             placeholderText="Fecha inicio"
-            locale="es"
           />
           <DatePicker
             selected={filters.endDate}
@@ -91,7 +90,6 @@ const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({ onFilterChange, current
             endDate={filters.endDate || undefined}
             dateFormat="yyyy/MM/dd"
             placeholderText="Fecha fin"
-            locale="es"
           />
           <Button variant="primary" type="submit">
             Aplicar filtros

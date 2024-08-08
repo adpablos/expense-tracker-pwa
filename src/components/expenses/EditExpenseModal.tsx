@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default */
 import React, { useState } from 'react';
 import { FaEdit } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
@@ -5,7 +6,9 @@ import styled from 'styled-components';
 
 import { RootState } from '../../store';
 import { Expense } from '../../types';
+import { stringToDate } from '../../utils/expenseUtils';
 import Button from '../common/Button';
+import DatePicker from '../common/DatePicker';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -93,6 +96,13 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onSave, on
     }
   };
 
+  const handleDateChange = (date: Date | null) => {
+    if (date) {
+      const formattedDate = date.toISOString().split('T')[0].replace(/-/g, '/');
+      setEditedExpense((prev) => ({ ...prev, date: formattedDate }));
+    }
+  };
+
   const validateAmount = (value: string) => {
     const regex = /^\d+(\.\d{1,2})?$/;
     if (!regex.test(value)) {
@@ -149,7 +159,12 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onSave, on
                 </option>
               ))}
           </Select>
-          <Input name="date" type="date" value={editedExpense.date} onChange={handleChange} />
+          <DatePicker
+            selected={stringToDate(editedExpense.date)}
+            onChange={handleDateChange}
+            dateFormat="yyyy/MM/dd"
+            placeholderText="Fecha del gasto"
+          />
           <ButtonContainer>
             <Button variant="secondary" onClick={onCancel}>
               Cancelar

@@ -75,7 +75,12 @@ const ExpenseForm: React.FC = () => {
           <AudioRecorder onUploadComplete={handleExpenseSubmit} onError={handleExpenseError} />
         );
       case 'image':
-        return <ImageUploader onUploadComplete={() => {}} />;
+        return (
+          <ImageUploader
+            onUploadComplete={handleExpenseSubmit}
+            onReset={() => setInputMethod(null)}
+          />
+        );
       default:
         return null;
     }
