@@ -9,6 +9,7 @@ const PaginationContainer = styled.div`
   justify-content: center;
   align-items: center;
   gap: ${({ theme }) => theme.space.small};
+  margin-top: ${({ theme }) => theme.space.medium};
 `;
 
 const Ellipsis = styled.span`
@@ -46,15 +47,15 @@ const Pagination: React.FC<PaginationProps> = ({
     return pageNumbers;
   };
 
+  if (totalPages <= 1) return null;
+
   return (
     <PaginationContainer>
-      <Button
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        variant="secondary"
-      >
-        Anterior
-      </Button>
+      {currentPage > 1 && (
+        <Button onClick={() => onPageChange(currentPage - 1)} variant="secondary">
+          Anterior
+        </Button>
+      )}
       <Button onClick={() => onPageChange(1)} variant={currentPage === 1 ? 'primary' : 'secondary'}>
         1
       </Button>
@@ -77,13 +78,11 @@ const Pagination: React.FC<PaginationProps> = ({
           {totalPages}
         </Button>
       )}
-      <Button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        variant="secondary"
-      >
-        Siguiente
-      </Button>
+      {currentPage < totalPages && (
+        <Button onClick={() => onPageChange(currentPage + 1)} variant="secondary">
+          Siguiente
+        </Button>
+      )}
     </PaginationContainer>
   );
 };

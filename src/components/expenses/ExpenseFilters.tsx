@@ -61,15 +61,35 @@ interface ExpenseFiltersProps {
 const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({ onFilterChange, currentFilters }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState<FilterValues>(currentFilters);
+  const [dateError, setDateError] = useState<string | null>(null);
 
   const handleDateChange = (date: Date | null, name: 'startDate' | 'endDate') => {
-    setFilters((prev) => ({ ...prev, [name]: date ? dateToString(date) : null }));
+    setFilters((prev) => {
+      const newFilters = { ...prev, [name]: date ? dateToString(date) : null };
+
+      // Validate that the end date is not before the start date
+      if (newFilters.startDate && newFilters.endDate) {
+        const start = stringToDate(newFilters.startDate);
+        const end = stringToDate(newFilters.endDate);
+        if (start && end && end < start) {
+          setDateError('La fecha de fin no puede ser anterior a la fecha de inicio');
+        } else {
+          setDateError(null);
+        }
+      } else {
+        setDateError(null);
+      }
+
+      return newFilters;
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onFilterChange(filters);
-    setIsOpen(false);
+    if (!dateError) {
+      onFilterChange(filters);
+      setIsOpen(false);
+    }
   };
 
   const getDateOrUndefined = (dateString: string | null): Date | undefined => {
