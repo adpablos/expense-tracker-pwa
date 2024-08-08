@@ -256,6 +256,7 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onSave, on
             onCancel();
           }}
           expense={editedExpense}
+          title="Gasto registrado con éxito"
         />
         <ErrorModal
           isOpen={!!errorMessage}

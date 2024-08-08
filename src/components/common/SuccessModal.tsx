@@ -111,10 +111,11 @@ interface SuccessModalProps {
   isOpen: boolean;
   onClose: () => void;
   expense: Expense | null;
+  title: string;
 }
 
-const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, expense }) => {
-  if (!isOpen || !expense) return null;
+const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, expense, title }) => {
+  if (!isOpen) return null;
 
   return (
     <ModalOverlay onClick={onClose}>
@@ -125,49 +126,51 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, expense })
         <IconContainer>
           <FaCheckCircle />
         </IconContainer>
-        <Message>Gasto registrado con éxito</Message>
-        <ExpenseDetails>
-          <DetailItem>
-            <DetailIcon>
-              <FaFileAlt />
-            </DetailIcon>
-            <DetailLabel>Descripción:</DetailLabel>
-            <DetailValue>{expense.description}</DetailValue>
-          </DetailItem>
-          <DetailItem>
-            <DetailIcon>
-              <FaDollarSign />
-            </DetailIcon>
-            <DetailLabel>Cantidad:</DetailLabel>
-            <DetailValue>
-              $
-              {typeof expense.amount === 'string'
-                ? parseFloat(expense.amount).toFixed(2)
-                : expense.amount.toFixed(2)}
-            </DetailValue>
-          </DetailItem>
-          <DetailItem>
-            <DetailIcon>
-              <FaTag />
-            </DetailIcon>
-            <DetailLabel>Categoría:</DetailLabel>
-            <DetailValue>{expense.category}</DetailValue>
-          </DetailItem>
-          <DetailItem>
-            <DetailIcon>
-              <FaLayerGroup />
-            </DetailIcon>
-            <DetailLabel>Subcategoría:</DetailLabel>
-            <DetailValue>{expense.subcategory}</DetailValue>
-          </DetailItem>
-          <DetailItem>
-            <DetailIcon>
-              <FaCalendarAlt />
-            </DetailIcon>
-            <DetailLabel>Fecha:</DetailLabel>
-            <DetailValue>{formatDateForDisplay(expense.date)}</DetailValue>
-          </DetailItem>
-        </ExpenseDetails>
+        <Message>{title}</Message>
+        {expense && (
+          <ExpenseDetails>
+            <DetailItem>
+              <DetailIcon>
+                <FaFileAlt />
+              </DetailIcon>
+              <DetailLabel>Descripción:</DetailLabel>
+              <DetailValue>{expense.description}</DetailValue>
+            </DetailItem>
+            <DetailItem>
+              <DetailIcon>
+                <FaDollarSign />
+              </DetailIcon>
+              <DetailLabel>Cantidad:</DetailLabel>
+              <DetailValue>
+                $
+                {typeof expense.amount === 'string'
+                  ? parseFloat(expense.amount).toFixed(2)
+                  : expense.amount.toFixed(2)}
+              </DetailValue>
+            </DetailItem>
+            <DetailItem>
+              <DetailIcon>
+                <FaTag />
+              </DetailIcon>
+              <DetailLabel>Categoría:</DetailLabel>
+              <DetailValue>{expense.category}</DetailValue>
+            </DetailItem>
+            <DetailItem>
+              <DetailIcon>
+                <FaLayerGroup />
+              </DetailIcon>
+              <DetailLabel>Subcategoría:</DetailLabel>
+              <DetailValue>{expense.subcategory}</DetailValue>
+            </DetailItem>
+            <DetailItem>
+              <DetailIcon>
+                <FaCalendarAlt />
+              </DetailIcon>
+              <DetailLabel>Fecha:</DetailLabel>
+              <DetailValue>{formatDateForDisplay(expense.date)}</DetailValue>
+            </DetailItem>
+          </ExpenseDetails>
+        )}
       </ModalContent>
     </ModalOverlay>
   );

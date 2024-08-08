@@ -147,6 +147,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onUploadComplete, onReset
         isOpen={successModalOpen}
         onClose={handleSuccessModalClose}
         expense={uploadedExpense}
+        title="Gasto registrado con éxito"
       />
     </Container>
   );

@@ -131,6 +131,7 @@ const ExpenseForm: React.FC = () => {
           setSubmittedExpense(null);
         }}
         expense={submittedExpense}
+        title="Gasto registrado con éxito"
       />
       <ErrorModal
         isOpen={errorModalOpen}

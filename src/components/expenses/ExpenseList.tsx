@@ -9,7 +9,10 @@ import { Margin, FlexContainer } from '../../styles/utilities';
 import { Expense } from '../../types';
 import { FilterValues } from '../../types/filters';
 import ErrorModal from '../common/ErrorModal';
+import LoadingOverlay from '../common/LoadingOverlay';
 import Pagination from '../common/Pagination';
+import Select from '../common/Select';
+import SuccessModal from '../common/SuccessModal';
 import { Container, Row, Col } from '../layout/Grid';
 
 import DeleteConfirmationModal from './DeleteConfirmationModal';
@@ -27,6 +30,13 @@ const ListContainer = styled(Container)`
   `}
 `;
 
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: ${({ theme }) => theme.space.large};
+`;
+
 const ExpenseList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const {
@@ -38,6 +48,7 @@ const ExpenseList: React.FC = () => {
   const categories = useSelector((state: RootState) => state.categories.categories);
   const subcategories = useSelector((state: RootState) => state.categories.subcategories);
   const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [filters, setFilters] = useState<FilterValues>({
     startDate: null,
     endDate: null,
@@ -46,6 +57,9 @@ const ExpenseList: React.FC = () => {
   const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successExpense, setSuccessExpense] = useState<Expense | null>(null);
+  const [successAction, setSuccessAction] = useState<'update' | 'delete' | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -53,32 +67,24 @@ const ExpenseList: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  useEffect(() => {
+  const fetchExpensesList = () => {
+    setIsLoading(true);
     dispatch(
       fetchExpenses({
         page: currentPage,
+        limit,
         startDate: filters.startDate ?? undefined,
         endDate: filters.endDate ?? undefined,
       })
-    );
-  }, [dispatch, currentPage, filters]);
+    ).then(() => setIsLoading(false));
+  };
+
+  useEffect(() => {
+    fetchExpensesList();
+  }, [dispatch, currentPage, limit, filters]);
 
   const handleDelete = (expense: Expense) => {
     setExpenseToDelete(expense);
-  };
-
-  const confirmDelete = async () => {
-    if (expenseToDelete) {
-      try {
-        await dispatch(deleteExpense(expenseToDelete.id)).unwrap();
-        setExpenseToDelete(null);
-      } catch (error) {
-        console.error('Failed to delete expense:', error);
-        setErrorMessage(
-          error instanceof Error ? error.message : 'Ha ocurrido un error al eliminar el gasto'
-        );
-      }
-    }
   };
 
   const handleEdit = (expense: Expense) => {
@@ -94,6 +100,26 @@ const ExpenseList: React.FC = () => {
     });
   };
 
+  const confirmDelete = async () => {
+    if (expenseToDelete) {
+      setIsLoading(true);
+      try {
+        await dispatch(deleteExpense(expenseToDelete.id)).unwrap();
+        setSuccessExpense(expenseToDelete);
+        setSuccessAction('delete');
+        setExpenseToDelete(null);
+        fetchExpensesList();
+      } catch (error) {
+        console.error('Failed to delete expense:', error);
+        setErrorMessage(
+          error instanceof Error ? error.message : 'Ha ocurrido un error al eliminar el gasto'
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
   const handleUpdate = async (updatedExpense: Expense) => {
     const category = categories.find((cat) => cat.id === updatedExpense.categoryId) || {
       id: 'custom',
@@ -104,8 +130,9 @@ const ExpenseList: React.FC = () => {
       name: updatedExpense.subcategory || 'Sin subcategoría',
     };
 
+    setIsLoading(true);
     try {
-      await dispatch(
+      const result = await dispatch(
         updateExpense({
           id: updatedExpense.id,
           expenseData: {
@@ -115,12 +142,16 @@ const ExpenseList: React.FC = () => {
           },
         })
       ).unwrap();
-      // La modal de éxito se maneja en el EditExpenseModal
+      setSuccessExpense(result);
+      setSuccessAction('update');
+      fetchExpensesList();
     } catch (error) {
       console.error('Failed to update expense:', error);
       setErrorMessage(
         error instanceof Error ? error.message : 'Ha ocurrido un error al actualizar el gasto'
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -131,6 +162,11 @@ const ExpenseList: React.FC = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handleLimitChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setLimit(Number(event.target.value));
+    setCurrentPage(1);
   };
 
   if (status === 'loading') return <div>Cargando gastos...</div>;
@@ -156,13 +192,23 @@ const ExpenseList: React.FC = () => {
           )}
         </Col>
       </Row>
-      <Margin size="large" direction="top">
+      <PaginationContainer>
+        <Select
+          value={limit.toString()}
+          onChange={handleLimitChange}
+          options={[
+            { value: '10', label: '10 por página' },
+            { value: '25', label: '25 por página' },
+            { value: '50', label: '50 por página' },
+          ]}
+        />
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}
+          maxDisplayedPages={5}
         />
-      </Margin>
+      </PaginationContainer>
       <DeleteConfirmationModal
         isOpen={!!expenseToDelete}
         expense={expenseToDelete}
@@ -181,6 +227,22 @@ const ExpenseList: React.FC = () => {
         onClose={() => setErrorMessage(null)}
         message={errorMessage || ''}
       />
+      <SuccessModal
+        isOpen={!!successExpense}
+        onClose={() => {
+          setSuccessExpense(null);
+          setSuccessAction(null);
+        }}
+        expense={successExpense}
+        title={
+          successAction === 'delete'
+            ? 'Gasto eliminado con éxito'
+            : successAction === 'update'
+              ? 'Gasto actualizado con éxito'
+              : ''
+        }
+      />
+      {isLoading && <LoadingOverlay />}
     </ListContainer>
   );
 };

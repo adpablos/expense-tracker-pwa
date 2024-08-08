@@ -1,71 +1,89 @@
+/* eslint-disable import/no-named-as-default */
 import React from 'react';
-// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
 
-import { theme } from '../../styles/theme';
+import Button from './Button';
 
 const PaginationContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: ${theme.padding.large};
+  gap: ${({ theme }) => theme.space.small};
 `;
 
-const PageButton = styled.button<{ isActive?: boolean }>`
-  padding: ${theme.padding.small} ${theme.padding.medium};
-  margin: 0 ${theme.padding.small};
-  background-color: ${(props) => (props.isActive ? theme.colors.primary : theme.colors.background)};
-  color: ${(props) => (props.isActive ? theme.colors.background : theme.colors.text)};
-  border: 1px solid ${theme.colors.border};
-  border-radius: ${theme.borderRadius};
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background-color: ${theme.colors.primaryHover};
-    color: ${theme.colors.background};
-  }
-
-  &:disabled {
-    background-color: ${theme.colors.disabled};
-    color: ${theme.colors.textLight};
-    cursor: not-allowed;
-  }
+const Ellipsis = styled.span`
+  padding: ${({ theme }) => theme.space.xsmall};
 `;
 
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  maxDisplayedPages?: number;
 }
 
-const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
-  const pageNumbers = [];
+const Pagination: React.FC<PaginationProps> = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+  maxDisplayedPages = 5,
+}) => {
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const halfMax = Math.floor(maxDisplayedPages / 2);
 
-  for (let i = 1; i <= totalPages; i++) {
-    pageNumbers.push(i);
-  }
+    let startPage = Math.max(currentPage - halfMax, 2);
+    const endPage = Math.min(startPage + maxDisplayedPages - 3, totalPages - 1);
+
+    if (endPage - startPage + 1 < maxDisplayedPages - 2) {
+      startPage = Math.max(endPage - maxDisplayedPages + 3, 2);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+
+    return pageNumbers;
+  };
 
   return (
     <PaginationContainer>
-      <PageButton onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1}>
+      <Button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        variant="secondary"
+      >
         Anterior
-      </PageButton>
-      {pageNumbers.map((number) => (
-        <PageButton
+      </Button>
+      <Button onClick={() => onPageChange(1)} variant={currentPage === 1 ? 'primary' : 'secondary'}>
+        1
+      </Button>
+      {currentPage > 3 && <Ellipsis>...</Ellipsis>}
+      {getPageNumbers().map((number) => (
+        <Button
           key={number}
           onClick={() => onPageChange(number)}
-          isActive={currentPage === number}
+          variant={currentPage === number ? 'primary' : 'secondary'}
         >
           {number}
-        </PageButton>
+        </Button>
       ))}
-      <PageButton
+      {currentPage < totalPages - 2 && <Ellipsis>...</Ellipsis>}
+      {totalPages > 1 && (
+        <Button
+          onClick={() => onPageChange(totalPages)}
+          variant={currentPage === totalPages ? 'primary' : 'secondary'}
+        >
+          {totalPages}
+        </Button>
+      )}
+      <Button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
+        variant="secondary"
       >
         Siguiente
-      </PageButton>
+      </Button>
     </PaginationContainer>
   );
 };
