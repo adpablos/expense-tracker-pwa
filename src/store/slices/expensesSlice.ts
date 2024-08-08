@@ -89,12 +89,14 @@ const expensesSlice = createSlice({
       .addCase(fetchExpenses.fulfilled, (state, action) => {
         state.status = 'succeeded';
         const convertedExpenses = action.payload.expenses.map(convertApiExpenseToExpense);
-        if (action.meta.arg.limit && (!action.meta.arg.page || action.meta.arg.page === 1)) {
-          state.recentItems = convertedExpenses;
-        } else {
-          state.items = convertedExpenses;
-        }
+        state.items = convertedExpenses;
         state.totalPages = action.payload.totalPages;
+
+        // Actualizar recentItems solo si estamos en la primera página y hay un límite
+        const params = action.meta.arg as FetchExpensesParams;
+        if (params.limit && (!params.page || params.page === 1)) {
+          state.recentItems = convertedExpenses.slice(0, 5); // Mantener solo los 5 más recientes
+        }
       })
       .addCase(fetchExpenses.rejected, (state, action) => {
         state.status = 'failed';
@@ -102,10 +104,10 @@ const expensesSlice = createSlice({
       })
       .addCase(createExpense.fulfilled, (state, action) => {
         state.items.unshift(action.payload);
-        if (state.recentItems.length >= 5) {
+        state.recentItems.unshift(action.payload);
+        if (state.recentItems.length > 5) {
           state.recentItems.pop();
         }
-        state.recentItems.unshift(action.payload);
       })
       .addCase(updateExpense.fulfilled, (state, action) => {
         const index = state.items.findIndex((expense) => expense.id === action.payload.id);

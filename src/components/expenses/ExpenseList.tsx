@@ -144,6 +144,7 @@ const ExpenseList: React.FC = () => {
       ).unwrap();
       setSuccessExpense(result);
       setSuccessAction('update');
+      setExpenseToEdit(null);
       fetchExpensesList();
     } catch (error) {
       console.error('Failed to update expense:', error);
@@ -232,6 +233,7 @@ const ExpenseList: React.FC = () => {
         onClose={() => {
           setSuccessExpense(null);
           setSuccessAction(null);
+          fetchExpensesList(); // Refresh the list after success
         }}
         expense={successExpense}
         title={
