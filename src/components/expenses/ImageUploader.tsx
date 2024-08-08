@@ -1,29 +1,31 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
+/* eslint-disable import/no-named-as-default */
+import { isAxiosError } from 'axios';
+import React, { useState, useRef } from 'react';
 import { FaUpload, FaImage } from 'react-icons/fa';
+import styled from 'styled-components';
+
 import { uploadExpenseFile } from '../../services/api';
 import { Expense } from '../../types';
-import { theme } from '../../styles/theme';
-import SubmitButton from '../common/SubmitButton';
+import { convertApiExpenseToExpense } from '../../utils/expenseUtils';
+import Button from '../common/Button';
 import ErrorModal from '../common/ErrorModal';
 import LoadingOverlay from '../common/LoadingOverlay';
-import axios from 'axios';
-import { convertApiExpenseToExpense } from '../../utils/expenseUtils';
+import SuccessModal from '../common/SuccessModal';
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
+  gap: ${({ theme }) => theme.space.medium};
+  padding: ${({ theme }) => theme.space.medium};
 `;
 
 const PreviewContainer = styled.div`
   width: 100%;
   max-width: 300px;
   height: 200px;
-  border: 2px dashed ${theme.colors.primary};
-  border-radius: 8px;
+  border: 2px dashed ${({ theme }) => theme.colors.primary};
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -36,41 +38,23 @@ const PreviewImage = styled.img`
   object-fit: contain;
 `;
 
-const FileInput = styled.input`
+const HiddenFileInput = styled.input`
   display: none;
-`;
-
-const SelectImageButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem 1.5rem;
-  background-color: ${theme.colors.primary};
-  color: ${theme.colors.background};
-  border: none;
-  border-radius: ${theme.borderRadius};
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background-color: ${theme.colors.primaryHover};
-  }
-
-  svg {
-    margin-right: 0.5rem;
-  }
 `;
 
 interface ImageUploaderProps {
   onUploadComplete: (expense: Expense) => void;
+  onReset: () => void;
 }
 
-const ImageUploader: React.FC<ImageUploaderProps> = ({ onUploadComplete }) => {
+const ImageUploader: React.FC<ImageUploaderProps> = ({ onUploadComplete, onReset }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [uploadedExpense, setUploadedExpense] = useState<Expense | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -84,39 +68,50 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onUploadComplete }) => {
     }
   };
 
+  const handleButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
   const handleUpload = async () => {
     if (selectedFile) {
       setIsLoading(true);
       try {
         const response = await uploadExpenseFile(selectedFile);
-        // Response was successful 2xx
         const convertedExpense = convertApiExpenseToExpense(response.data.expense);
+        setUploadedExpense(convertedExpense);
+        setSuccessModalOpen(true);
         onUploadComplete(convertedExpense);
       } catch (error) {
-        console.error('Error al cargar el audio:', error);
-        if (axios.isAxiosError(error)) {
+        console.error('Error al cargar la imagen:', error);
+        if (isAxiosError(error)) {
           if (error.response) {
-            // El servidor respondió con un status fuera del rango 2xx
             if (error.response.status === 422) {
-              setErrorMessage("No se registró ningún gasto. El archivo se procesó correctamente, pero no se pudo identificar ningún gasto válido.");
+              setErrorMessage(
+                'No se registró ningún gasto. El archivo se procesó correctamente, pero no se pudo identificar ningún gasto válido.'
+              );
             } else {
               setErrorMessage('Error en la respuesta del servidor: ' + error.response.data.message);
             }
           } else if (error.request) {
-            // La petición fue hecha pero no se recibió respuesta
             setErrorMessage('No se recibió respuesta del servidor. Por favor, intenta de nuevo.');
           } else {
-            // Algo sucedió al configurar la petición que provocó un Error
             setErrorMessage('Error al preparar la solicitud. Por favor, intenta de nuevo.');
           }
         } else {
-          // Error no relacionado con Axios
           setErrorMessage('Ocurrió un error inesperado. Por favor, intenta de nuevo.');
         }
       } finally {
         setIsLoading(false);
       }
     }
+  };
+
+  const handleSuccessModalClose = () => {
+    setSuccessModalOpen(false);
+    setSelectedFile(null);
+    setPreview(null);
+    setUploadedExpense(null);
+    onReset();
   };
 
   return (
@@ -126,29 +121,33 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onUploadComplete }) => {
         {preview ? (
           <PreviewImage src={preview} alt="Preview" />
         ) : (
-          <FaImage size={48} color={theme.colors.primary} />
+          <FaImage size={48} color="currentColor" />
         )}
       </PreviewContainer>
-      <FileInput
+      <HiddenFileInput
         type="file"
         accept="image/*"
         onChange={handleFileSelect}
-        id="imageInput"
+        ref={fileInputRef}
       />
-      <label htmlFor="imageInput">
-        <SelectImageButton as="span">
-          <FaUpload /> Seleccionar imagen
-        </SelectImageButton>
-      </label>
+      <Button onClick={handleButtonClick} variant="secondary">
+        <FaUpload /> Seleccionar imagen
+      </Button>
       {selectedFile && (
-        <SubmitButton onClick={handleUpload} disabled={isLoading}>
+        <Button onClick={handleUpload} disabled={isLoading} variant="primary">
           Registrar gasto
-        </SubmitButton>
+        </Button>
       )}
       <ErrorModal
         isOpen={!!errorMessage}
         onClose={() => setErrorMessage(null)}
         message={errorMessage || ''}
+      />
+      <SuccessModal
+        isOpen={successModalOpen}
+        onClose={handleSuccessModalClose}
+        expense={uploadedExpense}
+        title="Gasto registrado con éxito"
       />
     </Container>
   );

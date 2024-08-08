@@ -1,38 +1,25 @@
+/* eslint-disable import/no-named-as-default */
 import React from 'react';
-import styled from 'styled-components';
 import { FaEdit, FaTrash } from 'react-icons/fa';
+import styled from 'styled-components';
+
 import { Expense } from '../../types';
-import { theme } from '../../styles/theme';
 import { formatAmount } from '../../utils/expenseUtils';
+import Button from '../common/Button';
 
 const TableRow = styled.tr`
   &:nth-child(even) {
-    background-color: ${theme.colors.backgroundLight};
+    background-color: ${({ theme }) => theme.colors.backgroundLight};
   }
 `;
 
 const TableCell = styled.td`
-  padding: ${theme.padding.small};
+  padding: ${({ theme }) => theme.space.small};
 `;
 
-const ActionButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  margin-right: ${theme.padding.small};
-  transition: color 0.3s;
-
-  &:hover {
-    opacity: 0.8;
-  }
-`;
-
-const EditButton = styled(ActionButton)`
-  color: ${theme.colors.primary};
-`;
-
-const DeleteButton = styled(ActionButton)`
-  color: ${theme.colors.error};
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.space.xsmall};
 `;
 
 interface ExpenseItemProps {
@@ -44,18 +31,26 @@ interface ExpenseItemProps {
 const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense, onDelete, onEdit }) => {
   return (
     <TableRow>
-      <TableCell>{new Date(expense.date).toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' })}</TableCell>
-      <TableCell>{expense.description}</TableCell>
-      <TableCell>{formatAmount(expense.amount)}€</TableCell>
-      <TableCell>{expense.category}</TableCell>
-      <TableCell>{expense.subcategory}</TableCell>
       <TableCell>
-        <EditButton onClick={() => onEdit(expense)} aria-label="Editar gasto">
-          <FaEdit />
-        </EditButton>
-        <DeleteButton onClick={() => onDelete(expense)} aria-label="Eliminar gasto">
-          <FaTrash />
-        </DeleteButton>
+        {new Date(expense.date).toLocaleDateString('es-ES', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        })}
+      </TableCell>
+      <TableCell>{expense.description}</TableCell>
+      <TableCell>${formatAmount(expense.amount)}</TableCell>
+      <TableCell>{expense.category}</TableCell>
+      <TableCell>{expense.subcategory || 'Sin subcategoría'}</TableCell>
+      <TableCell>
+        <ButtonContainer>
+          <Button variant="primary" onClick={() => onEdit(expense)} isRound size="small">
+            <FaEdit />
+          </Button>
+          <Button variant="danger" onClick={() => onDelete(expense)} isRound size="small">
+            <FaTrash />
+          </Button>
+        </ButtonContainer>
       </TableCell>
     </TableRow>
   );

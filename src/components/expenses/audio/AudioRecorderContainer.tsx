@@ -1,6 +1,8 @@
 // src/components/expenses/AudioRecorderContainer.tsx
 import React from 'react';
+// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
+
 import { theme } from '../../../styles/theme';
 
 const Container = styled.div`
@@ -11,11 +13,11 @@ const Container = styled.div`
   padding: ${theme.padding.large};
   background-color: ${theme.colors.backgroundLight};
   border-radius: ${theme.borderRadius};
-  box-shadow: ${theme.boxShadow};
+  box-shadow: ${theme.shadows.medium};
 `;
 
 const StatusText = styled.p`
-  font-size: ${theme.fontSize.medium};
+  font-size: ${theme.fontSizes.medium};
   color: ${theme.colors.text};
   margin: 0;
 `;
@@ -28,8 +30,6 @@ interface AudioRecorderContainerProps {
 }
 
 const AudioRecorderContainer: React.FC<AudioRecorderContainerProps> = ({
-  isRecording,
-  recordingTime,
   statusText,
   children,
 }) => (

@@ -1,7 +1,8 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Expense, ExpenseInput, ExpenseFromAPI, ExpensesAPIResponse } from '../../types';
-import { convertApiExpenseToExpense } from '../../utils/expenseUtils';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+
 import * as api from '../../services/api';
+import { Expense, ExpenseInput, ExpensesAPIResponse } from '../../types';
+import { convertApiExpenseToExpense } from '../../utils/expenseUtils';
 
 interface ExpensesState {
   items: Expense[];
@@ -25,7 +26,12 @@ interface FetchExpensesParams {
   search?: string;
   startDate?: string;
   endDate?: string;
+  [key: string]: string | number | undefined;
 }
+
+type ApiError = {
+  message: string;
+};
 
 export const fetchExpenses = createAsyncThunk<ExpensesAPIResponse, FetchExpensesParams>(
   'expenses/fetchExpenses',
@@ -42,22 +48,22 @@ export const createExpense = createAsyncThunk<Expense, ExpenseInput>(
       const response = await api.apiCreateExpense(expenseData);
       return convertApiExpenseToExpense(response.data);
     } catch (err) {
-      return rejectWithValue((err as any).message || 'Error al crear gasto');
+      return rejectWithValue((err as ApiError).message || 'Error al crear gasto');
     }
   }
 );
 
-export const updateExpense = createAsyncThunk<Expense, { id: string; expenseData: Partial<ExpenseInput> }>(
-  'expenses/updateExpense',
-  async ({ id, expenseData }, { rejectWithValue }) => {
-    try {
-      const response = await api.updateExpense(id, expenseData);
-      return convertApiExpenseToExpense(response.data);
-    } catch (err) {
-      return rejectWithValue((err as any).message || 'Error al actualizar gasto');
-    }
+export const updateExpense = createAsyncThunk<
+  Expense,
+  { id: string; expenseData: Partial<ExpenseInput> }
+>('expenses/updateExpense', async ({ id, expenseData }, { rejectWithValue }) => {
+  try {
+    const response = await api.updateExpense(id, expenseData);
+    return convertApiExpenseToExpense(response.data);
+  } catch (err) {
+    return rejectWithValue((err as ApiError).message || 'Error al actualizar gasto');
   }
-);
+});
 
 export const deleteExpense = createAsyncThunk<string, string>(
   'expenses/deleteExpense',
@@ -66,7 +72,7 @@ export const deleteExpense = createAsyncThunk<string, string>(
       await api.deleteExpense(id);
       return id;
     } catch (err) {
-      return rejectWithValue((err as any).message || 'Error al eliminar gasto');
+      return rejectWithValue((err as ApiError).message || 'Error al eliminar gasto');
     }
   }
 );
@@ -83,12 +89,14 @@ const expensesSlice = createSlice({
       .addCase(fetchExpenses.fulfilled, (state, action) => {
         state.status = 'succeeded';
         const convertedExpenses = action.payload.expenses.map(convertApiExpenseToExpense);
-        if (action.meta.arg.limit && (!action.meta.arg.page || action.meta.arg.page === 1)) {
-          state.recentItems = convertedExpenses;
-        } else {
-          state.items = convertedExpenses;
-        }
+        state.items = convertedExpenses;
         state.totalPages = action.payload.totalPages;
+
+        // Actualizar recentItems solo si estamos en la primera página y hay un límite
+        const params = action.meta.arg as FetchExpensesParams;
+        if (params.limit && (!params.page || params.page === 1)) {
+          state.recentItems = convertedExpenses.slice(0, 5); // Mantener solo los 5 más recientes
+        }
       })
       .addCase(fetchExpenses.rejected, (state, action) => {
         state.status = 'failed';
@@ -96,24 +104,26 @@ const expensesSlice = createSlice({
       })
       .addCase(createExpense.fulfilled, (state, action) => {
         state.items.unshift(action.payload);
-        if (state.recentItems.length >= 5) {
+        state.recentItems.unshift(action.payload);
+        if (state.recentItems.length > 5) {
           state.recentItems.pop();
         }
-        state.recentItems.unshift(action.payload);
       })
       .addCase(updateExpense.fulfilled, (state, action) => {
-        const index = state.items.findIndex(expense => expense.id === action.payload.id);
+        const index = state.items.findIndex((expense) => expense.id === action.payload.id);
         if (index !== -1) {
           state.items[index] = action.payload;
         }
-        const recentIndex = state.recentItems.findIndex(expense => expense.id === action.payload.id);
+        const recentIndex = state.recentItems.findIndex(
+          (expense) => expense.id === action.payload.id
+        );
         if (recentIndex !== -1) {
           state.recentItems[recentIndex] = action.payload;
         }
       })
       .addCase(deleteExpense.fulfilled, (state, action) => {
-        state.items = state.items.filter(expense => expense.id !== action.payload);
-        state.recentItems = state.recentItems.filter(expense => expense.id !== action.payload);
+        state.items = state.items.filter((expense) => expense.id !== action.payload);
+        state.recentItems = state.recentItems.filter((expense) => expense.id !== action.payload);
       });
   },
 });

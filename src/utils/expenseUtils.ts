@@ -3,7 +3,7 @@ import { ExpenseFromAPI, Expense } from '../types';
 export const convertApiExpenseToExpense = (apiExpense: ExpenseFromAPI): Expense => {
   return {
     ...apiExpense,
-    amount: parseFloat(apiExpense.amount)
+    amount: parseFloat(apiExpense.amount),
   };
 };
 

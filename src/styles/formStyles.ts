@@ -1,6 +1,6 @@
 // src/styles/formStyles.ts
+// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
-import { theme } from './theme';
 
 const CommonInputStyles = `
   width: 100%;
@@ -50,7 +50,7 @@ export const StyledDatePicker = styled.div`
   .react-datepicker-wrapper {
     width: 100%;
   }
-  
+
   .react-datepicker__input-container input {
     ${CommonInputStyles}
   }

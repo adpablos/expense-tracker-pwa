@@ -1,6 +1,7 @@
 // src/components/expenses/audio/UploadButton.tsx
 import React from 'react';
 import { FaCheck } from 'react-icons/fa';
+
 import SubmitButton from '../../common/SubmitButton';
 
 interface UploadButtonProps {
@@ -9,12 +10,11 @@ interface UploadButtonProps {
   isLoading: boolean;
 }
 
-const UploadButton: React.FC<UploadButtonProps> = ({ audioBlob, handleUpload, isLoading }) => (
+const UploadButton: React.FC<UploadButtonProps> = ({ audioBlob, handleUpload, isLoading }) =>
   audioBlob && !isLoading ? (
     <SubmitButton onClick={handleUpload}>
-      <FaCheck /> Enviar 
+      <FaCheck /> Enviar
     </SubmitButton>
-  ) : null 
-);
+  ) : null;
 
 export default UploadButton;

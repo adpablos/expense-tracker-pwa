@@ -25,12 +25,14 @@ export interface ExpenseInput extends ExpenseBase {
 
 export interface ExpenseFromAPI extends ExpenseBase {
   id: string;
-  amount: string;  // Amount is a string in the API response
+  amount: string; // Amount is a string in the API response
 }
 
 export interface Expense extends ExpenseBase {
   id: string;
-  amount: number;  // Amount is converted to a number for use in the app
+  amount: number; // Amount is converted to a number for use in the app
+  categoryId?: string;
+  subcategoryId?: string;
 }
 
 export interface ExpensesAPIResponse {
@@ -40,9 +42,4 @@ export interface ExpensesAPIResponse {
   page: number;
   nextPage: number | null;
   totalItems: number;
-}
-
-export interface UploadExpenseResponse {
-  message: string;
-  expense: Expense;
 }

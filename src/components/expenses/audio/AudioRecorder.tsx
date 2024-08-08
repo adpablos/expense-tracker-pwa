@@ -1,13 +1,14 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import styled, { keyframes, css } from 'styled-components';
+/* eslint-disable import/no-named-as-default */
+import React, { useState, useRef, useEffect } from 'react';
 import { FaMicrophone, FaPause, FaPlay, FaTrash, FaPaperPlane } from 'react-icons/fa';
-import { theme } from '../../../styles/theme';
-import { Expense } from '../../../types';
-import { uploadExpenseFile } from '../../../services/api';
-import LoadingOverlay from '../../common/LoadingOverlay';
-import { convertApiExpenseToExpense } from '../../../utils/expenseUtils';
+import styled, { keyframes } from 'styled-components';
 
-const CANVAS_WIDTH = 800;
+import { uploadExpenseFile } from '../../../services/api';
+import { Expense } from '../../../types';
+import { convertApiExpenseToExpense } from '../../../utils/expenseUtils';
+import Button from '../../common/Button';
+import LoadingOverlay from '../../common/LoadingOverlay';
+
 const CANVAS_HEIGHT = 150;
 
 const pulse = keyframes`
@@ -26,27 +27,14 @@ const RecorderContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
   width: 100%;
-  max-width: 500px;
-  margin: 0 auto;
-  background-color: ${theme.colors.backgroundLight};
 `;
 
-const MainButton = styled.button<{ isRecording: boolean }>`
+const MainButton = styled(Button)<{ $isRecording: boolean }>`
   width: 120px;
   height: 120px;
-  border-radius: 50%;
-  background-color: ${props => props.isRecording ? theme.colors.error : theme.colors.primary};
-  border: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  ${props => props.isRecording && css`
-    animation: ${pulse} 2s infinite;
-  `}
+  animation: ${({ $isRecording }) => ($isRecording ? pulse : 'none')} 2s infinite;
+  margin-bottom: ${({ theme }) => theme.space.small};
 
   &:hover {
     transform: scale(1.1);
@@ -57,44 +45,25 @@ const ControlsContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 20px;
-  gap: 20px;
+  gap: ${({ theme }) => theme.space.small};
   width: 100%;
-`;
-
-const ActionButton = styled.button<{ color?: string }>`
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background-color: ${props => props.color || theme.colors.primary};
-  border: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    transform: scale(1.1);
-  }
+  margin-top: ${({ theme }) => theme.space.small};
 `;
 
 const Timer = styled.div`
-  font-size: 1.5rem;
-  margin-top: 20px;
-  color: ${theme.colors.text};
-  font-weight: bold;
+  font-size: ${({ theme }) => theme.fontSizes.large};
+  color: ${({ theme }) => theme.colors.text};
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
 
 const WaveformContainer = styled.div`
   width: 100%;
   height: ${CANVAS_HEIGHT}px;
-  background-color: ${theme.colors.waveformBackground};
-  border-radius: 10px;
+  background-color: ${({ theme }) => theme.colors.waveformBackground};
+  border-radius: ${({ theme }) => theme.borderRadius.small};
   overflow: hidden;
-  margin: 20px 0;
+  margin: ${({ theme }) => theme.space.small} 0;
   position: relative;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const Waveform = styled.canvas`
@@ -107,9 +76,13 @@ const PlaybackPosition = styled.div`
   top: 0;
   bottom: 0;
   width: 2px;
-  background-color: ${theme.colors.primary};
-  box-shadow: 0 0 5px ${theme.colors.primary};
+  background-color: ${({ theme }) => theme.colors.primary};
+  box-shadow: 0 0 5px ${({ theme }) => theme.colors.primary};
 `;
+
+interface WindowWithWebkit extends Window {
+  webkitAudioContext?: typeof AudioContext;
+}
 
 interface AudioRecorderProps {
   onUploadComplete: (expense: Expense) => void;
@@ -136,7 +109,8 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete, onError
   const audioChunksRef = useRef<Blob[]>([]);
 
   useEffect(() => {
-    audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    audioContextRef.current = new (window.AudioContext ||
+      (window as WindowWithWebkit).webkitAudioContext)();
     return () => {
       if (audioContextRef.current) {
         audioContextRef.current.close();
@@ -148,7 +122,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete, onError
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
-      
+
       mediaRecorderRef.current.ondataavailable = (event) => {
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
@@ -166,6 +140,9 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete, onError
       startTimeRef.current = audioContextRef.current!.currentTime;
     } catch (error) {
       console.error('Error accessing microphone:', error);
+      onError(
+        'Error al acceder al micrófono. Por favor, asegúrate de que tienes un micrófono conectado y has dado permiso para usarlo.'
+      );
     }
   };
 
@@ -206,11 +183,11 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete, onError
     const step = Math.ceil(data.length / width);
 
     ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = theme.colors.waveformBackground;
+    ctx.fillStyle = '#f0f0f0';
     ctx.fillRect(0, 0, width, height);
 
     ctx.lineWidth = 2;
-    ctx.strokeStyle = theme.colors.primary;
+    ctx.strokeStyle = '#007bff';
     ctx.beginPath();
 
     const centerY = height / 2;
@@ -324,19 +301,22 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete, onError
       {isRecording || !audioBlob ? (
         <>
           <MainButton
-            isRecording={isRecording}
+            variant={isRecording ? 'danger' : 'primary'}
             onClick={isRecording ? stopRecording : startRecording}
+            $isRecording={isRecording}
+            isRound
           >
-            {isRecording ? <FaPause color="white" size={40} /> : <FaMicrophone color="white" size={40} />}
+            {isRecording ? (
+              <FaPause color="white" size={40} />
+            ) : (
+              <FaMicrophone color="white" size={40} />
+            )}
           </MainButton>
           <Timer>{formatTime(recordingTime)}</Timer>
         </>
       ) : (
         <>
-          <MainButton
-            isRecording={false}
-            onClick={startRecording}
-          >
+          <MainButton variant="primary" onClick={startRecording} $isRecording={false} isRound>
             <FaMicrophone color="white" size={40} />
           </MainButton>
           <WaveformContainer>
@@ -344,15 +324,15 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete, onError
             <PlaybackPosition style={{ left: `${playbackProgress * 100}%` }} />
           </WaveformContainer>
           <ControlsContainer>
-            <ActionButton onClick={togglePlayback} color={theme.colors.primary}>
+            <Button variant="primary" onClick={togglePlayback} isRound>
               {isPlaying ? <FaPause color="white" size={24} /> : <FaPlay color="white" size={24} />}
-            </ActionButton>
-            <ActionButton onClick={discardRecording} color={theme.colors.error}>
+            </Button>
+            <Button variant="danger" onClick={discardRecording} isRound>
               <FaTrash color="white" size={24} />
-            </ActionButton>
-            <ActionButton onClick={handleUpload} color={theme.colors.success}>
+            </Button>
+            <Button variant="success" onClick={handleUpload} isRound>
               <FaPaperPlane color="white" size={24} />
-            </ActionButton>
+            </Button>
           </ControlsContainer>
         </>
       )}

@@ -1,58 +1,38 @@
-// src/components/expenses/ExpenseForm.tsx
+/* eslint-disable import/no-named-as-default */
 import React, { useState } from 'react';
-import styled from 'styled-components';
 import { FaFileAlt, FaMicrophone, FaImage } from 'react-icons/fa';
-import { theme } from '../../styles/theme';
-import ManualExpenseForm from './ManualExpenseForm';
-import AudioRecorder from './audio/AudioRecorder';
-import ImageUploader from './ImageUploader';
-import SuccessModal from '../common/SuccessModal';
-import ErrorModal from '../common/ErrorModal';
-import { Expense, ExpenseInput } from '../../types';
 import { useDispatch } from 'react-redux';
+import styled from 'styled-components';
+
 import { AppDispatch } from '../../store';
 import { createExpense } from '../../store/slices/expensesSlice';
+import { Expense, ExpenseInput } from '../../types';
+import { dateToString, getCurrentUTCDate } from '../../utils/dateUtils';
+import Button from '../common/Button';
+import ErrorModal from '../common/ErrorModal';
+import SuccessModal from '../common/SuccessModal';
 
-const FormContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${theme.padding.large};
+import AudioRecorder from './audio/AudioRecorder';
+import ImageUploader from './ImageUploader';
+import ManualExpenseForm from './ManualExpenseForm';
+
+const FormContainer = styled.section`
+  width: 100%;
+  background-color: ${({ theme }) => theme.colors.backgroundLight};
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  box-shadow: ${({ theme }) => theme.shadows.medium};
+  padding: ${({ theme }) => theme.space.medium};
 `;
 
 const OptionContainer = styled.div`
   display: flex;
   justify-content: center;
-  gap: ${theme.padding.medium};
-`;
-
-const OptionButton = styled.button<{ isSelected: boolean }>`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: ${theme.padding.medium};
-  background-color: ${props => props.isSelected ? theme.colors.primary : theme.colors.background};
-  color: ${props => props.isSelected ? theme.colors.background : theme.colors.primary};
-  border: 2px solid ${theme.colors.primary};
-  border-radius: ${theme.borderRadius};
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background-color: ${theme.colors.primary};
-    color: ${theme.colors.background};
-  }
-
-  svg {
-    font-size: 1.5rem;
-    margin-bottom: ${theme.padding.small};
-  }
+  gap: ${({ theme }) => theme.space.small};
+  margin-bottom: ${({ theme }) => theme.space.medium};
 `;
 
 const ContentContainer = styled.div`
-  background-color: ${theme.colors.backgroundLight};
-  border-radius: ${theme.borderRadius};
-  padding: ${theme.padding.large};
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
 `;
 
 type InputMethod = 'manual' | 'audio' | 'image';
@@ -67,7 +47,11 @@ const ExpenseForm: React.FC = () => {
 
   const handleExpenseSubmit = async (expense: ExpenseInput) => {
     try {
-      const resultAction = await dispatch(createExpense(expense));
+      const expenseWithFormattedDate = {
+        ...expense,
+        date: dateToString(expense.date ? new Date(expense.date) : getCurrentUTCDate()),
+      };
+      const resultAction = await dispatch(createExpense(expenseWithFormattedDate));
       if (createExpense.fulfilled.match(resultAction)) {
         setSubmittedExpense(resultAction.payload);
         setSuccessModalOpen(true);
@@ -91,9 +75,16 @@ const ExpenseForm: React.FC = () => {
       case 'manual':
         return <ManualExpenseForm onSubmit={handleExpenseSubmit} />;
       case 'audio':
-        return <AudioRecorder onUploadComplete={handleExpenseSubmit} onError={handleExpenseError} />;
+        return (
+          <AudioRecorder onUploadComplete={handleExpenseSubmit} onError={handleExpenseError} />
+        );
       case 'image':
-        return <ImageUploader onUploadComplete={() => { }} />;
+        return (
+          <ImageUploader
+            onUploadComplete={handleExpenseSubmit}
+            onReset={() => setInputMethod(null)}
+          />
+        );
       default:
         return null;
     }
@@ -110,33 +101,29 @@ const ExpenseForm: React.FC = () => {
   return (
     <FormContainer>
       <OptionContainer>
-        <OptionButton
-          isSelected={inputMethod === 'manual'}
+        <Button
+          variant={inputMethod === 'manual' ? 'primary' : 'secondary'}
           onClick={() => toggleInputMethod('manual')}
+          isRound
         >
           <FaFileAlt />
-          Manual
-        </OptionButton>
-        <OptionButton
-          isSelected={inputMethod === 'audio'}
+        </Button>
+        <Button
+          variant={inputMethod === 'audio' ? 'primary' : 'secondary'}
           onClick={() => toggleInputMethod('audio')}
+          isRound
         >
           <FaMicrophone />
-          Audio
-        </OptionButton>
-        <OptionButton
-          isSelected={inputMethod === 'image'}
+        </Button>
+        <Button
+          variant={inputMethod === 'image' ? 'primary' : 'secondary'}
           onClick={() => toggleInputMethod('image')}
+          isRound
         >
           <FaImage />
-          Imagen
-        </OptionButton>
+        </Button>
       </OptionContainer>
-      {inputMethod && (
-        <ContentContainer>
-          {renderContent()}
-        </ContentContainer>
-      )}
+      {inputMethod && <ContentContainer>{renderContent()}</ContentContainer>}
       <SuccessModal
         isOpen={successModalOpen}
         onClose={() => {
@@ -144,6 +131,7 @@ const ExpenseForm: React.FC = () => {
           setSubmittedExpense(null);
         }}
         expense={submittedExpense}
+        title="Gasto registrado con éxito"
       />
       <ErrorModal
         isOpen={errorModalOpen}

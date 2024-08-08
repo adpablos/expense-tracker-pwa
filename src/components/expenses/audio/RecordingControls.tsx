@@ -1,9 +1,12 @@
 // src/components/expenses/audio/RecordingControls.tsx
-import React, { useState } from 'react';
+import React from 'react';
 import { FaMicrophone, FaPause, FaTimes, FaPlay, FaCheck } from 'react-icons/fa';
-import ActionButton from '../../common/ActionButton';
+// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
+
 import { theme } from '../../../styles/theme';
+import ActionButton from '../../common/Button';
+
 import WaveAnimation from './WaveAnimation';
 
 const RecordingCircle = styled.div`
@@ -19,7 +22,7 @@ const RecordingCircle = styled.div`
 `;
 
 const Timer = styled.div`
-  font-size: 1.2rem; 
+  font-size: 1.2rem;
   z-index: 2;
 `;
 
@@ -59,7 +62,7 @@ const RecordingControls: React.FC<RecordingControlsProps> = ({
 }) => {
   return (
     <div>
-      {(isRecording || isPaused) ? (
+      {isRecording || isPaused ? (
         <RecordingCircle>
           <WaveAnimation />
           {(isRecording || isPaused) && (
@@ -71,8 +74,8 @@ const RecordingControls: React.FC<RecordingControlsProps> = ({
                 <ActionButton onClick={handlePauseResume}>
                   <FaPause />
                 </ActionButton>
-                <ActionButton onClick={cancelRecording} isActive={true}> 
-                  <FaTimes /> 
+                <ActionButton onClick={cancelRecording} isActive={true}>
+                  <FaTimes />
                 </ActionButton>
               </>
             )}
@@ -84,8 +87,8 @@ const RecordingControls: React.FC<RecordingControlsProps> = ({
                 <ActionButton onClick={startRecording}>
                   <FaMicrophone />
                 </ActionButton>
-                <ActionButton onClick={handleUpload} isActive={true}> 
-                  <FaCheck /> 
+                <ActionButton onClick={handleUpload} isActive={true}>
+                  <FaCheck />
                 </ActionButton>
               </>
             )}

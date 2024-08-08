@@ -1,8 +1,11 @@
 import React from 'react';
-import styled from 'styled-components';
 import { FaExclamationTriangle } from 'react-icons/fa';
-import { theme } from '../../styles/theme';
+// eslint-disable-next-line import/no-named-as-default
+import styled from 'styled-components';
+
 import { Expense } from '../../types';
+// eslint-disable-next-line import/no-named-as-default
+import Button from '../common/Button';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -18,28 +21,27 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContent = styled.div`
-  background-color: ${theme.colors.background};
+  background-color: ${({ theme }) => theme.colors.background};
   padding: 2rem;
-  border-radius: ${theme.borderRadius};
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  box-shadow: ${({ theme }) => theme.shadows.medium};
   text-align: center;
   max-width: 400px;
 `;
 
 const Icon = styled(FaExclamationTriangle)`
-  color: ${theme.colors.warning};
+  color: ${({ theme }) => theme.colors.warning};
   font-size: 3rem;
   margin-bottom: 1rem;
 `;
 
 const Title = styled.h2`
-  color: ${theme.colors.text};
+  color: ${({ theme }) => theme.colors.text};
   margin-bottom: 1rem;
-  text-align: center;
 `;
 
 const Message = styled.p`
-  color: ${theme.colors.textLight};
+  color: ${({ theme }) => theme.colors.textLight};
   margin-bottom: 1.5rem;
 `;
 
@@ -47,23 +49,6 @@ const ButtonContainer = styled.div`
   display: flex;
   justify-content: center;
   gap: 1rem;
-`;
-
-const Button = styled.button<{ isPrimary?: boolean }>`
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: ${theme.borderRadius};
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s;
-
-  background-color: ${props => props.isPrimary ? theme.colors.error : theme.colors.background};
-  color: ${props => props.isPrimary ? theme.colors.background : theme.colors.text};
-  border: 1px solid ${props => props.isPrimary ? theme.colors.error : theme.colors.border};
-
-  &:hover {
-    background-color: ${props => props.isPrimary ? theme.colors.errorHover : theme.colors.backgroundHover};
-  }
 `;
 
 interface DeleteConfirmationModalProps {
@@ -77,19 +62,26 @@ export const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = (
   isOpen,
   expense,
   onConfirm,
-  onCancel
+  onCancel,
 }) => {
   if (!isOpen || !expense) return null;
 
   return (
     <ModalOverlay onClick={onCancel}>
-      <ModalContent onClick={e => e.stopPropagation()}>
+      <ModalContent onClick={(e) => e.stopPropagation()}>
         <Icon />
         <Title>Confirmar eliminación</Title>
-        <Message>¿Estás seguro de que quieres eliminar el gasto "{expense.description}"?</Message>
+        <Message>
+          ¿Estás seguro de que quieres eliminar el gasto &ldquo;
+          {expense.description}&ldquo;?
+        </Message>
         <ButtonContainer>
-          <Button onClick={onCancel}>Cancelar</Button>
-          <Button isPrimary onClick={onConfirm}>Eliminar</Button>
+          <Button variant="secondary" onClick={onCancel}>
+            Cancelar
+          </Button>
+          <Button variant="danger" onClick={onConfirm}>
+            Eliminar
+          </Button>
         </ButtonContainer>
       </ModalContent>
     </ModalOverlay>

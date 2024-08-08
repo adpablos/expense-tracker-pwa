@@ -1,6 +1,8 @@
 import React from 'react';
-import styled, { keyframes } from 'styled-components';
 import { FaSpinner } from 'react-icons/fa';
+// eslint-disable-next-line import/no-named-as-default
+import styled, { keyframes } from 'styled-components';
+
 import { theme } from '../../styles/theme';
 
 const spin = keyframes`

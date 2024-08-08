@@ -1,6 +1,8 @@
 // src/components/expenses/AudioWaveform.tsx
 import React from 'react';
+// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
+
 import { theme } from '../../../styles/theme';
 
 const WaveformContainer = styled.div<{ isVisible: boolean }>`
@@ -9,7 +11,7 @@ const WaveformContainer = styled.div<{ isVisible: boolean }>`
   background-color: ${theme.colors.waveformBackground};
   border-radius: ${theme.borderRadius};
   overflow: hidden;
-  display: ${props => (props.isVisible ? 'block' : 'none')};
+  display: ${(props) => (props.isVisible ? 'block' : 'none')};
   position: relative;
 `;
 
