@@ -1,12 +1,11 @@
+/* eslint-disable import/no-named-as-default */
 import React, { useState, useRef, useEffect } from 'react';
 import { FaMicrophone, FaPause, FaPlay, FaTrash, FaPaperPlane } from 'react-icons/fa';
-import styled, { keyframes, css } from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 import { uploadExpenseFile } from '../../../services/api';
-import { theme } from '../../../styles/theme';
 import { Expense } from '../../../types';
 import { convertApiExpenseToExpense } from '../../../utils/expenseUtils';
-// eslint-disable-next-line import/no-named-as-default
 import Button from '../../common/Button';
 import LoadingOverlay from '../../common/LoadingOverlay';
 
@@ -28,21 +27,14 @@ const RecorderContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
   width: 100%;
-  max-width: 500px;
-  margin: 0 auto;
-  background-color: ${({ theme }) => theme.colors.backgroundLight};
 `;
 
-const MainButton = styled(Button)<{ isRecording: boolean }>`
+const MainButton = styled(Button)<{ $isRecording: boolean }>`
   width: 120px;
   height: 120px;
-  ${(props) =>
-    props.isRecording &&
-    css`
-      animation: ${pulse} 2s infinite;
-    `}
+  animation: ${({ $isRecording }) => ($isRecording ? pulse : 'none')} 2s infinite;
+  margin-bottom: ${({ theme }) => theme.space.small};
 
   &:hover {
     transform: scale(1.1);
@@ -53,27 +45,25 @@ const ControlsContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 20px;
-  gap: 20px;
+  gap: ${({ theme }) => theme.space.small};
   width: 100%;
+  margin-top: ${({ theme }) => theme.space.small};
 `;
 
 const Timer = styled.div`
-  font-size: 1.5rem;
-  margin-top: 20px;
+  font-size: ${({ theme }) => theme.fontSizes.large};
   color: ${({ theme }) => theme.colors.text};
-  font-weight: bold;
+  font-weight: ${({ theme }) => theme.fontWeights.bold};
 `;
 
 const WaveformContainer = styled.div`
   width: 100%;
   height: ${CANVAS_HEIGHT}px;
   background-color: ${({ theme }) => theme.colors.waveformBackground};
-  border-radius: 10px;
+  border-radius: ${({ theme }) => theme.borderRadius.small};
   overflow: hidden;
-  margin: 20px 0;
+  margin: ${({ theme }) => theme.space.small} 0;
   position: relative;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const Waveform = styled.canvas`
@@ -150,6 +140,9 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete, onError
       startTimeRef.current = audioContextRef.current!.currentTime;
     } catch (error) {
       console.error('Error accessing microphone:', error);
+      onError(
+        'Error al acceder al micrófono. Por favor, asegúrate de que tienes un micrófono conectado y has dado permiso para usarlo.'
+      );
     }
   };
 
@@ -190,11 +183,11 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete, onError
     const step = Math.ceil(data.length / width);
 
     ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = theme.colors.waveformBackground;
+    ctx.fillStyle = '#f0f0f0';
     ctx.fillRect(0, 0, width, height);
 
     ctx.lineWidth = 2;
-    ctx.strokeStyle = theme.colors.primary;
+    ctx.strokeStyle = '#007bff';
     ctx.beginPath();
 
     const centerY = height / 2;
@@ -310,7 +303,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete, onError
           <MainButton
             variant={isRecording ? 'danger' : 'primary'}
             onClick={isRecording ? stopRecording : startRecording}
-            isRecording={isRecording}
+            $isRecording={isRecording}
             isRound
           >
             {isRecording ? (
@@ -323,7 +316,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onUploadComplete, onError
         </>
       ) : (
         <>
-          <MainButton variant="primary" onClick={startRecording} isRecording={false} isRound>
+          <MainButton variant="primary" onClick={startRecording} $isRecording={false} isRound>
             <FaMicrophone color="white" size={40} />
           </MainButton>
           <WaveformContainer>

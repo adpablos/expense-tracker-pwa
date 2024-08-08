@@ -14,17 +14,15 @@ import Input from '../common/Input';
 import LoadingOverlay from '../common/LoadingOverlay';
 import Select from '../common/Select';
 
-const FormContainer = styled.div`
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-`;
-
 const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.space.small};
   width: 100%;
+`;
+
+const SubmitButton = styled(Button)`
+  margin-top: ${({ theme }) => theme.space.medium};
 `;
 
 interface ManualExpenseFormProps {
@@ -116,54 +114,52 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
     }));
 
   return (
-    <FormContainer>
-      <Form onSubmit={handleSubmit}>
-        <Input
-          name="description"
-          value={formData.description}
-          onChange={handleInputChange}
-          placeholder="Descripción del gasto"
-          required
-        />
-        <Input
-          name="amount"
-          type="number"
-          inputMode="decimal"
-          pattern="[0-9]*"
-          value={formData.amount}
-          onChange={handleAmountChange}
-          placeholder="Cantidad"
-          required
-        />
-        <Select
-          name="categoryId"
-          value={formData.categoryId}
-          onChange={handleInputChange}
-          options={categoryOptions}
-          placeholder="Selecciona una categoría"
-          required
-        />
-        <Select
-          name="subcategoryId"
-          value={formData.subcategoryId}
-          onChange={handleInputChange}
-          options={subcategoryOptions}
-          placeholder="Selecciona una subcategoría"
-          disabled={!formData.categoryId}
-        />
-        <DatePicker
-          selected={formData.date}
-          onChange={handleDateChange}
-          dateFormat="yyyy/MM/dd"
-          placeholderText="Fecha del gasto"
-        />
-        {error && <p>{error}</p>}
-        <Button type="submit" variant="primary">
-          Registrar gasto
-        </Button>
-        {isLoading && <LoadingOverlay message="Procesando gasto..." />}
-      </Form>
-    </FormContainer>
+    <Form onSubmit={handleSubmit}>
+      <Input
+        name="description"
+        value={formData.description}
+        onChange={handleInputChange}
+        placeholder="Descripción del gasto"
+        required
+      />
+      <Input
+        name="amount"
+        type="number"
+        inputMode="decimal"
+        pattern="[0-9]*"
+        value={formData.amount}
+        onChange={handleAmountChange}
+        placeholder="Cantidad"
+        required
+      />
+      <Select
+        name="categoryId"
+        value={formData.categoryId}
+        onChange={handleInputChange}
+        options={categoryOptions}
+        placeholder="Selecciona una categoría"
+        required
+      />
+      <Select
+        name="subcategoryId"
+        value={formData.subcategoryId}
+        onChange={handleInputChange}
+        options={subcategoryOptions}
+        placeholder="Selecciona una subcategoría"
+        disabled={!formData.categoryId}
+      />
+      <DatePicker
+        selected={formData.date}
+        onChange={handleDateChange}
+        dateFormat="yyyy/MM/dd"
+        placeholderText="Fecha del gasto"
+      />
+      {error && <p>{error}</p>}
+      <SubmitButton type="submit" variant="primary">
+        Registrar gasto
+      </SubmitButton>
+      {isLoading && <LoadingOverlay message="Procesando gasto..." />}
+    </Form>
   );
 };
 

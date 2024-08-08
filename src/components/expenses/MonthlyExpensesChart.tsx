@@ -8,7 +8,7 @@ import styled from 'styled-components';
 import { RootState, AppDispatch } from '../../store';
 import { fetchExpenses } from '../../store/slices/expensesSlice';
 import { theme } from '../../styles/theme';
-import { Margin, Padding, FlexContainer } from '../../styles/utilities';
+import { Margin, Padding } from '../../styles/utilities';
 import Button from '../common/Button';
 
 const ChartWrapper = styled.div`
@@ -17,12 +17,15 @@ const ChartWrapper = styled.div`
   box-shadow: ${({ theme }) => theme.shadows.medium};
 `;
 
-const ChartHeader = styled(FlexContainer)`
+const ChartHeader = styled.div`
+  display: flex;
   justify-content: center;
   align-items: center;
+  padding: ${({ theme }) => theme.padding.medium};
 `;
 
-const DateSelector = styled(FlexContainer)`
+const DateSelector = styled.div`
+  display: flex;
   align-items: center;
   font-size: ${({ theme }) => theme.fontSizes.large};
   color: ${({ theme }) => theme.colors.primary};
@@ -35,6 +38,7 @@ const MonthDisplay = styled.span`
 
 const ChartContainer = styled.div`
   height: 300px;
+  padding: ${({ theme }) => theme.padding.medium};
 
   @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
     height: 250px;
@@ -44,10 +48,10 @@ const ChartContainer = styled.div`
 const TotalExpenses = styled.div`
   text-align: center;
   font-size: ${({ theme }) => theme.fontSizes.large};
+  padding: ${({ theme }) => theme.padding.medium};
   background-color: ${({ theme }) => theme.colors.backgroundLight};
   color: ${({ theme }) => theme.colors.text};
-  border-radius: ${({ theme }) => theme.borderRadius.medium};
-  box-shadow: ${({ theme }) => theme.shadows.small};
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
@@ -153,67 +157,59 @@ const MonthlyExpensesChart: React.FC = () => {
 
   return (
     <ChartWrapper>
-      <Padding size="large">
-        <ChartHeader>
-          <Button variant="secondary" onClick={() => changeMonth(-1)} isRound>
-            <FaChevronLeft />
-          </Button>
-          <Margin size="medium" direction="horizontal">
-            <DateSelector>
-              <MonthDisplay>{`${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`}</MonthDisplay>
-            </DateSelector>
-          </Margin>
-          <Button variant="secondary" onClick={() => changeMonth(1)} isRound>
-            <FaChevronRight />
-          </Button>
-        </ChartHeader>
-        {isLoading ? (
-          <Margin size="large" direction="top">
-            <p>Cargando datos...</p>
-          </Margin>
-        ) : chartData.length > 0 ? (
-          <>
-            <Margin size="medium" direction="top">
-              <ChartContainer>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius="80%"
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip content={<CustomTooltip />} />
-                  </PieChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </Margin>
-            <Margin size="medium" direction="top">
-              <TotalExpenses>
-                <Padding size="medium">
-                  <strong>Total gastado este mes:</strong>
-                  <br />
-                  <span style={{ fontSize: '1.5em', color: theme.colors.primary }}>
-                    ${totalExpenses.toFixed(2)}
-                  </span>
-                </Padding>
-              </TotalExpenses>
-            </Margin>
-          </>
-        ) : (
-          <Margin size="large" direction="top">
-            <p>No hay gastos registrados para este mes.</p>
-          </Margin>
-        )}
-      </Padding>
+      <ChartHeader>
+        <Button variant="secondary" onClick={() => changeMonth(-1)} isRound>
+          <FaChevronLeft />
+        </Button>
+        <Margin size="medium" direction="horizontal">
+          <DateSelector>
+            <MonthDisplay>{`${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`}</MonthDisplay>
+          </DateSelector>
+        </Margin>
+        <Button variant="secondary" onClick={() => changeMonth(1)} isRound>
+          <FaChevronRight />
+        </Button>
+      </ChartHeader>
+      {isLoading ? (
+        <Padding size="large">
+          <p>Cargando datos...</p>
+        </Padding>
+      ) : chartData.length > 0 ? (
+        <>
+          <ChartContainer>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius="80%"
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+          <TotalExpenses>
+            <strong>Total gastado este mes:</strong>
+            <br />
+            <span style={{ fontSize: '1.5em', color: theme.colors.primary }}>
+              ${totalExpenses.toFixed(2)}
+            </span>
+          </TotalExpenses>
+        </>
+      ) : (
+        <Padding size="large">
+          <p>No hay gastos registrados para este mes.</p>
+        </Padding>
+      )}
     </ChartWrapper>
   );
 };
