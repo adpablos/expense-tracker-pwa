@@ -32,9 +32,13 @@ const ListContainer = styled(Container)`
 
 const PaginationContainer = styled.div`
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
   margin-top: ${({ theme }) => theme.space.large};
+`;
+
+const LimitSelector = styled.div`
+  margin-bottom: ${({ theme }) => theme.space.medium};
 `;
 
 const ExpenseList: React.FC = () => {
@@ -194,15 +198,17 @@ const ExpenseList: React.FC = () => {
         </Col>
       </Row>
       <PaginationContainer>
-        <Select
-          value={limit.toString()}
-          onChange={handleLimitChange}
-          options={[
-            { value: '10', label: '10 por página' },
-            { value: '25', label: '25 por página' },
-            { value: '50', label: '50 por página' },
-          ]}
-        />
+        <LimitSelector>
+          <Select
+            value={limit.toString()}
+            onChange={handleLimitChange}
+            options={[
+              { value: '10', label: '10 por página' },
+              { value: '25', label: '25 por página' },
+              { value: '50', label: '50 por página' },
+            ]}
+          />
+        </LimitSelector>
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
