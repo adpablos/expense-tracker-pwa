@@ -1,88 +1,53 @@
+/* eslint-disable import/no-named-as-default */
 import React, { useEffect, useState } from 'react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
-// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
 
 import { RootState, AppDispatch } from '../../store';
 import { fetchExpenses } from '../../store/slices/expensesSlice';
 import { theme } from '../../styles/theme';
+import { Margin, Padding, FlexContainer } from '../../styles/utilities';
+import Button from '../common/Button';
 
 const ChartWrapper = styled.div`
-  background-color: ${theme.colors.backgroundLight};
-  border-radius: ${theme.borderRadius};
-  padding: ${theme.padding.large};
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: ${({ theme }) => theme.colors.backgroundLight};
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  box-shadow: ${({ theme }) => theme.shadows.medium};
 `;
 
-const ChartHeader = styled.div`
-  display: flex;
+const ChartHeader = styled(FlexContainer)`
   justify-content: center;
   align-items: center;
-  margin-bottom: ${theme.padding.medium};
 `;
 
-const DateSelector = styled.div`
-  display: flex;
+const DateSelector = styled(FlexContainer)`
   align-items: center;
-  font-size: 1.2rem;
-  color: ${theme.colors.primary};
+  font-size: ${({ theme }) => theme.fontSizes.large};
+  color: ${({ theme }) => theme.colors.primary};
 `;
 
 const MonthDisplay = styled.span`
-  margin: 0 ${theme.padding.medium};
   min-width: 150px;
   text-align: center;
 `;
 
-const IconButton = styled.button`
-  background: none;
-  border: none;
-  color: ${theme.colors.primary};
-  cursor: pointer;
-  padding: ${theme.padding.small};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &:hover {
-    color: ${theme.colors.primaryHover};
-  }
-`;
-
 const ChartContainer = styled.div`
   height: 300px;
-  margin-top: ${theme.padding.medium};
 
-  @media (max-width: 768px) {
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
     height: 250px;
   }
 `;
 
 const TotalExpenses = styled.div`
   text-align: center;
-  font-size: 1.2rem;
-  margin-top: ${theme.padding.medium};
-  padding: ${theme.padding.medium};
-  background-color: ${theme.colors.backgroundLight};
-  color: ${theme.colors.text};
-  border-radius: ${theme.borderRadius};
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const LoadingMessage = styled.p`
-  text-align: center;
-  color: ${theme.colors.textLight};
-  font-size: 1rem;
-  margin-top: ${theme.padding.large};
-`;
-
-const NoDataMessage = styled.p`
-  text-align: center;
-  color: ${theme.colors.textLight};
-  font-size: 1rem;
-  margin-top: ${theme.padding.large};
+  font-size: ${({ theme }) => theme.fontSizes.large};
+  background-color: ${({ theme }) => theme.colors.backgroundLight};
+  color: ${({ theme }) => theme.colors.text};
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  box-shadow: ${({ theme }) => theme.shadows.small};
 `;
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
@@ -188,53 +153,67 @@ const MonthlyExpensesChart: React.FC = () => {
 
   return (
     <ChartWrapper>
-      <ChartHeader>
-        <IconButton onClick={() => changeMonth(-1)}>
-          <FaChevronLeft />
-        </IconButton>
-        <DateSelector>
-          <MonthDisplay>{`${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`}</MonthDisplay>
-        </DateSelector>
-        <IconButton onClick={() => changeMonth(1)}>
-          <FaChevronRight />
-        </IconButton>
-      </ChartHeader>
-      {isLoading ? (
-        <LoadingMessage>Cargando datos...</LoadingMessage>
-      ) : chartData.length > 0 ? (
-        <>
-          <ChartContainer>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius="80%"
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-          <TotalExpenses>
-            <strong>Total gastado este mes:</strong>
-            <br />
-            <span style={{ fontSize: '1.5em', color: theme.colors.primary }}>
-              ${totalExpenses.toFixed(2)}
-            </span>
-          </TotalExpenses>
-        </>
-      ) : (
-        <NoDataMessage>No hay gastos registrados para este mes.</NoDataMessage>
-      )}
+      <Padding size="large">
+        <ChartHeader>
+          <Button variant="secondary" onClick={() => changeMonth(-1)} isRound>
+            <FaChevronLeft />
+          </Button>
+          <Margin size="medium" direction="horizontal">
+            <DateSelector>
+              <MonthDisplay>{`${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`}</MonthDisplay>
+            </DateSelector>
+          </Margin>
+          <Button variant="secondary" onClick={() => changeMonth(1)} isRound>
+            <FaChevronRight />
+          </Button>
+        </ChartHeader>
+        {isLoading ? (
+          <Margin size="large" direction="top">
+            <p>Cargando datos...</p>
+          </Margin>
+        ) : chartData.length > 0 ? (
+          <>
+            <Margin size="medium" direction="top">
+              <ChartContainer>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius="80%"
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </Margin>
+            <Margin size="medium" direction="top">
+              <TotalExpenses>
+                <Padding size="medium">
+                  <strong>Total gastado este mes:</strong>
+                  <br />
+                  <span style={{ fontSize: '1.5em', color: theme.colors.primary }}>
+                    ${totalExpenses.toFixed(2)}
+                  </span>
+                </Padding>
+              </TotalExpenses>
+            </Margin>
+          </>
+        ) : (
+          <Margin size="large" direction="top">
+            <p>No hay gastos registrados para este mes.</p>
+          </Margin>
+        )}
+      </Padding>
     </ChartWrapper>
   );
 };

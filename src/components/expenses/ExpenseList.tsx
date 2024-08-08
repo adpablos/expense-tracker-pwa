@@ -5,10 +5,11 @@ import styled from 'styled-components';
 
 import { RootState, AppDispatch } from '../../store';
 import { fetchExpenses, deleteExpense, updateExpense } from '../../store/slices/expensesSlice';
-import { theme } from '../../styles/theme';
+import { Margin, FlexContainer } from '../../styles/utilities';
 import { Expense } from '../../types';
 import { FilterValues } from '../../types/filters';
 import Pagination from '../common/Pagination';
+import { Container, Row, Col } from '../layout/Grid';
 
 import DeleteConfirmationModal from './DeleteConfirmationModal';
 import EditExpenseModal from './EditExpenseModal';
@@ -16,8 +17,13 @@ import ExpenseCard from './ExpenseCard';
 import ExpenseFilters from './ExpenseFilters';
 import ExpenseTable from './ExpenseTable';
 
-const ListContainer = styled.div`
-  padding: ${theme.padding.medium};
+const ListContainer = styled(Container)`
+  ${({ theme }) => `
+    @media (max-width: ${theme.breakpoints.tablet}) {
+      padding-left: ${theme.space.small};
+      padding-right: ${theme.space.small};
+    }
+  `}
 `;
 
 const ExpenseList: React.FC = () => {
@@ -87,24 +93,31 @@ const ExpenseList: React.FC = () => {
 
   return (
     <ListContainer>
-      <ExpenseFilters onFilterChange={handleFilterChange} currentFilters={filters} />
-      {isMobile ? (
-        expenses.map((expense) => (
-          <ExpenseCard
-            key={expense.id}
-            expense={expense}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        ))
-      ) : (
-        <ExpenseTable expenses={expenses} onEdit={handleEdit} onDelete={handleDelete} />
-      )}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
+      <Margin size="large" direction="bottom">
+        <ExpenseFilters onFilterChange={handleFilterChange} currentFilters={filters} />
+      </Margin>
+      <Row>
+        <Col xs={12}>
+          {isMobile ? (
+            <FlexContainer direction="column">
+              {expenses.map((expense) => (
+                <Margin key={expense.id} size="small" direction="bottom">
+                  <ExpenseCard expense={expense} onEdit={handleEdit} onDelete={handleDelete} />
+                </Margin>
+              ))}
+            </FlexContainer>
+          ) : (
+            <ExpenseTable expenses={expenses} onEdit={handleEdit} onDelete={handleDelete} />
+          )}
+        </Col>
+      </Row>
+      <Margin size="large" direction="top">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      </Margin>
       <DeleteConfirmationModal
         isOpen={!!expenseToDelete}
         expense={expenseToDelete}
