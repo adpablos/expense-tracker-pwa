@@ -34,6 +34,8 @@ const ExpenseList: React.FC = () => {
     error,
     totalPages,
   } = useSelector((state: RootState) => state.expenses);
+  const categories = useSelector((state: RootState) => state.categories.categories);
+  const subcategories = useSelector((state: RootState) => state.categories.subcategories);
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<FilterValues>({
     startDate: null,
@@ -71,11 +73,32 @@ const ExpenseList: React.FC = () => {
   };
 
   const handleEdit = (expense: Expense) => {
-    setExpenseToEdit(expense);
+    const category = categories.find((cat) => cat.name === expense.category);
+    const subcategory = subcategories.find(
+      (sub) => sub.name === expense.subcategory && sub.categoryId === category?.id
+    );
+
+    setExpenseToEdit({
+      ...expense,
+      categoryId: category?.id || '',
+      subcategoryId: subcategory?.id || '',
+    });
   };
 
   const handleUpdate = (updatedExpense: Expense) => {
-    dispatch(updateExpense({ id: updatedExpense.id, expenseData: updatedExpense }));
+    const category = categories.find((cat) => cat.id === updatedExpense.categoryId);
+    const subcategory = subcategories.find((sub) => sub.id === updatedExpense.subcategoryId);
+
+    dispatch(
+      updateExpense({
+        id: updatedExpense.id,
+        expenseData: {
+          ...updatedExpense,
+          category: category?.name || '',
+          subcategory: subcategory?.name || 'Sin subcategoría',
+        },
+      })
+    );
     setExpenseToEdit(null);
   };
 

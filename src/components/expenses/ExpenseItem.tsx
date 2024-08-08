@@ -39,9 +39,9 @@ const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense, onDelete, onEdit }) 
         })}
       </TableCell>
       <TableCell>{expense.description}</TableCell>
-      <TableCell>{formatAmount(expense.amount)}€</TableCell>
+      <TableCell>${formatAmount(expense.amount)}</TableCell>
       <TableCell>{expense.category}</TableCell>
-      <TableCell>{expense.subcategory}</TableCell>
+      <TableCell>{expense.subcategory || 'Sin subcategoría'}</TableCell>
       <TableCell>
         <ButtonContainer>
           <Button variant="primary" onClick={() => onEdit(expense)} isRound size="small">

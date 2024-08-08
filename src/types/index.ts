@@ -31,6 +31,8 @@ export interface ExpenseFromAPI extends ExpenseBase {
 export interface Expense extends ExpenseBase {
   id: string;
   amount: number; // Amount is converted to a number for use in the app
+  categoryId?: string;
+  subcategoryId?: string;
 }
 
 export interface ExpensesAPIResponse {

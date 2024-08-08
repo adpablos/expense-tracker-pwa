@@ -57,7 +57,7 @@ const ExpenseCard: React.FC<ExpenseCardProps> = ({ expense, onEdit, onDelete }) 
       <Padding size="medium">
         <CardHeader>
           <ExpenseDate>{format(new Date(expense.date), 'yyyy-MM-dd')}</ExpenseDate>
-          <Amount>{formatAmount(expense.amount)}€</Amount>
+          <Amount>${formatAmount(expense.amount)}</Amount>
         </CardHeader>
         <Margin size="small" direction="vertical">
           <Description>{expense.description}</Description>

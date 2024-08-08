@@ -1,5 +1,5 @@
+/* eslint-disable import/no-named-as-default */
 import React from 'react';
-// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
 
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {

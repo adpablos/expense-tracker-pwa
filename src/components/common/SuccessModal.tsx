@@ -13,6 +13,7 @@ import styled, { keyframes } from 'styled-components';
 
 import { theme } from '../../styles/theme';
 import { Expense } from '../../types';
+import { formatDate } from '../../utils/expenseUtils';
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(-20px); }
@@ -114,16 +115,6 @@ interface SuccessModalProps {
 
 const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, expense }) => {
   if (!isOpen || !expense) return null;
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      timeZone: 'UTC', // Esto asegura que no haya ajustes por zona horaria
-    });
-  };
 
   return (
     <ModalOverlay onClick={onClose}>

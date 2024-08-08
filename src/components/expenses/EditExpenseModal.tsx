@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaEdit } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -9,6 +9,8 @@ import { Expense } from '../../types';
 import { stringToDate } from '../../utils/expenseUtils';
 import Button from '../common/Button';
 import DatePicker from '../common/DatePicker';
+import Input from '../common/Input';
+import Select from '../common/Select';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -50,16 +52,10 @@ const Form = styled.form`
   gap: 1rem;
 `;
 
-const Input = styled.input`
-  padding: 0.5rem;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius.small};
-`;
-
-const Select = styled.select`
-  padding: 0.5rem;
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  border-radius: ${({ theme }) => theme.borderRadius.small};
+const ErrorMessage = styled.p`
+  color: ${({ theme }) => theme.colors.danger};
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
 `;
 
 const ButtonContainer = styled.div`
@@ -69,12 +65,6 @@ const ButtonContainer = styled.div`
   margin-top: 1rem;
 `;
 
-const ErrorMessage = styled.p`
-  color: ${({ theme }) => theme.colors.danger};
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-`;
-
 interface EditExpenseModalProps {
   expense: Expense;
   onSave: (updatedExpense: Expense) => void;
@@ -82,10 +72,20 @@ interface EditExpenseModalProps {
 }
 
 const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onSave, onCancel }) => {
-  const [editedExpense, setEditedExpense] = useState<Expense>(expense);
+  const [editedExpense, setEditedExpense] = useState<Expense>({ ...expense });
+  const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
+    const date = stringToDate(expense.date);
+    return date ? new Date(date.getTime() - date.getTimezoneOffset() * 60000) : null;
+  });
   const [amountError, setAmountError] = useState<string | null>(null);
   const categories = useSelector((state: RootState) => state.categories.categories);
   const subcategories = useSelector((state: RootState) => state.categories.subcategories);
+
+  useEffect(() => {
+    setEditedExpense({ ...expense });
+    const date = stringToDate(expense.date);
+    setSelectedDate(date ? new Date(date.getTime() - date.getTimezoneOffset() * 60000) : null);
+  }, [expense]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -94,11 +94,32 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onSave, on
     if (name === 'amount') {
       validateAmount(value);
     }
+
+    if (name === 'categoryId') {
+      const category = categories.find((cat) => cat.id === value);
+      setEditedExpense((prev) => ({
+        ...prev,
+        categoryId: value,
+        category: category?.name || '',
+        subcategoryId: '',
+        subcategory: 'Sin subcategoría',
+      }));
+    }
+
+    if (name === 'subcategoryId') {
+      const subcategory = subcategories.find((sub) => sub.id === value);
+      setEditedExpense((prev) => ({
+        ...prev,
+        subcategoryId: value,
+        subcategory: subcategory?.name || 'Sin subcategoría',
+      }));
+    }
   };
 
   const handleDateChange = (date: Date | null) => {
+    setSelectedDate(date);
     if (date) {
-      const formattedDate = date.toISOString().split('T')[0].replace(/-/g, '/');
+      const formattedDate = date.toISOString().split('T')[0];
       setEditedExpense((prev) => ({ ...prev, date: formattedDate }));
     }
   };
@@ -119,6 +140,18 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onSave, on
     }
   };
 
+  const categoryOptions = categories.map((category) => ({
+    value: category.id,
+    label: category.name,
+  }));
+
+  const subcategoryOptions = subcategories
+    .filter((sub) => sub.categoryId === editedExpense.categoryId)
+    .map((sub) => ({
+      value: sub.id,
+      label: sub.name,
+    }));
+
   return (
     <ModalOverlay onClick={onCancel}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
@@ -134,33 +167,28 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onSave, on
           <Input
             name="amount"
             type="text"
-            value={editedExpense.amount}
+            value={editedExpense.amount.toString()}
             onChange={handleChange}
             placeholder="Cantidad"
           />
           {amountError && <ErrorMessage>{amountError}</ErrorMessage>}
-          <Select name="category" value={editedExpense.category} onChange={handleChange}>
-            {categories.map((category) => (
-              <option key={category.id} value={category.name}>
-                {category.name}
-              </option>
-            ))}
-          </Select>
-          <Select name="subcategory" value={editedExpense.subcategory} onChange={handleChange}>
-            {subcategories
-              .filter(
-                (sub) =>
-                  sub.categoryId ===
-                  categories.find((cat) => cat.name === editedExpense.category)?.id
-              )
-              .map((subcategory) => (
-                <option key={subcategory.id} value={subcategory.name}>
-                  {subcategory.name}
-                </option>
-              ))}
-          </Select>
+          <Select
+            name="categoryId"
+            value={editedExpense.categoryId || ''}
+            onChange={handleChange}
+            options={categoryOptions}
+            placeholder="Selecciona una categoría"
+          />
+          <Select
+            name="subcategoryId"
+            value={editedExpense.subcategoryId || ''}
+            onChange={handleChange}
+            options={[{ value: '', label: 'Sin subcategoría' }, ...subcategoryOptions]}
+            placeholder="Selecciona una subcategoría"
+            disabled={!editedExpense.categoryId}
+          />
           <DatePicker
-            selected={stringToDate(editedExpense.date)}
+            selected={selectedDate}
             onChange={handleDateChange}
             dateFormat="yyyy/MM/dd"
             placeholderText="Fecha del gasto"

@@ -1,11 +1,10 @@
+/* eslint-disable import/no-named-as-default */
 import React from 'react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
-// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
 
 import { Expense } from '../../types';
-import { formatAmount } from '../../utils/expenseUtils';
-// eslint-disable-next-line import/no-named-as-default
+import { formatAmount, formatDate } from '../../utils/expenseUtils';
 import Button from '../common/Button';
 
 const Table = styled.table`
@@ -44,13 +43,6 @@ interface ExpenseTableProps {
 }
 
 const ExpenseTable: React.FC<ExpenseTableProps> = ({ expenses, onEdit, onDelete }) => {
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(
-      date.getDate()
-    ).padStart(2, '0')}`;
-  };
-
   return (
     <Table>
       <thead>
