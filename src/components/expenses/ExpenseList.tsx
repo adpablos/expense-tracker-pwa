@@ -1,7 +1,6 @@
-// src/components/expenses/ExpenseList.tsx
+/* eslint-disable import/no-named-as-default */
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
 
 import { RootState, AppDispatch } from '../../store';
@@ -11,7 +10,6 @@ import { Expense } from '../../types';
 import { FilterValues } from '../../types/filters';
 import Pagination from '../common/Pagination';
 
-// eslint-disable-next-line import/no-named-as-default
 import DeleteConfirmationModal from './DeleteConfirmationModal';
 import EditExpenseModal from './EditExpenseModal';
 import ExpenseCard from './ExpenseCard';

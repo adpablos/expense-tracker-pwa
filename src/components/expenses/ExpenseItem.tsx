@@ -1,11 +1,10 @@
+/* eslint-disable import/no-named-as-default */
 import React from 'react';
 import { FaEdit, FaTrash } from 'react-icons/fa';
-// eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
 
 import { Expense } from '../../types';
 import { formatAmount } from '../../utils/expenseUtils';
-// eslint-disable-next-line import/no-named-as-default
 import Button from '../common/Button';
 
 const TableRow = styled.tr`
