@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import { AppDispatch } from '../../store';
 import { createExpense } from '../../store/slices/expensesSlice';
 import { Expense, ExpenseInput } from '../../types';
-import { dateToString, getCurrentUTCDate } from '../../utils/dateUtils';
+import { dateToString, getCurrentLocalDate } from '../../utils/dateUtils';
 import Button from '../common/Button';
 import ErrorModal from '../common/ErrorModal';
 import SuccessModal from '../common/SuccessModal';
@@ -43,13 +43,19 @@ const ExpenseForm: React.FC = () => {
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [submittedExpense, setSubmittedExpense] = useState<Expense | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const dispatch = useDispatch<AppDispatch>();
 
   const handleExpenseSubmit = async (expense: ExpenseInput) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const expenseWithFormattedDate = {
         ...expense,
-        date: dateToString(expense.date ? new Date(expense.date) : getCurrentUTCDate()),
+        date: dateToString(
+          expense.expenseDatetime ? new Date(expense.expenseDatetime) : getCurrentLocalDate()
+        ),
       };
       const resultAction = await dispatch(createExpense(expenseWithFormattedDate));
       if (createExpense.fulfilled.match(resultAction)) {
@@ -61,8 +67,10 @@ const ExpenseForm: React.FC = () => {
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occurred');
       setErrorModalOpen(true);
+    } finally {
+      setIsSubmitting(false);
+      setInputMethod(null);
     }
-    setInputMethod(null);
   };
 
   const handleExpenseError = (message: string) => {

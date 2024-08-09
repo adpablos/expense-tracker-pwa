@@ -9,6 +9,7 @@ import { RootState, AppDispatch } from '../../store';
 import { fetchExpenses } from '../../store/slices/expensesSlice';
 import { theme } from '../../styles/theme';
 import { Margin, Padding } from '../../styles/utilities';
+import { dateToString } from '../../utils/dateUtils';
 import Button from '../common/Button';
 
 const ChartWrapper = styled.div`
@@ -84,8 +85,8 @@ const MonthlyExpensesChart: React.FC = () => {
 
     dispatch(
       fetchExpenses({
-        startDate: startOfMonth.toISOString().split('T')[0],
-        endDate: endOfMonth.toISOString().split('T')[0],
+        startDate: dateToString(startOfMonth),
+        endDate: dateToString(endOfMonth),
       })
     ).then(() => setIsLoading(false));
   }, [dispatch, currentDate]);

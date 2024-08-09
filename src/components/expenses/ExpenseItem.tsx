@@ -32,7 +32,7 @@ const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense, onDelete, onEdit }) 
   return (
     <TableRow>
       <TableCell>
-        {new Date(expense.date).toLocaleDateString('es-ES', {
+        {new Date(expense.expenseDatetime).toLocaleDateString('es-ES', {
           year: 'numeric',
           month: '2-digit',
           day: '2-digit',

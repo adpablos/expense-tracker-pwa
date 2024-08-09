@@ -79,7 +79,7 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onSave, on
   const dispatch = useDispatch<AppDispatch>();
   const [editedExpense, setEditedExpense] = useState<Expense>({ ...expense });
   const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
-    return stringToDate(expense.date);
+    return stringToDate(expense.expenseDatetime);
   });
   const [amountError, setAmountError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -94,7 +94,7 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({ expense, onSave, on
 
   useEffect(() => {
     setEditedExpense({ ...expense });
-    setSelectedDate(stringToDate(expense.date));
+    setSelectedDate(stringToDate(expense.expenseDatetime));
   }, [expense]);
 
   useEffect(() => {

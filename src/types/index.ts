@@ -16,7 +16,7 @@ export interface ExpenseBase {
   description: string;
   category: string;
   subcategory: string;
-  date: string;
+  expenseDatetime: string;
 }
 
 export interface ExpenseInput extends ExpenseBase {

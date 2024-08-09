@@ -8,6 +8,7 @@ import { RootState, AppDispatch } from '../../store';
 import { fetchCategories } from '../../store/slices/categoriesSlice';
 import { createExpense } from '../../store/slices/expensesSlice';
 import { ExpenseInput, Expense } from '../../types';
+import { createLocalNoonDate, dateToString, getCurrentLocalDate } from '../../utils/dateUtils';
 import Button from '../common/Button';
 import DatePicker from '../common/DatePicker';
 import Input from '../common/Input';
@@ -40,7 +41,7 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
     amount: '',
     categoryId: '',
     subcategoryId: '',
-    date: new Date(),
+    expenseDatetime: getCurrentLocalDate(),
   });
 
   useEffect(() => {
@@ -61,7 +62,12 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
 
   const handleDateChange = (date: Date | null) => {
     if (date) {
-      setFormData((prev) => ({ ...prev, date }));
+      const localNoonDate = createLocalNoonDate(
+        date.getFullYear(),
+        date.getMonth() + 1,
+        date.getDate()
+      );
+      setFormData((prev) => ({ ...prev, date: localNoonDate }));
     }
   };
 
@@ -84,7 +90,7 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
       amount: parseFloat(formData.amount),
       category: selectedCategory.name,
       subcategory: selectedSubcategory?.name || 'Sin subcategoría',
-      date: formData.date.toISOString().split('T')[0],
+      expenseDatetime: dateToString(formData.expenseDatetime),
     };
 
     try {
@@ -149,7 +155,7 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
         disabled={!formData.categoryId}
       />
       <DatePicker
-        selected={formData.date}
+        selected={formData.expenseDatetime}
         onChange={handleDateChange}
         dateFormat="yyyy/MM/dd"
         placeholderText="Fecha del gasto"
