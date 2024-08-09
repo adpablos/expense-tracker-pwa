@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
-import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { RootState, AppDispatch } from '../../store';
 import { fetchCategories } from '../../store/slices/categoriesSlice';
 import { createExpense } from '../../store/slices/expensesSlice';
@@ -11,6 +10,7 @@ import { ExpenseInput, Expense } from '../../types';
 import { createLocalNoonDate, dateToString, getCurrentLocalDate } from '../../utils/dateUtils';
 import Button from '../common/Button';
 import DatePicker from '../common/DatePicker';
+import ErrorModal from '../common/ErrorModal';
 import Input from '../common/Input';
 import LoadingOverlay from '../common/LoadingOverlay';
 import Select from '../common/Select';
@@ -33,8 +33,8 @@ interface ManualExpenseFormProps {
 const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { categories, subcategories } = useSelector((state: RootState) => state.categories);
-  const { error, handleError, clearError } = useErrorHandler();
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     description: '',
@@ -73,14 +73,14 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearError();
+    setErrorMessage(null);
     setIsLoading(true);
 
     const selectedCategory = categories.find((cat) => cat.id === formData.categoryId);
     const selectedSubcategory = subcategories.find((sub) => sub.id === formData.subcategoryId);
 
     if (!selectedCategory) {
-      handleError('Por favor, selecciona una categoría válida.');
+      setErrorMessage('Por favor, selecciona una categoría válida.');
       setIsLoading(false);
       return;
     }
@@ -94,16 +94,18 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
     };
 
     try {
-      const result = await dispatch(createExpense(expenseData));
-      if (createExpense.fulfilled.match(result)) {
-        setIsLoading(false);
-        onSubmit(result.payload);
-      } else {
-        throw new Error(result.error.message || 'Error al crear el gasto');
-      }
+      const result = await dispatch(createExpense(expenseData)).unwrap();
+      setIsLoading(false);
+      onSubmit(result);
     } catch (error) {
       setIsLoading(false);
-      handleError(error instanceof Error ? error.message : 'Error inesperado al crear el gasto');
+      if (typeof error === 'string') {
+        setErrorMessage(error);
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        setErrorMessage(error.message as string);
+      } else {
+        setErrorMessage('Error inesperado al crear el gasto');
+      }
     }
   };
 
@@ -160,11 +162,15 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
         dateFormat="yyyy/MM/dd"
         placeholderText="Fecha del gasto"
       />
-      {error && <p>{error}</p>}
       <SubmitButton type="submit" variant="primary">
         Registrar gasto
       </SubmitButton>
       {isLoading && <LoadingOverlay message="Procesando gasto..." />}
+      <ErrorModal
+        isOpen={!!errorMessage}
+        onClose={() => setErrorMessage(null)}
+        message={errorMessage || ''}
+      />
     </Form>
   );
 };

@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { AxiosError } from 'axios';
 
 import * as api from '../../services/api';
 import { Expense, ExpenseInput, ExpensesAPIResponse } from '../../types';
@@ -48,7 +49,10 @@ export const createExpense = createAsyncThunk<Expense, ExpenseInput>(
       const response = await api.apiCreateExpense(expenseData);
       return convertApiExpenseToExpense(response.data);
     } catch (err) {
-      return rejectWithValue((err as ApiError).message || 'Error al crear gasto');
+      if (err instanceof AxiosError && err.response) {
+        return rejectWithValue(err.response.data.message || 'Error al crear gasto');
+      }
+      return rejectWithValue('Error inesperado al crear el gasto');
     }
   }
 );
