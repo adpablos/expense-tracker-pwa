@@ -8,6 +8,7 @@ import { fetchCategories } from '../../store/slices/categoriesSlice';
 import { createExpense } from '../../store/slices/expensesSlice';
 import { ExpenseInput, Expense } from '../../types';
 import { createLocalNoonDate, dateToString, getCurrentLocalDate } from '../../utils/dateUtils';
+import { translateErrorMessage } from '../../utils/errorUtils';
 import Button from '../common/Button';
 import DatePicker from '../common/DatePicker';
 import ErrorModal from '../common/ErrorModal';
@@ -100,9 +101,9 @@ const ManualExpenseForm: React.FC<ManualExpenseFormProps> = ({ onSubmit }) => {
     } catch (error) {
       setIsLoading(false);
       if (typeof error === 'string') {
-        setErrorMessage(error);
+        setErrorMessage(translateErrorMessage(error));
       } else if (error && typeof error === 'object' && 'message' in error) {
-        setErrorMessage(error.message as string);
+        setErrorMessage(translateErrorMessage(error.message as string));
       } else {
         setErrorMessage('Error inesperado al crear el gasto');
       }
