@@ -12,6 +12,7 @@ interface ExpensesState {
   error: string | null;
   totalPages: number;
   lastFetch: string | null;
+  monthlyExpenses: Expense[];
 }
 
 const initialState: ExpensesState = {
@@ -21,14 +22,18 @@ const initialState: ExpensesState = {
   error: null,
   totalPages: 0,
   lastFetch: null,
+  monthlyExpenses: [],
 };
 
-interface FetchExpensesParams {
+export interface FetchExpensesParams {
   page?: number;
   limit?: number;
-  search?: string;
   startDate?: string;
   endDate?: string;
+  category?: string;
+  subcategory?: string;
+  amount?: number;
+  description?: string;
 }
 
 interface FetchExpensesThunkParams extends FetchExpensesParams {
@@ -113,6 +118,18 @@ export const deleteExpense = createAsyncThunk<string, string>(
   }
 );
 
+export const fetchMonthlyExpenses = createAsyncThunk<
+  Expense[],
+  { startDate: string; endDate: string }
+>('expenses/fetchMonthlyExpenses', async ({ startDate, endDate }, { rejectWithValue }) => {
+  try {
+    const response = await api.getExpenses({ startDate, endDate, limit: 1000 }); // Asumimos que no habrá más de 1000 gastos en un mes
+    return response.data.expenses.map(convertApiExpenseToExpense);
+  } catch (error) {
+    return rejectWithValue((error as ApiError).message || 'Failed to fetch monthly expenses');
+  }
+});
+
 const expensesSlice = createSlice({
   name: 'expenses',
   initialState,
@@ -161,6 +178,9 @@ const expensesSlice = createSlice({
       .addCase(deleteExpense.fulfilled, (state, action) => {
         state.items = state.items.filter((expense) => expense.id !== action.payload);
         state.recentItems = state.recentItems.filter((expense) => expense.id !== action.payload);
+      })
+      .addCase(fetchMonthlyExpenses.fulfilled, (state, action) => {
+        state.monthlyExpenses = action.payload;
       });
   },
 });

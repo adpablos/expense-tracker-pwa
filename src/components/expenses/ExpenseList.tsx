@@ -4,11 +4,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
 import { RootState, AppDispatch } from '../../store';
-import { fetchExpenses, deleteExpense, updateExpense } from '../../store/slices/expensesSlice';
+import {
+  fetchExpenses,
+  deleteExpense,
+  updateExpense,
+  FetchExpensesParams,
+} from '../../store/slices/expensesSlice';
 import { Margin, FlexContainer } from '../../styles/utilities';
 import { Expense } from '../../types';
 import { FilterValues } from '../../types/filters';
-import { dateToString, stringToDate } from '../../utils/dateUtils';
 import ErrorModal from '../common/ErrorModal';
 import LoadingOverlay from '../common/LoadingOverlay';
 import Pagination from '../common/Pagination';
@@ -57,6 +61,10 @@ const ExpenseList: React.FC = () => {
   const [filters, setFilters] = useState<FilterValues>({
     startDate: null,
     endDate: null,
+    category: null,
+    subcategory: null,
+    amount: null,
+    description: null,
   });
   const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null);
   const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null);
@@ -76,16 +84,34 @@ const ExpenseList: React.FC = () => {
 
   const fetchExpensesList = useCallback(() => {
     setIsLoading(true);
+    const apiParams: FetchExpensesParams = {
+      page: currentPage,
+      limit,
+    };
+
+    if (filters.startDate) apiParams.startDate = filters.startDate;
+    if (filters.endDate) apiParams.endDate = filters.endDate;
+    if (filters.category) apiParams.category = filters.category;
+    if (filters.subcategory) apiParams.subcategory = filters.subcategory;
+    if (filters.amount) apiParams.amount = parseFloat(filters.amount);
+    if (filters.description) apiParams.description = filters.description;
+
     dispatch(
       fetchExpenses({
-        page: currentPage,
-        limit,
-        startDate: filters.startDate ?? undefined,
-        endDate: filters.endDate ?? undefined,
+        ...apiParams,
         forceRefresh: true,
       })
     ).finally(() => setIsLoading(false));
   }, [dispatch, currentPage, limit, filters]);
+
+  useEffect(() => {
+    fetchExpensesList();
+  }, [fetchExpensesList]);
+
+  const handleFilterChange = (newFilters: FilterValues) => {
+    setFilters(newFilters);
+    setCurrentPage(1);
+  };
 
   useEffect(() => {
     fetchExpensesList();
@@ -168,15 +194,6 @@ const ExpenseList: React.FC = () => {
       setIsLoading(false);
       setIsActionInProgress(false);
     }
-  };
-
-  const handleFilterChange = (newFilters: FilterValues) => {
-    setFilters({
-      ...newFilters,
-      startDate: newFilters.startDate ? dateToString(stringToDate(newFilters.startDate)!) : null,
-      endDate: newFilters.endDate ? dateToString(stringToDate(newFilters.endDate)!) : null,
-    });
-    setCurrentPage(1);
   };
 
   const handlePageChange = (page: number) => {

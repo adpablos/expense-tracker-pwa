@@ -6,7 +6,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import styled from 'styled-components';
 
 import { RootState, AppDispatch } from '../../store';
-import { fetchExpenses } from '../../store/slices/expensesSlice';
+import { fetchMonthlyExpenses } from '../../store/slices/expensesSlice';
 import { theme } from '../../styles/theme';
 import { Margin, Padding } from '../../styles/utilities';
 import { dateToString } from '../../utils/dateUtils';
@@ -72,7 +72,7 @@ interface TooltipPayload {
 
 const MonthlyExpensesChart: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const expenses = useSelector((state: RootState) => state.expenses.items);
+  const monthlyExpenses = useSelector((state: RootState) => state.expenses.monthlyExpenses);
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
@@ -87,42 +87,39 @@ const MonthlyExpensesChart: React.FC = () => {
     [currentDate]
   );
 
-  const fetchMonthlyExpenses = useCallback(() => {
+  const fetchMonthlyExpensesData = useCallback(() => {
     setIsLoading(true);
     dispatch(
-      fetchExpenses({
+      fetchMonthlyExpenses({
         startDate: dateToString(startOfMonth),
         endDate: dateToString(endOfMonth),
-        forceRefresh: true,
       })
     ).finally(() => setIsLoading(false));
   }, [dispatch, startOfMonth, endOfMonth]);
 
   useEffect(() => {
-    fetchMonthlyExpenses();
-  }, [fetchMonthlyExpenses]);
+    fetchMonthlyExpensesData();
+  }, [fetchMonthlyExpensesData]);
 
   useEffect(() => {
-    const categoryTotals = expenses.reduce(
-      (acc, expense) => {
-        const category = expense.category;
-        acc[category] = (acc[category] || 0) + Number(expense.amount);
-        return acc;
-      },
-      {} as Record<string, number>
-    );
+    const categoryTotals = monthlyExpenses.reduce<Record<string, number>>((acc, expense) => {
+      const category = expense.category;
+      acc[category] = (acc[category] || 0) + Number(expense.amount);
+      return acc;
+    }, {});
 
-    const data = Object.entries(categoryTotals).map(([name, value]) => ({
+    const data: ChartData[] = Object.entries(categoryTotals).map(([name, value]) => ({
       name,
       value,
     }));
 
     setChartData(data);
     setTotalExpenses(data.reduce((sum, item) => sum + item.value, 0));
-  }, [expenses]);
+  }, [monthlyExpenses]);
 
   const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: TooltipPayload[] }) => {
     if (active && payload && payload.length) {
+      const percent = (payload[0].value / totalExpenses) * 100;
       return (
         <div
           style={{
@@ -135,9 +132,9 @@ const MonthlyExpensesChart: React.FC = () => {
           <p style={{ margin: 0 }}>
             <strong>{payload[0].name}</strong>
           </p>
-          <p
-            style={{ margin: 0 }}
-          >{`$${payload[0].value.toFixed(2)} (${(payload[0].payload.percent * 100).toFixed(0)}%)`}</p>
+          <p style={{ margin: 0 }}>
+            ${payload[0].value.toFixed(2)} ({percent.toFixed(2)}%)
+          </p>
         </div>
       );
     }
