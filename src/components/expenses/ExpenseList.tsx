@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -65,7 +65,7 @@ const ExpenseList: React.FC = () => {
   const [successExpense, setSuccessExpense] = useState<Expense | null>(null);
   const [successAction, setSuccessAction] = useState<'update' | 'delete' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(false);
+
   const [isActionInProgress, setIsActionInProgress] = useState(false);
 
   useEffect(() => {
@@ -74,7 +74,7 @@ const ExpenseList: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const fetchExpensesList = () => {
+  const fetchExpensesList = useCallback(() => {
     setIsLoading(true);
     dispatch(
       fetchExpenses({
@@ -82,40 +82,14 @@ const ExpenseList: React.FC = () => {
         limit,
         startDate: filters.startDate ?? undefined,
         endDate: filters.endDate ?? undefined,
+        forceRefresh: true,
       })
-    ).then(() => setIsLoading(false));
-  };
+    ).finally(() => setIsLoading(false));
+  }, [dispatch, currentPage, limit, filters]);
 
   useEffect(() => {
-    let isMounted = true;
-
-    const fetchExpensesList = async () => {
-      if (isFetching) return;
-      setIsFetching(true);
-      setIsLoading(true);
-      try {
-        await dispatch(
-          fetchExpenses({
-            page: currentPage,
-            limit,
-            startDate: filters.startDate ?? undefined,
-            endDate: filters.endDate ?? undefined,
-          })
-        ).unwrap();
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-          setIsFetching(false);
-        }
-      }
-    };
-
     fetchExpensesList();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [dispatch, currentPage, limit, filters]);
+  }, [fetchExpensesList]);
 
   const handleDelete = (expense: Expense) => {
     setExpenseToDelete(expense);
@@ -224,7 +198,9 @@ const ExpenseList: React.FC = () => {
       </Margin>
       <Row>
         <Col xs={12}>
-          {isMobile ? (
+          {expenses.length === 0 ? (
+            <div>No hay gastos para mostrar.</div>
+          ) : isMobile ? (
             <FlexContainer direction="column">
               {expenses.map((expense: Expense) => (
                 <Margin key={expense.id} size="small" direction="bottom">

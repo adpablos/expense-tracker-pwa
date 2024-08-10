@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
@@ -75,21 +75,32 @@ const MonthlyExpensesChart: React.FC = () => {
   const expenses = useSelector((state: RootState) => state.expenses.items);
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [totalExpenses, setTotalExpenses] = useState(0);
 
-  useEffect(() => {
-    setIsLoading(true);
-    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+  const startOfMonth = useMemo(
+    () => new Date(currentDate.getFullYear(), currentDate.getMonth(), 1),
+    [currentDate]
+  );
+  const endOfMonth = useMemo(
+    () => new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0),
+    [currentDate]
+  );
 
+  const fetchMonthlyExpenses = useCallback(() => {
+    setIsLoading(true);
     dispatch(
       fetchExpenses({
         startDate: dateToString(startOfMonth),
         endDate: dateToString(endOfMonth),
+        forceRefresh: true,
       })
-    ).then(() => setIsLoading(false));
-  }, [dispatch, currentDate]);
+    ).finally(() => setIsLoading(false));
+  }, [dispatch, startOfMonth, endOfMonth]);
+
+  useEffect(() => {
+    fetchMonthlyExpenses();
+  }, [fetchMonthlyExpenses]);
 
   useEffect(() => {
     const categoryTotals = expenses.reduce(
