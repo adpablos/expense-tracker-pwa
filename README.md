@@ -1,18 +1,24 @@
-
 # Expense Tracker PWA
 
-This project is an Expense Tracker Progressive Web Application (PWA) built with React, Redux, TypeScript, and Styled Components. The application helps users to manage their expenses efficiently by providing functionalities to add, track, and categorize expenses.
+Expense Tracker is a Progressive Web Application (PWA) designed to help you efficiently and effectively manage your expenses.
 
-## Features
+## Key Features
 
-- Add new expenses manually, via audio, or by uploading an image of a receipt.
-- Categorize expenses into various categories and subcategories.
-- Offline capabilities enabled by a service worker.
-- Responsive design for optimal use on mobile and desktop devices.
-- Redux for state management to ensure a predictable state container.
-- TypeScript for type safety and better developer experience.
+- **Expense Logging**: Add new expenses manually, via voice, or by uploading a receipt image.
+- **Categorization**: Organize your expenses into customizable categories and subcategories.
+- **Advanced Filters**: Search and filter your expenses by date, category, amount, and more.
+- **Data Visualization**: View your expense distribution with intuitive charts.
+- **Offline Mode**: Access and manage your expenses even without an internet connection.
+- **Responsive Design**: Enjoy an optimal experience on both mobile and desktop devices.
 
-## Installation
+## Getting Started
+
+### Prerequisites
+
+- Node.js (version 14 or later)
+- npm (usually comes with Node.js)
+
+### Installation
 
 1. Clone the repository:
     ```sh
@@ -27,48 +33,48 @@ This project is an Expense Tracker Progressive Web Application (PWA) built with 
     npm install
     ```
 
+## Usage
+
+1. Start the application in development mode:
+```sh 
+npm start 
+```
+2. Open [http://localhost:3002](http://localhost:3002) to view it in the browser.
+
 ## Available Scripts
 
 In the project directory, you can run:
 
-### `npm start`
+- `npm start`: Runs the app in development mode.
+- `npm test`: Launches the test runner in interactive watch mode.
+- `npm run build`: Builds the app for production to the `build` folder.
 
-Runs the app in the development mode.Open [http://localhost:3002](http://localhost:3002) to view it in your browser.
+## Technologies Used
 
-### `npm test`
+- **React**: For building a dynamic and efficient user interface.
+- **Redux**: For predictable and centralized state management.
+- **TypeScript**: For adding static typing and improving code maintainability.
+- **Styled Components**: For modular and themeable component styling.
+- **PWA**: For offering a native app-like experience and offline functionality.
 
-Launches the test runner in the interactive watch mode.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.It correctly bundles React in production mode and optimizes the build for the best performance.
-
-### `npm run eject`
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-## Folder Structure
+## Project Structure
 
 - `src/`: Contains the source code of the application.
-  - `components/`: Reusable React components.
-    - `common/`: Common components used across the application.
-    - `expenses/`: Components related to the expense functionalities.
-  - `services/`: API service files.
-  - `store/`: Redux store setup and slices.
-  - `styles/`: Styled Components themes and global styles.
-  - `types/`: TypeScript types and interfaces.
-  - `hooks/`: Custom React hooks.
-- `public/`: Static files.
-- `build/`: Production build files.
+- `components/`: Reusable React components.
+- `services/`: API service files.
+- `store/`: Redux store setup and slices.
+- `styles/`: Styled Components themes and global styles.
+- `types/`: TypeScript types and interfaces.
+- `utils/`: Utility functions.
 
 ## Contributing
 
-Contributions are welcome! Please fork the repository and create a pull request with your changes.
+Contributions are welcome! Please open an issue first to discuss what you would like to change.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contact
 
-If you have any questions or suggestions, feel free to open an issue or contact me at [alex@alexdepablos.com].
+If you have any questions or suggestions, feel free to open an issue or contact us at [alexl@alexdepablos.com].
