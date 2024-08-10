@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { FaFileAlt, FaMicrophone, FaImage } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import { AppDispatch } from '../../store';
 import { createExpense } from '../../store/slices/expensesSlice';
 import { Expense, ExpenseInput } from '../../types';
-import { dateToString, getCurrentUTCDate } from '../../utils/dateUtils';
+import { dateToString, getCurrentLocalDate } from '../../utils/dateUtils';
 import Button from '../common/Button';
 import ErrorModal from '../common/ErrorModal';
 import SuccessModal from '../common/SuccessModal';
@@ -37,66 +37,79 @@ const ContentContainer = styled.div`
 
 type InputMethod = 'manual' | 'audio' | 'image';
 
-const ExpenseForm: React.FC = () => {
+const ExpenseFormComponent: React.FC = () => {
   const [inputMethod, setInputMethod] = useState<InputMethod | null>(null);
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [submittedExpense, setSubmittedExpense] = useState<Expense | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const dispatch = useDispatch<AppDispatch>();
 
-  const handleExpenseSubmit = async (expense: ExpenseInput) => {
-    try {
-      const expenseWithFormattedDate = {
-        ...expense,
-        date: dateToString(expense.date ? new Date(expense.date) : getCurrentUTCDate()),
-      };
-      const resultAction = await dispatch(createExpense(expenseWithFormattedDate));
-      if (createExpense.fulfilled.match(resultAction)) {
-        setSubmittedExpense(resultAction.payload);
-        setSuccessModalOpen(true);
-      } else {
-        throw new Error('Failed to create expense');
+  const handleExpenseSubmit = useCallback(
+    async (expense: ExpenseInput) => {
+      if (isSubmitting) return;
+      setIsSubmitting(true);
+      try {
+        const expenseWithFormattedDate = {
+          ...expense,
+          date: dateToString(
+            expense.expenseDatetime ? new Date(expense.expenseDatetime) : getCurrentLocalDate()
+          ),
+        };
+        const resultAction = await dispatch(createExpense(expenseWithFormattedDate));
+        if (createExpense.fulfilled.match(resultAction)) {
+          setSubmittedExpense(resultAction.payload);
+          setSuccessModalOpen(true);
+        } else {
+          throw new Error('Failed to create expense');
+        }
+      } catch (error) {
+        setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occurred');
+        setErrorModalOpen(true);
+      } finally {
+        setIsSubmitting(false);
+        setInputMethod(null);
       }
-    } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occurred');
-      setErrorModalOpen(true);
-    }
-    setInputMethod(null);
-  };
+    },
+    [dispatch]
+  );
 
-  const handleExpenseError = (message: string) => {
+  const handleFileUploadComplete = useCallback((expense: Expense) => {
+    setSubmittedExpense(expense);
+    setSuccessModalOpen(true);
+    setInputMethod(null);
+  }, []);
+
+  const handleExpenseError = useCallback((message: string) => {
     setErrorMessage(message);
     setErrorModalOpen(true);
-  };
+  }, []);
 
-  const renderContent = () => {
+  const toggleInputMethod = useCallback((method: InputMethod) => {
+    setInputMethod((prev) => (prev === method ? null : method));
+  }, []);
+
+  const renderContent = useMemo(() => {
     switch (inputMethod) {
       case 'manual':
         return <ManualExpenseForm onSubmit={handleExpenseSubmit} />;
       case 'audio':
         return (
-          <AudioRecorder onUploadComplete={handleExpenseSubmit} onError={handleExpenseError} />
+          <AudioRecorder onUploadComplete={handleFileUploadComplete} onError={handleExpenseError} />
         );
       case 'image':
         return (
           <ImageUploader
-            onUploadComplete={handleExpenseSubmit}
+            onUploadComplete={handleFileUploadComplete}
             onReset={() => setInputMethod(null)}
           />
         );
       default:
         return null;
     }
-  };
-
-  const toggleInputMethod = (method: InputMethod) => {
-    if (inputMethod === method) {
-      setInputMethod(null);
-    } else {
-      setInputMethod(method);
-    }
-  };
+  }, [inputMethod, handleExpenseSubmit, handleFileUploadComplete, handleExpenseError]);
 
   return (
     <FormContainer>
@@ -123,7 +136,7 @@ const ExpenseForm: React.FC = () => {
           <FaImage />
         </Button>
       </OptionContainer>
-      {inputMethod && <ContentContainer>{renderContent()}</ContentContainer>}
+      {inputMethod && <ContentContainer>{renderContent}</ContentContainer>}
       <SuccessModal
         isOpen={successModalOpen}
         onClose={() => {
@@ -144,5 +157,8 @@ const ExpenseForm: React.FC = () => {
     </FormContainer>
   );
 };
+
+const ExpenseForm = React.memo(ExpenseFormComponent);
+ExpenseForm.displayName = 'ExpenseForm';
 
 export default ExpenseForm;

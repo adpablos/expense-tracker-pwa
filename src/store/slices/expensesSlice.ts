@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { AxiosError } from 'axios';
 
 import * as api from '../../services/api';
 import { Expense, ExpenseInput, ExpensesAPIResponse } from '../../types';
@@ -10,6 +11,7 @@ interface ExpensesState {
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
   totalPages: number;
+  lastFetch: string | null;
 }
 
 const initialState: ExpensesState = {
@@ -18,6 +20,7 @@ const initialState: ExpensesState = {
   status: 'idle',
   error: null,
   totalPages: 0,
+  lastFetch: null,
 };
 
 interface FetchExpensesParams {
@@ -26,18 +29,48 @@ interface FetchExpensesParams {
   search?: string;
   startDate?: string;
   endDate?: string;
-  [key: string]: string | number | undefined;
+}
+
+interface FetchExpensesThunkParams extends FetchExpensesParams {
+  forceRefresh?: boolean;
 }
 
 type ApiError = {
   message: string;
 };
 
-export const fetchExpenses = createAsyncThunk<ExpensesAPIResponse, FetchExpensesParams>(
+export const fetchExpenses = createAsyncThunk<ExpensesAPIResponse, FetchExpensesThunkParams>(
   'expenses/fetchExpenses',
-  async (params) => {
-    const response = await api.getExpenses(params);
-    return response.data;
+  async (params, { getState, rejectWithValue }) => {
+    const state = getState() as { expenses: ExpensesState };
+    const currentDate = new Date().toISOString();
+
+    if (!params.forceRefresh && state.expenses.lastFetch) {
+      const lastFetchDate = new Date(state.expenses.lastFetch);
+      const timeDifference = new Date(currentDate).getTime() - lastFetchDate.getTime();
+      if (timeDifference < 60000) {
+        // 1 minute
+        // Devolvemos los datos existentes en el formato ExpensesAPIResponse
+        return {
+          expenses: state.expenses.items.map((expense) => ({
+            ...expense,
+            amount: expense.amount.toString(), // Convertimos amount a string para coincidir con ExpenseFromAPI
+          })),
+          totalPages: state.expenses.totalPages,
+          page: params.page || 1,
+          nextPage: null, // Asumimos que no hay siguiente página en este caso
+          totalItems: state.expenses.items.length,
+        };
+      }
+    }
+
+    try {
+      const { forceRefresh: _, ...apiParams } = params;
+      const response = await api.getExpenses(apiParams);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue((error as ApiError).message || 'Failed to fetch expenses');
+    }
   }
 );
 
@@ -48,7 +81,10 @@ export const createExpense = createAsyncThunk<Expense, ExpenseInput>(
       const response = await api.apiCreateExpense(expenseData);
       return convertApiExpenseToExpense(response.data);
     } catch (err) {
-      return rejectWithValue((err as ApiError).message || 'Error al crear gasto');
+      if (err instanceof AxiosError && err.response) {
+        return rejectWithValue(err.response.data.message || 'Error al crear gasto');
+      }
+      return rejectWithValue('Error inesperado al crear el gasto');
     }
   }
 );
@@ -91,6 +127,7 @@ const expensesSlice = createSlice({
         const convertedExpenses = action.payload.expenses.map(convertApiExpenseToExpense);
         state.items = convertedExpenses;
         state.totalPages = action.payload.totalPages;
+        state.lastFetch = new Date().toISOString();
 
         // Actualizar recentItems solo si estamos en la primera página y hay un límite
         const params = action.meta.arg as FetchExpensesParams;

@@ -167,7 +167,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, onClose, expense, t
                 <FaCalendarAlt />
               </DetailIcon>
               <DetailLabel>Fecha:</DetailLabel>
-              <DetailValue>{formatDateForDisplay(expense.date)}</DetailValue>
+              <DetailValue>{formatDateForDisplay(expense.expenseDatetime)}</DetailValue>
             </DetailItem>
           </ExpenseDetails>
         )}

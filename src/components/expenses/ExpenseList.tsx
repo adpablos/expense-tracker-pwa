@@ -1,5 +1,5 @@
 /* eslint-disable import/no-named-as-default */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 
@@ -8,6 +8,7 @@ import { fetchExpenses, deleteExpense, updateExpense } from '../../store/slices/
 import { Margin, FlexContainer } from '../../styles/utilities';
 import { Expense } from '../../types';
 import { FilterValues } from '../../types/filters';
+import { dateToString, stringToDate } from '../../utils/dateUtils';
 import ErrorModal from '../common/ErrorModal';
 import LoadingOverlay from '../common/LoadingOverlay';
 import Pagination from '../common/Pagination';
@@ -65,13 +66,15 @@ const ExpenseList: React.FC = () => {
   const [successAction, setSuccessAction] = useState<'update' | 'delete' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [isActionInProgress, setIsActionInProgress] = useState(false);
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const fetchExpensesList = () => {
+  const fetchExpensesList = useCallback(() => {
     setIsLoading(true);
     dispatch(
       fetchExpenses({
@@ -79,13 +82,14 @@ const ExpenseList: React.FC = () => {
         limit,
         startDate: filters.startDate ?? undefined,
         endDate: filters.endDate ?? undefined,
+        forceRefresh: true,
       })
-    ).then(() => setIsLoading(false));
-  };
+    ).finally(() => setIsLoading(false));
+  }, [dispatch, currentPage, limit, filters]);
 
   useEffect(() => {
     fetchExpensesList();
-  }, [dispatch, currentPage, limit, filters]);
+  }, [fetchExpensesList]);
 
   const handleDelete = (expense: Expense) => {
     setExpenseToDelete(expense);
@@ -105,6 +109,8 @@ const ExpenseList: React.FC = () => {
   };
 
   const confirmDelete = async () => {
+    if (isActionInProgress) return;
+    setIsActionInProgress(true);
     if (expenseToDelete) {
       setIsLoading(true);
       try {
@@ -120,11 +126,14 @@ const ExpenseList: React.FC = () => {
         );
       } finally {
         setIsLoading(false);
+        setIsActionInProgress(false);
       }
     }
   };
 
   const handleUpdate = async (updatedExpense: Expense) => {
+    if (isActionInProgress) return;
+    setIsActionInProgress(true);
     const category = categories.find((cat) => cat.id === updatedExpense.categoryId) || {
       id: 'custom',
       name: updatedExpense.category,
@@ -157,11 +166,16 @@ const ExpenseList: React.FC = () => {
       );
     } finally {
       setIsLoading(false);
+      setIsActionInProgress(false);
     }
   };
 
   const handleFilterChange = (newFilters: FilterValues) => {
-    setFilters(newFilters);
+    setFilters({
+      ...newFilters,
+      startDate: newFilters.startDate ? dateToString(stringToDate(newFilters.startDate)!) : null,
+      endDate: newFilters.endDate ? dateToString(stringToDate(newFilters.endDate)!) : null,
+    });
     setCurrentPage(1);
   };
 
@@ -184,9 +198,11 @@ const ExpenseList: React.FC = () => {
       </Margin>
       <Row>
         <Col xs={12}>
-          {isMobile ? (
+          {expenses.length === 0 ? (
+            <div>No hay gastos para mostrar.</div>
+          ) : isMobile ? (
             <FlexContainer direction="column">
-              {expenses.map((expense) => (
+              {expenses.map((expense: Expense) => (
                 <Margin key={expense.id} size="small" direction="bottom">
                   <ExpenseCard expense={expense} onEdit={handleEdit} onDelete={handleDelete} />
                 </Margin>

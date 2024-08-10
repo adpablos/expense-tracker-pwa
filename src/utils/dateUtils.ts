@@ -1,39 +1,58 @@
 // src/utils/dateUtils.ts
 
-import { format, parse, isValid, parseISO } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
-// Format for dates to use along the whole application
-export const DATE_FORMAT = 'yyyy-MM-dd';
+// Formato para mostrar fechas en la interfaz de usuario
+export const DISPLAY_DATE_FORMAT = 'dd/MM/yyyy';
 
-// Converts a date to string using the DATE_FORMAT
+/**
+ * Convierte una fecha a string en formato ISO 8601.
+ * @param date - La fecha a convertir.
+ * @returns La fecha en formato ISO 8601 string.
+ */
 export function dateToString(date: Date): string {
-  return format(date, DATE_FORMAT);
+  return date.toISOString();
 }
 
-// Converts a string to a Date object assuming the string is in DATE_FORMAT or ISO format
+/**
+ * Convierte un string ISO 8601 a un objeto Date.
+ * @param dateString - El string de fecha en formato ISO 8601.
+ * @returns Un objeto Date o null si el string no es válido.
+ */
 export function stringToDate(dateString: string): Date | null {
-  let parsedDate;
-  if (dateString.includes('T')) {
-    parsedDate = parseISO(dateString);
-  } else {
-    parsedDate = parse(dateString, DATE_FORMAT, new Date());
+  try {
+    return parseISO(dateString);
+  } catch {
+    return null;
   }
-  return isValid(parsedDate) ? parsedDate : null;
 }
 
-// Formats a date for display
+/**
+ * Formatea una fecha para mostrar en la interfaz de usuario.
+ * @param date - La fecha a formatear (puede ser Date o string ISO 8601).
+ * @returns La fecha formateada como string para mostrar.
+ */
 export function formatDateForDisplay(date: Date | string): string {
   const dateObject = typeof date === 'string' ? stringToDate(date) : date;
-  return dateObject ? format(dateObject, 'dd/MM/yyyy') : '';
+  return dateObject ? format(dateObject, DISPLAY_DATE_FORMAT) : '';
 }
 
-// Creates a Date object in UTC
-export function createUTCDate(year: number, month: number, day: number): Date {
-  return new Date(Date.UTC(year, month - 1, day));
+/**
+ * Obtiene la fecha y hora actual en la zona horaria local del usuario.
+ * @returns La fecha y hora actual como objeto Date.
+ */
+export function getCurrentLocalDate(): Date {
+  return new Date();
 }
 
-// Gets the current date in UTC
-export function getCurrentUTCDate(): Date {
-  const now = new Date();
-  return createUTCDate(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate());
+/**
+ * Crea una fecha con la hora establecida a las 12:00 PM en la zona horaria local del usuario.
+ * @param year - El año de la fecha.
+ * @param month - El mes de la fecha (1-12).
+ * @param day - El día del mes.
+ * @returns Un objeto Date con la hora establecida a las 12:00 PM.
+ */
+export function createLocalNoonDate(year: number, month: number, day: number): Date {
+  const date = new Date(year, month - 1, day, 12, 0, 0, 0);
+  return date;
 }

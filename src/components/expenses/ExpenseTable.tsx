@@ -59,7 +59,7 @@ const ExpenseTable: React.FC<ExpenseTableProps> = ({ expenses, onEdit, onDelete 
       <tbody>
         {expenses.map((expense: Expense) => (
           <TableRow key={expense.id}>
-            <TableCell>{formatDateForDisplay(expense.date)}</TableCell>
+            <TableCell>{formatDateForDisplay(expense.expenseDatetime)}</TableCell>
             <TableCell>{expense.description}</TableCell>
             <TableCell>${formatAmount(expense.amount)}</TableCell>
             <TableCell>{expense.category}</TableCell>
