@@ -1,30 +1,55 @@
 /* eslint-disable import/no-named-as-default */
 // src/components/categories/CategoryForm.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { AppDispatch } from '../../store';
-import { createCategory } from '../../store/slices/categoriesSlice';
+import { createCategory, updateCategory } from '../../store/slices/categoriesSlice';
+import { Category } from '../../types';
 import Button from '../common/Button';
 import Input from '../common/Input';
 
 const Form = styled.form`
   display: flex;
-  gap: ${({ theme }) => theme.space.medium};
-  margin-bottom: ${({ theme }) => theme.space.large};
+  flex-direction: column;
+  gap: ${({ theme }) => theme.space.small};
+  margin-top: ${({ theme }) => theme.space.medium};
 `;
 
-const CategoryForm: React.FC = () => {
-  const [name, setName] = useState('');
+interface CategoryFormProps {
+  categoryToEdit?: Category;
+  onComplete: () => void;
+}
+
+const CategoryForm: React.FC<CategoryFormProps> = ({ categoryToEdit, onComplete }) => {
+  const [name, setName] = useState(categoryToEdit?.name || '');
+  const [isChanged, setIsChanged] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    if (categoryToEdit) {
+      setName(categoryToEdit.name);
+    }
+  }, [categoryToEdit]);
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+    setIsChanged(e.target.value !== categoryToEdit?.name);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim()) {
-      dispatch(createCategory({ name }));
+    if (name.trim() && isChanged) {
+      if (categoryToEdit) {
+        dispatch(updateCategory({ id: categoryToEdit.id, name }));
+      } else {
+        dispatch(createCategory({ name }));
+      }
       setName('');
+      setIsChanged(false);
+      onComplete();
     }
   };
 
@@ -33,10 +58,12 @@ const CategoryForm: React.FC = () => {
       <Input
         type="text"
         value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Nombre de la nueva categoría"
+        onChange={handleNameChange}
+        placeholder="Nombre de la categoría"
       />
-      <Button type="submit">Añadir Categoría</Button>
+      <Button type="submit" disabled={!isChanged}>
+        {categoryToEdit ? 'Actualizar' : 'Añadir'} Categoría
+      </Button>
     </Form>
   );
 };

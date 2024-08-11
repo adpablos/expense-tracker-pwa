@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default */
 // src/components/categories/SubcategoryForm.tsx
 
 import React, { useState } from 'react';
@@ -11,8 +12,13 @@ import Input from '../common/Input';
 
 const Form = styled.form`
   display: flex;
-  gap: ${({ theme }) => theme.space.medium};
-  margin-top: ${({ theme }) => theme.space.medium};
+  flex-direction: column;
+  gap: ${({ theme }) => theme.space.small};
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.space.small};
 `;
 
 interface SubcategoryFormProps {
@@ -41,7 +47,11 @@ const SubcategoryForm: React.FC<SubcategoryFormProps> = ({ categoryId, onComplet
         onChange={(e) => setName(e.target.value)}
         placeholder="Nombre de la nueva subcategoría"
       />
-      <Button type="submit">Añadir Subcategoría</Button>
+      <ButtonGroup>
+        <Button type="submit" variant="primary">
+          Añadir Subcategoría
+        </Button>
+      </ButtonGroup>
     </Form>
   );
 };

@@ -1,41 +1,43 @@
-/* eslint-disable import/no-named-as-default */
 // src/components/categories/CategoryList.tsx
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 import { RootState, AppDispatch } from '../../store';
-import { deleteCategory, deleteSubcategory } from '../../store/slices/categoriesSlice';
+import { fetchCategories } from '../../store/slices/categoriesSlice';
+import LoadingOverlay from '../common/LoadingOverlay';
 
-import CategoryItem from './CategoryItem';
+import CategoryCard from './CategoryCard';
 
-const List = styled.ul`
-  list-style-type: none;
-  padding: 0;
+const List = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: ${({ theme }) => theme.space.medium};
 `;
 
 const CategoryList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const categories = useSelector((state: RootState) => state.categories.categories);
+  const { categories, status, error } = useSelector((state: RootState) => state.categories);
 
-  const handleDeleteCategory = (categoryId: string) => {
-    dispatch(deleteCategory(categoryId));
-  };
+  useEffect(() => {
+    if (status === 'idle') {
+      dispatch(fetchCategories());
+    }
+  }, [status, dispatch]);
 
-  const handleDeleteSubcategory = (categoryId: string, subcategoryId: string) => {
-    dispatch(deleteSubcategory({ categoryId, subcategoryId }));
-  };
+  if (status === 'loading') {
+    return <LoadingOverlay message="Cargando categorías..." />;
+  }
+
+  if (status === 'failed') {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <List>
       {categories.map((category) => (
-        <CategoryItem
-          key={category.id}
-          category={category}
-          onDeleteCategory={handleDeleteCategory}
-          onDeleteSubcategory={handleDeleteSubcategory}
-        />
+        <CategoryCard key={category.id} category={category} />
       ))}
     </List>
   );
