@@ -1,11 +1,12 @@
+/* eslint-disable import/no-named-as-default */
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import styled, { ThemeProvider } from 'styled-components';
 
 import NavigationBar from './components/common/NavigationBar';
 import DataProvider from './components/DataProvider';
-import ExpenseForm from './components/expenses/ExpenseForm';
 import ExpenseList from './components/expenses/ExpenseList';
+import CategoriesPage from './components/pages/CategoriesPage';
 import HomePage from './components/pages/HomePage';
 import GlobalStyle from './styles/globalStyles';
 import { theme } from './styles/theme';
@@ -49,8 +50,8 @@ const App: React.FC = () => {
             <MainContent>
               <Routes>
                 <Route path="/" element={<HomePage />} />
-                <Route path="/add" element={<ExpenseForm />} />
                 <Route path="/list" element={<ExpenseList />} />
+                <Route path="/categories" element={<CategoriesPage />} />
               </Routes>
             </MainContent>
           </AppContainer>

@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
 
 import * as api from '../../services/api';
 
@@ -61,33 +60,64 @@ export const fetchCategories = createAsyncThunk(
   }
 );
 
+export const createCategory = createAsyncThunk(
+  'categories/createCategory',
+  async (categoryData: { name: string }) => {
+    const response = await api.createCategory(categoryData);
+    return response.data;
+  }
+);
+
+export const createSubcategory = createAsyncThunk(
+  'categories/createSubcategory',
+  async ({ categoryId, name }: { categoryId: string; name: string }) => {
+    const response = await api.createSubcategory({ categoryId, name });
+    return response.data;
+  }
+);
+
+export const deleteCategory = createAsyncThunk(
+  'categories/deleteCategory',
+  async (categoryId: string) => {
+    await api.deleteCategory(categoryId);
+    return categoryId;
+  }
+);
+
+export const deleteSubcategory = createAsyncThunk(
+  'categories/deleteSubcategory',
+  async ({ categoryId, subcategoryId }: { categoryId: string; subcategoryId: string }) => {
+    await api.deleteSubcategory(subcategoryId);
+    return { categoryId, subcategoryId };
+  }
+);
+
 const categoriesSlice = createSlice({
   name: 'categories',
   initialState,
   reducers: {},
   extraReducers: (builder) => {
+    // ... (reducers existentes)
     builder
-      .addCase(fetchCategories.pending, (state) => {
-        state.status = 'loading';
-        console.log('Categories fetch started');
+      .addCase(createCategory.fulfilled, (state, action) => {
+        state.categories.push(action.payload);
       })
-      .addCase(
-        fetchCategories.fulfilled,
-        (
-          state,
-          action: PayloadAction<{ categories: Category[]; subcategories: Subcategory[] }>
-        ) => {
-          state.status = 'succeeded';
-          state.categories = action.payload.categories;
-          state.subcategories = action.payload.subcategories;
-          state.lastFetched = Date.now();
-          console.log('Categories fetch succeeded');
+      .addCase(createSubcategory.fulfilled, (state, action) => {
+        const category = state.categories.find((c) => c.id === action.payload.categoryId);
+        if (category) {
+          category.subcategories.push(action.payload);
         }
-      )
-      .addCase(fetchCategories.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.error.message || 'Something went wrong';
-        console.log('Categories fetch failed', state.error);
+      })
+      .addCase(deleteCategory.fulfilled, (state, action) => {
+        state.categories = state.categories.filter((c) => c.id !== action.payload);
+      })
+      .addCase(deleteSubcategory.fulfilled, (state, action) => {
+        const category = state.categories.find((c) => c.id === action.payload.categoryId);
+        if (category) {
+          category.subcategories = category.subcategories.filter(
+            (s) => s.id !== action.payload.subcategoryId
+          );
+        }
       });
   },
 });

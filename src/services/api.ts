@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 
-import { ExpenseInput, ExpenseFromAPI, ExpensesAPIResponse } from '../types';
+import { ExpenseInput, ExpenseFromAPI, ExpensesAPIResponse, Category, Subcategory } from '../types';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL;
 
@@ -43,5 +43,24 @@ export const uploadExpenseFile = (file: File) => {
     })
     .catch(handleError);
 };
+
+export const createCategory = (categoryData: { name: string }) =>
+  api.post<Category>('/categories', categoryData).catch(handleError);
+
+export const updateCategory = (id: string, categoryData: { name: string }) =>
+  api.put<Category>(`/categories/${id}`, categoryData).catch(handleError);
+
+export const deleteCategory = (id: string) => api.delete(`/categories/${id}`).catch(handleError);
+
+export const createSubcategory = (subcategoryData: { name: string; categoryId: string }) =>
+  api.post<Subcategory>('/subcategories', subcategoryData).catch(handleError);
+
+export const updateSubcategory = (
+  id: string,
+  subcategoryData: { name: string; categoryId: string }
+) => api.put<Subcategory>(`/subcategories/${id}`, subcategoryData).catch(handleError);
+
+export const deleteSubcategory = (id: string) =>
+  api.delete(`/subcategories/${id}`).catch(handleError);
 
 export default api;
