@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios';
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
@@ -13,6 +14,7 @@ import {
   updateSubcategory,
   deleteSubcategory,
 } from '../../store/slices/categoriesSlice';
+import { translateErrorMessage } from '../../utils/errorUtils';
 import Button from '../common/Button';
 import ConfirmModal from '../common/ConfirmModal';
 import ErrorModal from '../common/ErrorModal';
@@ -123,7 +125,9 @@ const CategoriesManager: React.FC = () => {
   const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
+  const [confirmAction, setConfirmAction] = useState<((force: boolean) => Promise<void>) | null>(
+    null
+  );
   const [confirmMessage, setConfirmMessage] = useState<string>('');
   const [editingCategory, setEditingCategory] = useState<{ id: string; name: string } | null>(null);
   const [editingSubcategory, setEditingSubcategory] = useState<{
@@ -131,6 +135,7 @@ const CategoriesManager: React.FC = () => {
     categoryId: string;
     name: string;
   } | null>(null);
+  const [isSubcategoryDeletion, setIsSubcategoryDeletion] = useState(false);
 
   useEffect(() => {
     if (status === 'idle') {
@@ -163,16 +168,54 @@ const CategoriesManager: React.FC = () => {
 
   const handleDeleteCategory = (categoryId: string, categoryName: string) => {
     setConfirmMessage(`¿Estás seguro de que quieres eliminar la categoría "${categoryName}"?`);
-    setConfirmAction(() => async () => {
+    setConfirmAction(() => async (force: boolean = false) => {
       try {
-        await dispatch(deleteCategory(categoryId)).unwrap();
+        await dispatch(deleteCategory({ categoryId, force })).unwrap();
         setSuccessMessage('Categoría eliminada con éxito');
       } catch (error) {
-        setErrorMessage(`Error al eliminar la categoría: ${error}`);
+        if (
+          typeof error === 'object' &&
+          error !== null &&
+          'status' in error &&
+          'message' in error
+        ) {
+          const customError = error as { status: string; message: string };
+          const translatedMessage = translateErrorMessage(customError.message);
+
+          if (
+            customError.message.includes('Cannot delete category with associated subcategories')
+          ) {
+            // Primero mostramos el mensaje de error
+            setErrorMessage(translatedMessage);
+
+            // Luego, configuramos una nueva acción de confirmación para eliminar con subcategorías
+            setConfirmMessage(
+              `¿Deseas eliminar la categoría "${categoryName}" y todas sus subcategorías?`
+            );
+            setConfirmAction(() => async () => {
+              try {
+                await dispatch(deleteCategory({ categoryId, force: true })).unwrap();
+                setSuccessMessage('Categoría y subcategorías eliminadas con éxito');
+              } catch (innerError) {
+                setErrorMessage(
+                  `Error al eliminar la categoría y subcategorías: ${translateErrorMessage(innerError instanceof Error ? innerError.message : 'Se produjo un error inesperado')}`
+                );
+              }
+            });
+          } else {
+            setErrorMessage(`Error al eliminar la categoría: ${translatedMessage}`);
+          }
+        } else if (isAxiosError(error)) {
+          const errorMessage = error.response?.data?.message || error.message;
+          setErrorMessage(`Error al eliminar la categoría: ${translateErrorMessage(errorMessage)}`);
+        } else {
+          const errorMessage =
+            error instanceof Error ? error.message : 'Se produjo un error inesperado';
+          setErrorMessage(`Error al eliminar la categoría: ${translateErrorMessage(errorMessage)}`);
+        }
       }
     });
   };
-
   const handleCreateSubcategory = async (categoryId: string) => {
     const name = newSubcategoryNames[categoryId];
     if (name && name.trim()) {
@@ -205,6 +248,7 @@ const CategoriesManager: React.FC = () => {
     categoryId: string,
     subcategoryName: string
   ) => {
+    setIsSubcategoryDeletion(true);
     setConfirmMessage(
       `¿Estás seguro de que quieres eliminar la subcategoría "${subcategoryName}"?`
     );
@@ -213,7 +257,15 @@ const CategoriesManager: React.FC = () => {
         await dispatch(deleteSubcategory({ categoryId, subcategoryId })).unwrap();
         setSuccessMessage('Subcategoría eliminada con éxito');
       } catch (error) {
-        setErrorMessage(`Error al eliminar la subcategoría: ${error}`);
+        if (isAxiosError(error)) {
+          setErrorMessage(
+            `Error al eliminar la subcategoría: ${error.response?.data?.message || error.message}`
+          );
+        } else {
+          setErrorMessage(
+            `Error al eliminar la subcategoría: ${error instanceof Error ? error.message : 'Se produjo un error inesperado'}`
+          );
+        }
       }
     });
   };
@@ -326,11 +378,18 @@ const CategoriesManager: React.FC = () => {
         onClose={() => setConfirmAction(null)}
         onConfirm={() => {
           if (confirmAction) {
-            confirmAction();
-            setConfirmAction(null);
+            confirmAction(false).then(() => setConfirmAction(null));
           }
         }}
+        onSecondaryAction={
+          confirmAction && !isSubcategoryDeletion
+            ? () => {
+                confirmAction(true).then(() => setConfirmAction(null));
+              }
+            : undefined
+        }
         message={confirmMessage}
+        secondaryActionLabel={isSubcategoryDeletion ? undefined : 'Eliminar con subcategorías'}
       />
       <EditModal
         isOpen={!!editingCategory}

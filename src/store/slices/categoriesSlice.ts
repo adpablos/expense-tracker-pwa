@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
+import { isAxiosError } from 'axios';
 
 import * as api from '../../services/api';
 
@@ -96,12 +97,15 @@ export const updateCategory = createAsyncThunk(
 
 export const deleteCategory = createAsyncThunk(
   'categories/deleteCategory',
-  async (categoryId: string, { rejectWithValue }) => {
+  async ({ categoryId, force }: { categoryId: string; force?: boolean }, { rejectWithValue }) => {
     try {
-      await api.deleteCategory(categoryId);
+      await api.deleteCategory(categoryId, force);
       return categoryId;
     } catch (error) {
-      return rejectWithValue(error);
+      if (isAxiosError(error)) {
+        return rejectWithValue(error.response?.data || error.message);
+      }
+      return rejectWithValue('An unknown error occurred');
     }
   }
 );

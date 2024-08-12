@@ -44,14 +44,24 @@ const ButtonGroup = styled.div`
   justify-content: center;
   gap: ${({ theme }) => theme.space.small};
 `;
+
 interface ConfirmModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  onSecondaryAction?: () => void;
   message: string;
+  secondaryActionLabel?: string;
 }
 
-const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm, message }) => {
+const ConfirmModal: React.FC<ConfirmModalProps> = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  onSecondaryAction,
+  message,
+  secondaryActionLabel,
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -68,6 +78,11 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({ isOpen, onClose, onConfirm,
           <Button variant="danger" onClick={onConfirm}>
             Confirmar
           </Button>
+          {onSecondaryAction && (
+            <Button variant="warning" onClick={onSecondaryAction}>
+              {secondaryActionLabel || 'Forzar eliminación'}
+            </Button>
+          )}
         </ButtonGroup>
       </ModalContent>
     </ModalOverlay>

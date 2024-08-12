@@ -50,7 +50,8 @@ export const createCategory = (categoryData: { name: string }) =>
 export const updateCategory = (id: string, categoryData: { name: string }) =>
   api.put<Category>(`/categories/${id}`, categoryData).catch(handleError);
 
-export const deleteCategory = (id: string) => api.delete(`/categories/${id}`).catch(handleError);
+export const deleteCategory = (id: string, force: boolean = false) =>
+  api.delete(`/categories/${id}`, { params: { force } }).catch(handleError);
 
 export const createSubcategory = (subcategoryData: { name: string; categoryId: string }) =>
   api.post<Subcategory>('/subcategories', subcategoryData).catch(handleError);
