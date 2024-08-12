@@ -1,4 +1,3 @@
-/* eslint-disable import/no-named-as-default */
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
@@ -28,15 +27,24 @@ const Container = styled.div`
   padding: ${({ theme }) => theme.space.medium};
 `;
 
+const AddCategorySection = styled.section`
+  background-color: ${({ theme }) => theme.colors.backgroundLight};
+  border-radius: ${({ theme }) => theme.borderRadius.large};
+  box-shadow: ${({ theme }) => theme.shadows.medium};
+  padding: ${({ theme }) => theme.space.large};
+  margin-bottom: ${({ theme }) => theme.space.xlarge};
+`;
+
+const AddCategoryTitle = styled.h3`
+  color: ${({ theme }) => theme.colors.primary};
+  font-size: ${({ theme }) => theme.fontSizes.large};
+  margin-bottom: ${({ theme }) => theme.space.medium};
+`;
+
 const AddCategoryForm = styled.form`
   display: flex;
-  gap: ${({ theme }) => theme.space.small};
-  margin-bottom: ${({ theme }) => theme.space.large};
-  background-color: ${({ theme }) => theme.colors.backgroundLight};
-  padding: ${({ theme }) => theme.space.medium};
-  border-radius: ${({ theme }) => theme.borderRadius.medium};
-  box-shadow: ${({ theme }) => theme.shadows.small};
-  align-items: center;
+  gap: ${({ theme }) => theme.space.medium};
+  align-items: flex-end;
 
   @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
     flex-direction: column;
@@ -44,9 +52,17 @@ const AddCategoryForm = styled.form`
   }
 `;
 
-const StyledInput = styled(Input)`
+const InputWrapper = styled.div`
   flex-grow: 1;
-  min-width: 0;
+`;
+
+const StyledInput = styled(Input)`
+  margin-bottom: 0;
+`;
+
+const AddButton = styled(Button)`
+  flex-shrink: 0;
+  height: 40px;
 `;
 
 const CategoryList = styled.ul`
@@ -208,16 +224,22 @@ const CategoriesManager: React.FC = () => {
 
   return (
     <Container>
-      <AddCategoryForm onSubmit={handleCreateCategory}>
-        <StyledInput
-          value={newCategoryName}
-          onChange={(e) => setNewCategoryName(e.target.value)}
-          placeholder="Nombre de la nueva categoría"
-        />
-        <Button type="submit">
-          <FaPlus /> Añadir Categoría
-        </Button>
-      </AddCategoryForm>
+      <AddCategorySection>
+        <AddCategoryTitle>Añadir Nueva Categoría</AddCategoryTitle>
+        <AddCategoryForm onSubmit={handleCreateCategory}>
+          <InputWrapper>
+            <StyledInput
+              label="Nombre de la categoría"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              placeholder="Ej: Alimentación, Transporte, Ocio..."
+            />
+          </InputWrapper>
+          <AddButton type="submit" variant="primary">
+            <FaPlus /> Añadir Categoría
+          </AddButton>
+        </AddCategoryForm>
+      </AddCategorySection>
 
       <CategoryList>
         {categories.map((category) => (

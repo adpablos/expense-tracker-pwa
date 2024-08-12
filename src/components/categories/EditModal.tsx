@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { FaSave, FaTimes, FaEdit } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaEdit, FaSave, FaTimes } from 'react-icons/fa';
 import styled from 'styled-components';
 
 import Button from '../common/Button';
@@ -62,12 +62,18 @@ interface EditModalProps {
 const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onSave, initialName, title }) => {
   const [name, setName] = useState(initialName);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (isOpen) {
+      setName(initialName);
+    }
+  }, [isOpen, initialName]);
 
   const handleSave = () => {
     onSave(name);
     onClose();
   };
+
+  if (!isOpen) return null;
 
   return (
     <ModalOverlay onClick={onClose}>
