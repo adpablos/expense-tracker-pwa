@@ -1,7 +1,7 @@
-/* eslint-disable import/no-named-as-default */
 // src/components/categories/SubcategoryForm.tsx
 
 import React, { useState } from 'react';
+import { FaPlus } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
@@ -16,9 +16,19 @@ const Form = styled.form`
   gap: ${({ theme }) => theme.space.small};
 `;
 
-const ButtonGroup = styled.div`
+const InputWrapper = styled.div`
   display: flex;
-  gap: ${({ theme }) => theme.space.small};
+  gap: ${({ theme }) => theme.space.xsmall};
+`;
+
+const StyledInput = styled(Input)`
+  flex-grow: 1;
+`;
+
+const AddButton = styled(Button)`
+  padding: ${({ theme }) => `${theme.space.xsmall} ${theme.space.small}`};
+  font-size: ${({ theme }) => theme.fontSizes.small};
+  white-space: nowrap;
 `;
 
 interface SubcategoryFormProps {
@@ -41,17 +51,17 @@ const SubcategoryForm: React.FC<SubcategoryFormProps> = ({ categoryId, onComplet
 
   return (
     <Form onSubmit={handleSubmit}>
-      <Input
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Nombre de la nueva subcategoría"
-      />
-      <ButtonGroup>
-        <Button type="submit" variant="primary">
-          Añadir Subcategoría
-        </Button>
-      </ButtonGroup>
+      <InputWrapper>
+        <StyledInput
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Nombre de la nueva subcategoría"
+        />
+        <AddButton type="submit" variant="primary">
+          <FaPlus /> Añadir
+        </AddButton>
+      </InputWrapper>
     </Form>
   );
 };

@@ -21,16 +21,29 @@ const AddCategoryButton = styled(Button)`
   margin-bottom: ${({ theme }) => theme.space.medium};
 `;
 
+const FormContainer = styled.div`
+  background-color: ${({ theme }) => theme.colors.backgroundLight};
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  padding: ${({ theme }) => theme.space.medium};
+  margin-bottom: ${({ theme }) => theme.space.large};
+  box-shadow: ${({ theme }) => theme.shadows.small};
+`;
+
 const CategoriesPage: React.FC = () => {
   const [isAddingCategory, setIsAddingCategory] = useState(false);
 
   return (
     <PageContainer>
       <Title>Gestión de Categorías</Title>
-      <AddCategoryButton onClick={() => setIsAddingCategory(true)}>
-        <FaPlus /> Añadir Categoría
-      </AddCategoryButton>
-      {isAddingCategory && <CategoryForm onComplete={() => setIsAddingCategory(false)} />}
+      {!isAddingCategory ? (
+        <AddCategoryButton onClick={() => setIsAddingCategory(true)}>
+          <FaPlus /> Añadir Categoría
+        </AddCategoryButton>
+      ) : (
+        <FormContainer>
+          <CategoryForm onComplete={() => setIsAddingCategory(false)} />
+        </FormContainer>
+      )}
       <CategoryList />
     </PageContainer>
   );

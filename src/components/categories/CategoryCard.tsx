@@ -42,6 +42,9 @@ const StyledButton = styled(Button)`
 
 const SubcategoryFormContainer = styled.div`
   margin-top: ${({ theme }) => theme.space.small};
+  padding: ${({ theme }) => theme.space.small};
+  background-color: ${({ theme }) => theme.colors.background};
+  border-radius: ${({ theme }) => theme.borderRadius.small};
 `;
 
 const ConfirmationModal = styled.div`
