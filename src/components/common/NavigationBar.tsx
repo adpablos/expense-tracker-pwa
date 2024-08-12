@@ -1,6 +1,6 @@
 // src/components/common/NavigationBar.tsx
 import React from 'react';
-import { FaHome, FaList } from 'react-icons/fa';
+import { FaHome, FaList, FaTags } from 'react-icons/fa';
 import { NavLink } from 'react-router-dom';
 // eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
@@ -41,6 +41,9 @@ const NavigationBar: React.FC = () => {
       </StyledNavLink>
       <StyledNavLink to="/list">
         <FaList /> Ver Gastos
+      </StyledNavLink>
+      <StyledNavLink to="/categories">
+        <FaTags /> Categorías
       </StyledNavLink>
     </Navigation>
   );
