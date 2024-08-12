@@ -59,6 +59,7 @@ const CloseButton = styled.button`
 const IconContainer = styled.div`
   color: ${theme.colors.success};
   font-size: 4rem;
+  font-weight: bold;
   margin-bottom: 1.5rem;
 `;
 
@@ -110,7 +111,7 @@ const DetailValue = styled.span`
 interface SuccessModalProps {
   isOpen: boolean;
   onClose: () => void;
-  expense: Expense | null;
+  expense?: Expense | null;
   title: string;
 }
 

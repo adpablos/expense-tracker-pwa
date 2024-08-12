@@ -1,83 +1,104 @@
 /* eslint-disable import/no-named-as-default */
-// src/components/categories/SubcategoryItem.tsx
-
 import React, { useState } from 'react';
 import { FaEdit, FaTrash, FaSave, FaTimes } from 'react-icons/fa';
-import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
-import { AppDispatch } from '../../store';
-import { updateSubcategory, deleteSubcategory } from '../../store/slices/categoriesSlice';
 import { Subcategory } from '../../types';
 import Button from '../common/Button';
 import Input from '../common/Input';
 
-const ListItem = styled.li`
+const Item = styled.li`
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: ${({ theme }) => theme.space.xsmall};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  padding: ${({ theme }) => theme.space.small};
+  border-radius: ${({ theme }) => theme.borderRadius.small};
+  background-color: ${({ theme }) => theme.colors.background};
+  margin-bottom: ${({ theme }) => theme.space.xsmall};
+  transition: all 0.3s ease;
 
-  &:last-child {
-    border-bottom: none;
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.backgroundHover};
   }
 `;
 
-const ButtonGroup = styled.div`
+const Name = styled.span`
+  flex-grow: 1;
+  margin-right: ${({ theme }) => theme.space.small};
+`;
+
+const Actions = styled.div`
   display: flex;
   gap: ${({ theme }) => theme.space.xsmall};
+`;
+
+const ActionButton = styled(Button)`
+  padding: ${({ theme }) => theme.space.xsmall};
 `;
 
 interface SubcategoryItemProps {
   subcategory: Subcategory;
   categoryId: string;
+  onUpdateSubcategory: (subcategoryId: string, categoryId: string, newName: string) => void;
+  onDeleteSubcategory: (subcategoryId: string, categoryId: string, subcategoryName: string) => void;
 }
 
-const SubcategoryItem: React.FC<SubcategoryItemProps> = ({ subcategory, categoryId }) => {
+const SubcategoryItem: React.FC<SubcategoryItemProps> = ({
+  subcategory,
+  categoryId,
+  onUpdateSubcategory,
+  onDeleteSubcategory,
+}) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(subcategory.name);
-  const dispatch = useDispatch<AppDispatch>();
 
   const handleUpdate = () => {
     if (editName.trim() && editName !== subcategory.name) {
-      dispatch(updateSubcategory({ id: subcategory.id, name: editName, categoryId }));
+      onUpdateSubcategory(subcategory.id, categoryId, editName.trim());
     }
     setIsEditing(false);
   };
 
-  const handleDelete = () => {
-    dispatch(deleteSubcategory({ categoryId, subcategoryId: subcategory.id }));
+  const handleCancel = () => {
+    setEditName(subcategory.name);
+    setIsEditing(false);
   };
 
   if (isEditing) {
     return (
-      <ListItem>
-        <Input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} />
-        <ButtonGroup>
-          <Button size="small" onClick={handleUpdate}>
+      <Item>
+        <Input
+          value={editName}
+          onChange={(e) => setEditName(e.target.value)}
+          onBlur={handleUpdate}
+          autoFocus
+        />
+        <Actions>
+          <ActionButton onClick={handleUpdate}>
             <FaSave />
-          </Button>
-          <Button size="small" variant="secondary" onClick={() => setIsEditing(false)}>
+          </ActionButton>
+          <ActionButton onClick={handleCancel}>
             <FaTimes />
-          </Button>
-        </ButtonGroup>
-      </ListItem>
+          </ActionButton>
+        </Actions>
+      </Item>
     );
   }
 
   return (
-    <ListItem>
-      {subcategory.name}
-      <ButtonGroup>
-        <Button size="small" onClick={() => setIsEditing(true)}>
+    <Item>
+      <Name>{subcategory.name}</Name>
+      <Actions>
+        <ActionButton onClick={() => setIsEditing(true)}>
           <FaEdit />
-        </Button>
-        <Button size="small" variant="danger" onClick={handleDelete}>
+        </ActionButton>
+        <ActionButton
+          variant="danger"
+          onClick={() => onDeleteSubcategory(subcategory.id, categoryId, subcategory.name)}
+        >
           <FaTrash />
-        </Button>
-      </ButtonGroup>
-    </ListItem>
+        </ActionButton>
+      </Actions>
+    </Item>
   );
 };
 
