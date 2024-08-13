@@ -11,6 +11,11 @@ const PageContainer = styled.div`
 const Title = styled.h1`
   color: ${({ theme }) => theme.colors.primary};
   margin-bottom: ${({ theme }) => theme.space.medium};
+  text-align: left;
+
+  @media (max-width: 768px) {
+    text-align: center;
+  }
 `;
 
 const CategoriesPage: React.FC = () => {
