@@ -8,6 +8,11 @@ import { formatDateForDisplay } from '../../utils/dateUtils';
 import { formatAmount } from '../../utils/expenseUtils';
 import Button from '../common/Button';
 
+const TableWrapper = styled.div`
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+`;
+
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
@@ -45,51 +50,53 @@ interface ExpenseTableProps {
 
 const ExpenseTable: React.FC<ExpenseTableProps> = ({ expenses, onEdit, onDelete }) => {
   return (
-    <Table>
-      <thead>
-        <tr>
-          <TableHeader>Fecha</TableHeader>
-          <TableHeader>Descripción</TableHeader>
-          <TableHeader>Cantidad</TableHeader>
-          <TableHeader>Categoría</TableHeader>
-          <TableHeader>Subcategoría</TableHeader>
-          <TableHeader>Acciones</TableHeader>
-        </tr>
-      </thead>
-      <tbody>
-        {expenses.map((expense: Expense) => (
-          <TableRow key={expense.id}>
-            <TableCell>{formatDateForDisplay(expense.expenseDatetime)}</TableCell>
-            <TableCell>{expense.description}</TableCell>
-            <TableCell>${formatAmount(expense.amount)}</TableCell>
-            <TableCell>{expense.category}</TableCell>
-            <TableCell>{expense.subcategory}</TableCell>
-            <TableCell>
-              <ButtonContainer>
-                <Button
-                  variant="primary"
-                  onClick={() => onEdit(expense)}
-                  isRound
-                  size="small"
-                  aria-label="Editar gasto"
-                >
-                  <FaEdit />
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={() => onDelete(expense)}
-                  isRound
-                  size="small"
-                  aria-label="Eliminar gasto"
-                >
-                  <FaTrash />
-                </Button>
-              </ButtonContainer>
-            </TableCell>
-          </TableRow>
-        ))}
-      </tbody>
-    </Table>
+    <TableWrapper>
+      <Table>
+        <thead>
+          <tr>
+            <TableHeader>Fecha</TableHeader>
+            <TableHeader>Descripción</TableHeader>
+            <TableHeader>Cantidad</TableHeader>
+            <TableHeader>Categoría</TableHeader>
+            <TableHeader>Subcategoría</TableHeader>
+            <TableHeader>Acciones</TableHeader>
+          </tr>
+        </thead>
+        <tbody>
+          {expenses.map((expense: Expense) => (
+            <TableRow key={expense.id}>
+              <TableCell>{formatDateForDisplay(expense.expenseDatetime)}</TableCell>
+              <TableCell>{expense.description}</TableCell>
+              <TableCell>${formatAmount(expense.amount)}</TableCell>
+              <TableCell>{expense.category}</TableCell>
+              <TableCell>{expense.subcategory}</TableCell>
+              <TableCell>
+                <ButtonContainer>
+                  <Button
+                    variant="primary"
+                    onClick={() => onEdit(expense)}
+                    isRound
+                    size="small"
+                    aria-label="Editar gasto"
+                  >
+                    <FaEdit />
+                  </Button>
+                  <Button
+                    variant="danger"
+                    onClick={() => onDelete(expense)}
+                    isRound
+                    size="small"
+                    aria-label="Eliminar gasto"
+                  >
+                    <FaTrash />
+                  </Button>
+                </ButtonContainer>
+              </TableCell>
+            </TableRow>
+          ))}
+        </tbody>
+      </Table>
+    </TableWrapper>
   );
 };
 
