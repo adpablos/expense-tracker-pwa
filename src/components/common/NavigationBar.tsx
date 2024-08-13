@@ -5,9 +5,20 @@ import { NavLink } from 'react-router-dom';
 // eslint-disable-next-line import/no-named-as-default
 import styled from 'styled-components';
 
+import MobileMenu from './MobileMenu';
+
 const Navigation = styled.nav`
   display: flex;
   gap: 10px;
+`;
+
+const DesktopMenu = styled.div`
+  display: flex;
+  gap: 10px;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    display: none;
+  }
 `;
 
 const StyledNavLink = styled(NavLink)`
@@ -33,18 +44,31 @@ const StyledNavLink = styled(NavLink)`
   }
 `;
 
+const MobileMenuWrapper = styled.div`
+  display: none;
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    display: block;
+  }
+`;
+
 const NavigationBar: React.FC = () => {
   return (
     <Navigation>
-      <StyledNavLink to="/" end>
-        <FaHome /> Inicio
-      </StyledNavLink>
-      <StyledNavLink to="/list">
-        <FaList /> Ver Gastos
-      </StyledNavLink>
-      <StyledNavLink to="/categories">
-        <FaTags /> Categorías
-      </StyledNavLink>
+      <DesktopMenu>
+        <StyledNavLink to="/" end>
+          <FaHome /> Inicio
+        </StyledNavLink>
+        <StyledNavLink to="/list">
+          <FaList /> Ver Gastos
+        </StyledNavLink>
+        <StyledNavLink to="/categories">
+          <FaTags /> Categorías
+        </StyledNavLink>
+      </DesktopMenu>
+      <MobileMenuWrapper>
+        <MobileMenu />
+      </MobileMenuWrapper>
     </Navigation>
   );
 };

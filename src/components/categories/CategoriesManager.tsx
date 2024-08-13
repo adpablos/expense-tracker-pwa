@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default */
 import { isAxiosError } from 'axios';
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa';
@@ -21,6 +22,7 @@ import ErrorModal from '../common/ErrorModal';
 import Input from '../common/Input';
 import SuccessModal from '../common/SuccessModal';
 
+import AddCategoryForm from './AddCategoryForm';
 import EditModal from './EditModal';
 
 const Container = styled.div`
@@ -41,30 +43,6 @@ const AddCategoryTitle = styled.h3`
   color: ${({ theme }) => theme.colors.primary};
   font-size: ${({ theme }) => theme.fontSizes.large};
   margin-bottom: ${({ theme }) => theme.space.medium};
-`;
-
-const AddCategoryForm = styled.form`
-  display: flex;
-  gap: ${({ theme }) => theme.space.medium};
-  align-items: flex-end;
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
-    flex-direction: column;
-    align-items: stretch;
-  }
-`;
-
-const InputWrapper = styled.div`
-  flex-grow: 1;
-`;
-
-const StyledInput = styled(Input)`
-  margin-bottom: 0;
-`;
-
-const AddButton = styled(Button)`
-  flex-shrink: 0;
-  height: 40px;
 `;
 
 const CategoryList = styled.ul`
@@ -120,7 +98,6 @@ const SubcategoryItem = styled.li`
 const CategoriesManager: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { categories, status } = useSelector((state: RootState) => state.categories);
-  const [newCategoryName, setNewCategoryName] = useState('');
   const [newSubcategoryNames, setNewSubcategoryNames] = useState<{ [key: string]: string }>({});
   const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -143,13 +120,11 @@ const CategoriesManager: React.FC = () => {
     }
   }, [status, dispatch]);
 
-  const handleCreateCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newCategoryName.trim()) {
+  const handleCreateCategory = async (name: string) => {
+    if (name.trim()) {
       try {
-        await dispatch(createCategory({ name: newCategoryName })).unwrap();
+        await dispatch(createCategory({ name: name.trim() })).unwrap();
         setSuccessMessage('Categoría creada con éxito');
-        setNewCategoryName('');
       } catch (error) {
         setErrorMessage(`Error al crear la categoría: ${error}`);
       }
@@ -185,10 +160,7 @@ const CategoriesManager: React.FC = () => {
           if (
             customError.message.includes('Cannot delete category with associated subcategories')
           ) {
-            // Primero mostramos el mensaje de error
             setErrorMessage(translatedMessage);
-
-            // Luego, configuramos una nueva acción de confirmación para eliminar con subcategorías
             setConfirmMessage(
               `¿Deseas eliminar la categoría "${categoryName}" y todas sus subcategorías?`
             );
@@ -216,6 +188,7 @@ const CategoriesManager: React.FC = () => {
       }
     });
   };
+
   const handleCreateSubcategory = async (categoryId: string) => {
     const name = newSubcategoryNames[categoryId];
     if (name && name.trim()) {
@@ -278,19 +251,7 @@ const CategoriesManager: React.FC = () => {
     <Container>
       <AddCategorySection>
         <AddCategoryTitle>Añadir Nueva Categoría</AddCategoryTitle>
-        <AddCategoryForm onSubmit={handleCreateCategory}>
-          <InputWrapper>
-            <StyledInput
-              label="Nombre de la categoría"
-              value={newCategoryName}
-              onChange={(e) => setNewCategoryName(e.target.value)}
-              placeholder="Ej: Alimentación, Transporte, Ocio..."
-            />
-          </InputWrapper>
-          <AddButton type="submit" variant="primary">
-            <FaPlus /> Añadir Categoría
-          </AddButton>
-        </AddCategoryForm>
+        <AddCategoryForm onAddCategory={handleCreateCategory} />
       </AddCategorySection>
 
       <CategoryList>

@@ -67,6 +67,10 @@ const FilterForm = styled.form`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: ${({ theme }) => theme.space.medium};
+
+  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const FilterItem = styled.div`
