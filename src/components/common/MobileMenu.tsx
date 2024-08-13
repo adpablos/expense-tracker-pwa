@@ -56,7 +56,7 @@ const MobileMenu: React.FC = () => {
         <MobileMenuItem to="/list" onClick={toggleMenu}>
           Ver Gastos
         </MobileMenuItem>
-        <MobileMenuItem to="/list" onClick={toggleMenu}>
+        <MobileMenuItem to="/categories" onClick={toggleMenu}>
           Categorías
         </MobileMenuItem>
         {/* Añadir más items de menú según sea necesario */}
