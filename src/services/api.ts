@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default */
 import axios, { AxiosError } from 'axios';
 
 import { ExpenseInput, ExpenseFromAPI, ExpensesAPIResponse, Category, Subcategory } from '../types';
@@ -12,6 +13,23 @@ const handleError = (error: Error | AxiosError) => {
   console.error('API error:', error);
   throw error;
 };
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('auth_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export const login = (credentials: { email: string; password: string }) =>
+  api.post('/auth/login', credentials);
+
+export const register = (userData: { auth_provider_id: string; email: string; name: string }) =>
+  api.post('/users', userData);
+
+export const updateProfile = (userData: { name: string; email: string }) =>
+  api.put('/users/me', userData);
 
 export const getCategories = () => api.get('/categories').catch(handleError);
 export const getSubcategories = () => api.get('/subcategories').catch(handleError);
