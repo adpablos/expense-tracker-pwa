@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 // eslint-disable-next-line import/no-named-as-default
 import styled, { css } from 'styled-components';
 
@@ -11,6 +12,8 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   isActive?: boolean;
   isRound?: boolean;
   fullWidth?: boolean;
+  as?: typeof Link;
+  to?: string;
 }
 
 const ButtonBase = styled.button<ButtonProps>`
@@ -129,10 +132,32 @@ const StyledButton = styled(ButtonBase)<ButtonProps>`
   &:hover:not(:disabled) {
     transform: scale(1.05);
   }
+
+  width: ${(props) => (props.fullWidth ? '100%' : 'auto')};
+  display: ${(props) => (props.fullWidth ? 'block' : 'inline-flex')};
+  justify-content: center;
+  align-items: center;
 `;
 
-export const Button: React.FC<ButtonProps> = ({ children, ...props }) => {
-  return <StyledButton {...props}>{children}</StyledButton>;
+export const Button: React.FC<ButtonProps & { to?: string }> = ({
+  children,
+  fullWidth,
+  as,
+  to,
+  ...props
+}) => {
+  if (as === Link && to) {
+    return (
+      <StyledButton fullWidth={fullWidth} as={Link} to={to} {...props}>
+        {children}
+      </StyledButton>
+    );
+  }
+  return (
+    <StyledButton fullWidth={fullWidth} {...props}>
+      {children}
+    </StyledButton>
+  );
 };
 
 export default Button;

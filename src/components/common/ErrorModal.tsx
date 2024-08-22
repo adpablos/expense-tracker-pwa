@@ -52,10 +52,13 @@ interface ErrorModalProps {
   isOpen: boolean;
   onClose: () => void;
   message: string;
+  title?: string;
 }
 
-const ErrorModal: React.FC<ErrorModalProps> = ({ isOpen, onClose, message }) => {
+const ErrorModal: React.FC<ErrorModalProps> = ({ isOpen, onClose, message, title }) => {
   if (!isOpen) return null;
+
+  const defaultTitle = 'Error al procesar el gasto';
 
   return (
     <ModalOverlay onClick={onClose}>
@@ -63,7 +66,7 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ isOpen, onClose, message }) => 
         <IconContainer>
           <FaExclamationTriangle />
         </IconContainer>
-        <ErrorTitle>Error al procesar el gasto</ErrorTitle>
+        <ErrorTitle>{title || defaultTitle}</ErrorTitle>
         <ErrorMessage>{message}</ErrorMessage>
         <Button variant="primary" onClick={onClose}>
           Cerrar
