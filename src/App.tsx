@@ -1,63 +1,99 @@
 /* eslint-disable import/no-named-as-default */
+import { Auth0Provider } from '@auth0/auth0-react';
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import styled, { ThemeProvider } from 'styled-components';
 
+import AuthCallback from './components/AuthCallback';
+import Footer from './components/common/Footer';
 import NavigationBar from './components/common/NavigationBar';
+import CompleteRegistration from './components/CompleteRegistration';
 import DataProvider from './components/DataProvider';
 import ExpenseList from './components/expenses/ExpenseList';
 import CategoriesPage from './components/pages/CategoriesPage';
+import DashboardPage from './components/pages/DashboardPage';
 import HomePage from './components/pages/HomePage';
+import ProfilePage from './components/pages/ProfilePage';
+import PrivateRoute from './components/PrivateRoute';
 import GlobalStyle from './styles/globalStyles';
 import { theme } from './styles/theme';
 
 const AppContainer = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-`;
-
-const Header = styled.header`
+  min-height: 100vh;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-`;
-
-const Title = styled.h1`
-  font-size: 24px;
-  color: #333;
+  flex-direction: column;
 `;
 
 const MainContent = styled.main`
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  flex: 1;
+  padding: ${({ theme }) => theme.padding.medium};
+  margin-top: 70px; // Añadimos un margen superior global
 `;
 
 const App: React.FC = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <DataProvider>
-        <Router>
-          <GlobalStyle />
-          <AppContainer>
-            <Header>
-              <Title>Expense Tracker</Title>
+    <Auth0Provider
+      domain={process.env.REACT_APP_AUTH0_DOMAIN!}
+      clientId={process.env.REACT_APP_AUTH0_CLIENT_ID!}
+      authorizationParams={{
+        redirect_uri: `${window.location.origin}/callback`,
+        audience: 'https://api.expensetracker.com',
+        ui_locales: 'es',
+      }}
+      useRefreshTokens={true}
+      cacheLocation="localstorage"
+    >
+      <ThemeProvider theme={theme}>
+        <DataProvider>
+          <Router>
+            <GlobalStyle />
+            <AppContainer>
               <NavigationBar />
-            </Header>
-            <MainContent>
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/list" element={<ExpenseList />} />
-                <Route path="/categories" element={<CategoriesPage />} />
-              </Routes>
-            </MainContent>
-          </AppContainer>
-        </Router>
-      </DataProvider>
-    </ThemeProvider>
+              <MainContent>
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route
+                    path="/list"
+                    element={
+                      <PrivateRoute>
+                        <ExpenseList />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/categories"
+                    element={
+                      <PrivateRoute>
+                        <CategoriesPage />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <PrivateRoute>
+                        <ProfilePage />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route path="/callback" element={<AuthCallback />} />
+                  <Route
+                    path="/dashboard"
+                    element={
+                      <PrivateRoute>
+                        <DashboardPage />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route path="/complete-registration" element={<CompleteRegistration />} />
+                </Routes>
+              </MainContent>
+              <Footer />
+            </AppContainer>
+          </Router>
+        </DataProvider>
+      </ThemeProvider>
+    </Auth0Provider>
   );
 };
 
