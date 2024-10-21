@@ -13,6 +13,7 @@ import ExpenseList from './components/expenses/ExpenseList';
 import CategoriesPage from './components/pages/CategoriesPage';
 import DashboardPage from './components/pages/DashboardPage';
 import HomePage from './components/pages/HomePage';
+import NotFoundPage from './components/pages/NotFoundPage';
 import ProfilePage from './components/pages/ProfilePage';
 import PrivateRoute from './components/PrivateRoute';
 import GlobalStyle from './styles/globalStyles';
@@ -86,6 +87,7 @@ const App: React.FC = () => {
                     }
                   />
                   <Route path="/complete-registration" element={<CompleteRegistration />} />
+                  <Route path="*" element={<NotFoundPage />} />
                 </Routes>
               </MainContent>
               <Footer />
