@@ -51,7 +51,9 @@ const getWidthString = (span: number) => {
           max-width: ${width}%;`;
 };
 
-export const Col = styled.div<ColProps>`
+export const Col = styled.div.withConfig({
+  shouldForwardProp: (prop) => !['xs', 'sm', 'md', 'lg'].includes(prop),
+})<ColProps>`
   position: relative;
   width: 100%;
   min-height: 1px;

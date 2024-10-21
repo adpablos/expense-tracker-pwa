@@ -7,6 +7,7 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   error?: string;
   options: { value: string; label: string }[];
   placeholder?: string;
+  value?: string;
 }
 
 const SelectContainer = styled.div`
@@ -47,13 +48,20 @@ const ErrorMessage = styled.span`
   margin-top: ${({ theme }) => theme.space.xxsmall};
 `;
 
-export const Select: React.FC<SelectProps> = ({ label, error, options, placeholder, ...props }) => {
+export const Select: React.FC<SelectProps> = ({
+  label,
+  error,
+  options,
+  placeholder,
+  value,
+  ...props
+}) => {
   return (
     <SelectContainer>
       {label && <StyledLabel>{label}</StyledLabel>}
-      <StyledSelect {...props}>
+      <StyledSelect value={value} {...props}>
         {placeholder && (
-          <option value="" disabled selected hidden>
+          <option value="" disabled>
             {placeholder}
           </option>
         )}

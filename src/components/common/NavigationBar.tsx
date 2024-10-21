@@ -1,6 +1,6 @@
 /* eslint-disable import/no-named-as-default */
 import { useAuth0 } from '@auth0/auth0-react';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FaSignInAlt,
   FaUserPlus,
@@ -40,7 +40,7 @@ const LogoImage = styled.img`
   height: 40px;
 `;
 
-const NavItems = styled.div<{ isOpen: boolean }>`
+const NavItems = styled.div<{ $isOpen: boolean }>`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.space.medium};
@@ -54,7 +54,7 @@ const NavItems = styled.div<{ isOpen: boolean }>`
     bottom: 0;
     background-color: ${({ theme }) => theme.colors.backgroundLight};
     transition: transform 0.3s ease-in-out;
-    transform: ${({ isOpen }) => (isOpen ? 'translateX(0)' : 'translateX(-100%)')};
+    transform: ${({ $isOpen }) => ($isOpen ? 'translateX(0)' : 'translateX(-100%)')};
     padding: ${({ theme }) => theme.padding.medium};
     overflow-y: auto;
     z-index: 1000;
@@ -102,11 +102,26 @@ const HamburgerButton = styled.button`
 `;
 
 const NavigationBar: React.FC = () => {
-  const { isAuthenticated, loginWithRedirect, logout } = useAuth0();
+  const { isAuthenticated, isLoading, loginWithRedirect, logout, error } = useAuth0();
   const [isOpen, setIsOpen] = useState(false);
+  const [authState, setAuthState] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setAuthState(isAuthenticated);
+    }
+  }, [isAuthenticated, isLoading]);
+
+  useEffect(() => {
+    if (error) {
+      console.error('Auth0 error:', error);
+      setAuthState(false);
+    }
+  }, [error]);
 
   const handleLogout = () => {
     logout({ logoutParams: { returnTo: window.location.origin } });
+    setAuthState(false);
   };
 
   const handleLogin = () => {
@@ -121,14 +136,18 @@ const NavigationBar: React.FC = () => {
     setIsOpen(!isOpen);
   };
 
+  if (isLoading) {
+    return <Nav>Cargando...</Nav>;
+  }
+
   return (
     <Nav>
       <Logo to="/">
         <LogoImage src={logo} alt="Expense Tracker" />
       </Logo>
       <HamburgerButton onClick={toggleMenu}>{isOpen ? <FaTimes /> : <FaBars />}</HamburgerButton>
-      <NavItems isOpen={isOpen}>
-        {isAuthenticated ? (
+      <NavItems $isOpen={isOpen}>
+        {authState ? (
           <>
             <NavLink to="/dashboard" onClick={() => setIsOpen(false)}>
               <FaChartBar /> Dashboard

@@ -125,7 +125,10 @@ const ButtonSizes = {
   `,
 };
 
-const StyledButton = styled(ButtonBase)<ButtonProps>`
+const StyledButton = styled(ButtonBase).withConfig({
+  shouldForwardProp: (prop) =>
+    !['variant', 'size', 'isActive', 'isRound', 'fullWidth'].includes(prop),
+})<ButtonProps>`
   ${({ variant = 'primary' }) => ButtonVariants[variant]}
   ${({ size = 'medium' }) => ButtonSizes[size]}
   
