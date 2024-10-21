@@ -3,7 +3,7 @@ import axios, { AxiosError } from 'axios';
 
 import { ExpenseInput, ExpenseFromAPI, ExpensesAPIResponse, Category, Subcategory } from '../types';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL;
+const API_BASE_URL = process.env.REACT_APP_BACKEND_HOST || 'http://localhost:3001';
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
@@ -27,6 +27,8 @@ export const login = (credentials: { email: string; password: string }) =>
 
 export const register = (userData: { auth_provider_id: string; email: string; name: string }) =>
   api.post('/users', userData);
+
+export const getUser = () => api.get('/users/me').catch(handleError);
 
 export const updateProfile = (userData: { name: string; email: string }) =>
   api.put('/users/me', userData);

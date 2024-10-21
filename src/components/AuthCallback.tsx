@@ -1,10 +1,9 @@
 import { useAuth0 } from '@auth0/auth0-react';
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-import { register } from '../services/api';
+import { getUser, register } from '../services/api';
 import { AppDispatch } from '../store';
 import { setAuthInfo } from '../store/slices/authSlice';
 
@@ -21,7 +20,7 @@ interface ApiError {
 }
 
 const AuthCallback: React.FC = () => {
-  const { isAuthenticated, getIdTokenClaims, error, getAccessTokenSilently } = useAuth0();
+  const { isAuthenticated, getIdTokenClaims, error, getAccessTokenSilently, logout } = useAuth0();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const [modalError, setModalError] = useState<string | null>(null);
@@ -29,7 +28,7 @@ const AuthCallback: React.FC = () => {
   useEffect(() => {
     const handleAuthentication = async () => {
       if (error) {
-        setModalError(`Error during authentication: ${error.message}`);
+        setModalError(`Error durante la autenticación: ${error.message}`);
         return;
       }
 
@@ -42,22 +41,24 @@ const AuthCallback: React.FC = () => {
             localStorage.setItem('auth_token', accessToken);
 
             try {
-              await register({
-                auth_provider_id: user.sub,
-                name: user.name || '',
-                email: user.email || '',
-              });
-              console.log('User registered successfully in our API');
+              // Intentamos obtener la información del usuario
+              const existingUser = await getUser();
+              console.log('Usuario existente en nuestra API');
+
+              // Si el usuario no existe, lo registramos
+              if (!existingUser) {
+                await register({
+                  auth_provider_id: user.sub,
+                  name: user.name || '',
+                  email: user.email || '',
+                });
+                console.log('Usuario registrado exitosamente en nuestra API');
+              }
             } catch (error) {
               const apiError = error as ApiError;
-              if (axios.isAxiosError(apiError) && apiError.response?.status === 409) {
-                console.log('User already exists in our API');
-                // El usuario ya existe, podemos continuar con el flujo normal
-              } else {
-                console.error('Error registering user in our API:', apiError);
-                setModalError(`Error registering user in our system: ${apiError.message}`);
-                return;
-              }
+              console.error('Error al obtener/registrar usuario en nuestra API:', apiError);
+              setModalError(`Error al procesar el usuario en nuestro sistema: ${apiError.message}`);
+              return;
             }
 
             await dispatch(
@@ -74,18 +75,31 @@ const AuthCallback: React.FC = () => {
           }
         } catch (error) {
           const authError = error as Error;
-          setModalError(`Error setting authentication information: ${authError.message}`);
-          console.error('Error setting auth info:', authError);
+          setModalError(
+            `Error al establecer la información de autenticación: ${authError.message}`
+          );
+          console.error('Error al establecer la información de autenticación:', authError);
+          // Logout the user if there's an error
+          logout({ logoutParams: { returnTo: window.location.origin } });
         }
       }
     };
 
     handleAuthentication();
-  }, [isAuthenticated, getIdTokenClaims, dispatch, navigate, error, getAccessTokenSilently]);
+  }, [
+    isAuthenticated,
+    getIdTokenClaims,
+    dispatch,
+    navigate,
+    error,
+    getAccessTokenSilently,
+    logout,
+  ]);
 
   const closeModal = () => {
     setModalError(null);
-    navigate('/');
+    // Logout the user and redirect to home page
+    logout({ logoutParams: { returnTo: window.location.origin } });
   };
 
   return (
