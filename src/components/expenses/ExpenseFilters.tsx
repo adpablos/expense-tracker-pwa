@@ -58,8 +58,8 @@ const ResetLink = styled.button`
   }
 `;
 
-const FilterContent = styled.div<{ isOpen: boolean }>`
-  display: ${(props) => (props.isOpen ? 'block' : 'none')};
+const FilterContent = styled.div<{ $isOpen: boolean }>`
+  display: ${(props) => (props.$isOpen ? 'block' : 'none')};
   padding: ${({ theme }) => theme.space.medium};
 `;
 
@@ -169,7 +169,7 @@ const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({ onFilterChange, current
         </FilterToggle>
         <ResetLink onClick={handleReset}>Resetear filtros</ResetLink>
       </FilterHeader>
-      <FilterContent isOpen={isOpen}>
+      <FilterContent $isOpen={isOpen}>
         <FilterForm onSubmit={handleSubmit}>
           <FilterItem>
             <FilterLabel>

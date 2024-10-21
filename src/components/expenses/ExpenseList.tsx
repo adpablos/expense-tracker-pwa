@@ -104,10 +104,6 @@ const ExpenseList: React.FC = () => {
     ).finally(() => setIsLoading(false));
   }, [dispatch, currentPage, limit, filters]);
 
-  useEffect(() => {
-    fetchExpensesList();
-  }, [fetchExpensesList]);
-
   const handleFilterChange = (newFilters: FilterValues) => {
     setFilters(newFilters);
     setCurrentPage(1);
