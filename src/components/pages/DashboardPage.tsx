@@ -2,10 +2,14 @@
 import React from 'react';
 import styled from 'styled-components';
 
+import { useHouseholds } from '../../hooks/useHouseholds';
 import { theme } from '../../styles/theme';
 import ExpenseForm from '../expenses/ExpenseForm';
 import MonthlyExpensesChart from '../expenses/MonthlyExpensesChart';
 import { Col, Container, Row } from '../layout/Grid';
+
+// Importa el componente RecentExpenses si existe
+// import RecentExpenses from '../expenses/RecentExpenses';
 
 const HomeContainer = styled(Container)`
   padding-top: ${theme.padding.large};
@@ -35,9 +39,19 @@ const SectionTitle = styled.h2`
 `;
 
 const DashboardPage: React.FC = () => {
+  const { activeHousehold } = useHouseholds();
+
+  const getHouseholdName = () => {
+    if (!activeHousehold) return 'Sin hogar seleccionado';
+    if (typeof activeHousehold === 'string') return activeHousehold;
+    if (typeof activeHousehold === 'object' && 'name' in activeHousehold)
+      return activeHousehold.name;
+    return 'Hogar desconocido';
+  };
+
   return (
     <HomeContainer>
-      <Title>Gestor de Gastos</Title>
+      <Title>Dashboard de {getHouseholdName()}</Title>
       <Row>
         <Col xs={12} md={6}>
           <Section>
@@ -49,6 +63,15 @@ const DashboardPage: React.FC = () => {
           <Section>
             <SectionTitle>Distribución de gastos por categoría</SectionTitle>
             <MonthlyExpensesChart />
+          </Section>
+        </Col>
+      </Row>
+      <Row>
+        <Col xs={12}>
+          <Section>
+            <SectionTitle>Gastos Recientes</SectionTitle>
+            {/* Comenta o elimina la siguiente línea si RecentExpenses no existe */}
+            {/* <RecentExpenses /> */}
           </Section>
         </Col>
       </Row>

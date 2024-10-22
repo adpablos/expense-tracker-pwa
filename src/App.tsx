@@ -14,8 +14,9 @@ import CategoriesPage from './components/pages/CategoriesPage';
 import DashboardPage from './components/pages/DashboardPage';
 import HomePage from './components/pages/HomePage';
 import NotFoundPage from './components/pages/NotFoundPage';
-import ProfilePage from './components/pages/ProfilePage';
+import SettingsPage from './components/pages/SettingsPage';
 import PrivateRoute from './components/PrivateRoute';
+import { HouseholdProvider } from './contexts/HouseholdContext';
 import GlobalStyle from './styles/globalStyles';
 import { theme } from './styles/theme';
 
@@ -46,53 +47,55 @@ const App: React.FC = () => {
     >
       <ThemeProvider theme={theme}>
         <DataProvider>
-          <Router>
-            <GlobalStyle />
-            <AppContainer>
-              <NavigationBar />
-              <MainContent>
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route
-                    path="/list"
-                    element={
-                      <PrivateRoute>
-                        <ExpenseList />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/categories"
-                    element={
-                      <PrivateRoute>
-                        <CategoriesPage />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/profile"
-                    element={
-                      <PrivateRoute>
-                        <ProfilePage />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route path="/callback" element={<AuthCallback />} />
-                  <Route
-                    path="/dashboard"
-                    element={
-                      <PrivateRoute>
-                        <DashboardPage />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route path="/complete-registration" element={<CompleteRegistration />} />
-                  <Route path="*" element={<NotFoundPage />} />
-                </Routes>
-              </MainContent>
-              <Footer />
-            </AppContainer>
-          </Router>
+          <HouseholdProvider>
+            <Router>
+              <GlobalStyle />
+              <AppContainer>
+                <NavigationBar />
+                <MainContent>
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route
+                      path="/expenses"
+                      element={
+                        <PrivateRoute>
+                          <ExpenseList />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/categories"
+                      element={
+                        <PrivateRoute>
+                          <CategoriesPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/settings"
+                      element={
+                        <PrivateRoute>
+                          <SettingsPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route path="/callback" element={<AuthCallback />} />
+                    <Route
+                      path="/dashboard"
+                      element={
+                        <PrivateRoute>
+                          <DashboardPage />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route path="/complete-registration" element={<CompleteRegistration />} />
+                    <Route path="*" element={<NotFoundPage />} />
+                  </Routes>
+                </MainContent>
+                <Footer />
+              </AppContainer>
+            </Router>
+          </HouseholdProvider>
         </DataProvider>
       </ThemeProvider>
     </Auth0Provider>

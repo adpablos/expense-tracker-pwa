@@ -1,187 +1,212 @@
 /* eslint-disable import/no-named-as-default */
 import { useAuth0 } from '@auth0/auth0-react';
-import React, { useState, useEffect } from 'react';
-import {
-  FaSignInAlt,
-  FaUserPlus,
-  FaSignOutAlt,
-  FaBars,
-  FaTimes,
-  FaChartBar,
-  FaTags,
-} from 'react-icons/fa';
+import React, { useState, useRef, useEffect } from 'react';
+import { FaChartBar, FaCog, FaUser, FaSignOutAlt, FaUserPlus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
-import logo from '../../assets/logo.svg';
-
-import Button from './Button';
+import { ReactComponent as LogoSVG } from '../../assets/logo.svg';
 
 const Nav = styled.nav`
+  background-color: white;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const NavContent = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: ${({ theme }) => theme.padding.medium};
-  background-color: ${({ theme }) => theme.colors.backgroundLight};
-  box-shadow: ${({ theme }) => theme.shadows.small};
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
+  max-width: 1200px;
+  margin: 0 auto;
 `;
 
 const Logo = styled(Link)`
-  display: flex;
-  align-items: center;
-`;
-
-const LogoImage = styled.img`
-  height: 40px;
-`;
-
-const NavItems = styled.div<{ $isOpen: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: ${({ theme }) => theme.space.medium};
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    flex-direction: column;
-    position: fixed;
-    top: 70px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: ${({ theme }) => theme.colors.backgroundLight};
-    transition: transform 0.3s ease-in-out;
-    transform: ${({ $isOpen }) => ($isOpen ? 'translateX(0)' : 'translateX(-100%)')};
-    padding: ${({ theme }) => theme.padding.medium};
-    overflow-y: auto;
-    z-index: 1000;
+  svg {
+    height: 40px;
   }
+`;
+
+const NavItems = styled.div`
+  display: flex;
+  align-items: center;
 `;
 
 const NavLink = styled(Link)`
   color: ${({ theme }) => theme.colors.text};
   text-decoration: none;
-  padding: ${({ theme }) => theme.padding.small};
-  margin: 0 ${({ theme }) => theme.space.small};
+  margin-left: 1.5rem;
+  display: flex;
+  align-items: center;
 
   &:hover {
-    color: ${({ theme }) => theme.colors.primary};
+    text-decoration: underline;
   }
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    width: 100%;
-    text-align: center;
-    padding: ${({ theme }) => theme.padding.medium};
+  svg {
+    margin-right: 0.5rem;
   }
 `;
 
-const ButtonContainer = styled.div`
-  display: flex;
-  gap: ${({ theme }) => theme.space.medium};
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    flex-direction: column;
-    width: 100%;
-  }
+const UserMenu = styled.div`
+  position: relative;
+  margin-left: 1.5rem;
 `;
 
-const HamburgerButton = styled.button`
-  display: none;
+const UserButton = styled.button`
   background: none;
   border: none;
-  font-size: 1.5rem;
+  color: ${({ theme }) => theme.colors.text};
   cursor: pointer;
-  z-index: 1001;
+  display: flex;
+  align-items: center;
 
-  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    display: block;
+  img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+  }
+`;
+
+const UserDropdown = styled.div<{ isOpen: boolean }>`
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: ${({ isOpen }) => (isOpen ? 'block' : 'none')};
+  min-width: 200px;
+`;
+
+const DropdownItem = styled(Link)`
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  color: ${({ theme }) => theme.colors.text};
+  text-decoration: none;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.backgroundLight};
+  }
+
+  svg {
+    margin-right: 0.5rem;
+  }
+`;
+
+const DropdownButton = styled.button`
+  display: flex;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 1rem;
+  color: ${({ theme }) => theme.colors.text};
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: inherit;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.backgroundLight};
+  }
+
+  svg {
+    margin-right: 0.5rem;
+  }
+`;
+
+const AuthButton = styled.button<{ primary?: boolean }>`
+  color: ${({ theme, primary }) => (primary ? theme.colors.white : theme.colors.primary)};
+  background-color: ${({ theme, primary }) => (primary ? theme.colors.primary : 'transparent')};
+  border: 2px solid ${({ theme }) => theme.colors.primary};
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  margin-left: 1rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+
+  &:hover {
+    background-color: ${({ theme, primary }) =>
+      primary ? theme.colors.primaryDark : theme.colors.primaryLight};
+    color: ${({ theme, primary }) => (primary ? theme.colors.white : theme.colors.primaryDark)};
+  }
+
+  svg {
+    margin-right: 0.5rem;
   }
 `;
 
 const NavigationBar: React.FC = () => {
-  const { isAuthenticated, isLoading, loginWithRedirect, logout, error } = useAuth0();
-  const [isOpen, setIsOpen] = useState(false);
-  const [authState, setAuthState] = useState(false);
+  const { isAuthenticated, loginWithRedirect, logout, user } = useAuth0();
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!isLoading) {
-      setAuthState(isAuthenticated);
-    }
-  }, [isAuthenticated, isLoading]);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
 
-  useEffect(() => {
-    if (error) {
-      console.error('Auth0 error:', error);
-      setAuthState(false);
-    }
-  }, [error]);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
-  const handleLogout = () => {
-    logout({ logoutParams: { returnTo: window.location.origin } });
-    setAuthState(false);
-  };
-
-  const handleLogin = () => {
+  const handleLogin = () => loginWithRedirect();
+  const handleSignUp = () =>
     loginWithRedirect({
-      authorizationParams: {
-        ui_locales: 'es',
-      },
+      authorizationParams: { screen_hint: 'signup' },
     });
-  };
-
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
-
-  if (isLoading) {
-    return <Nav>Cargando...</Nav>;
-  }
 
   return (
     <Nav>
-      <Logo to="/">
-        <LogoImage src={logo} alt="Expense Tracker" />
-      </Logo>
-      <HamburgerButton onClick={toggleMenu}>{isOpen ? <FaTimes /> : <FaBars />}</HamburgerButton>
-      <NavItems $isOpen={isOpen}>
-        {authState ? (
-          <>
-            <NavLink to="/dashboard" onClick={() => setIsOpen(false)}>
+      <NavContent>
+        <Logo to="/">
+          <LogoSVG />
+        </Logo>
+        {isAuthenticated ? (
+          <NavItems>
+            <NavLink to="/dashboard">
               <FaChartBar /> Dashboard
             </NavLink>
-            <NavLink to="/list" onClick={() => setIsOpen(false)}>
-              <FaChartBar /> Ver Gastos
-            </NavLink>
-            <NavLink to="/categories" onClick={() => setIsOpen(false)}>
-              <FaTags /> Categorías
-            </NavLink>
-            <Button onClick={handleLogout} variant="secondary">
-              <FaSignOutAlt /> <span style={{ marginLeft: '0.5em' }}>Cerrar sesión</span>
-            </Button>
-          </>
+            <UserMenu ref={userMenuRef}>
+              <UserButton onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
+                {user?.picture ? <img src={user.picture} alt={user.name || 'User'} /> : <FaUser />}
+                {user?.name}
+              </UserButton>
+              <UserDropdown isOpen={isUserMenuOpen}>
+                <DropdownItem to="/settings" onClick={() => setIsUserMenuOpen(false)}>
+                  <FaCog /> Ajustes
+                </DropdownItem>
+                <DropdownButton
+                  onClick={() => {
+                    logout();
+                    setIsUserMenuOpen(false);
+                  }}
+                >
+                  <FaSignOutAlt /> Cerrar sesión
+                </DropdownButton>
+              </UserDropdown>
+            </UserMenu>
+          </NavItems>
         ) : (
-          <ButtonContainer>
-            <Button onClick={() => handleLogin()} variant="secondary">
-              <FaSignInAlt /> <span style={{ marginLeft: '0.5em' }}>Iniciar sesión</span>
-            </Button>
-            <Button
-              onClick={() =>
-                loginWithRedirect({
-                  authorizationParams: {
-                    screen_hint: 'signup',
-                  },
-                })
-              }
-              variant="primary"
-            >
-              <FaUserPlus /> <span style={{ marginLeft: '0.5em' }}>Registrarse</span>
-            </Button>
-          </ButtonContainer>
+          <NavItems>
+            <AuthButton onClick={handleLogin}>
+              <FaUser /> Iniciar sesión
+            </AuthButton>
+            <AuthButton primary onClick={handleSignUp}>
+              <FaUserPlus /> Registrarse
+            </AuthButton>
+          </NavItems>
         )}
-      </NavItems>
+      </NavContent>
     </Nav>
   );
 };
