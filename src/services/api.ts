@@ -3,6 +3,7 @@ import axios, { AxiosError } from 'axios';
 
 import { ExpenseInput, ExpenseFromAPI, ExpensesAPIResponse, Category, Subcategory } from '../types';
 
+console.log('API Base URL (REACT_APP_BACKEND_HOST):', process.env.REACT_APP_BACKEND_HOST);
 const API_BASE_URL = process.env.REACT_APP_BACKEND_HOST || 'http://localhost:3001';
 
 const api = axios.create({
