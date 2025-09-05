@@ -3,7 +3,6 @@ import axios, { AxiosError } from 'axios';
 
 import { ExpenseInput, ExpenseFromAPI, ExpensesAPIResponse, Category, Subcategory } from '../types';
 
-console.log('API Base URL (REACT_APP_BACKEND_HOST):', process.env.REACT_APP_BACKEND_HOST);
 const API_BASE_URL = process.env.REACT_APP_BACKEND_HOST || 'http://localhost:3001';
 
 const api = axios.create({
@@ -15,10 +14,25 @@ const handleError = (error: Error | AxiosError) => {
   throw error;
 };
 
+const getActiveHouseholdId = (): string | null => localStorage.getItem('active_household_id');
+export const setActiveHouseholdId = (householdId: string | null): void => {
+  if (householdId) {
+    localStorage.setItem('active_household_id', householdId);
+    api.defaults.headers.common['X-Household-Id'] = householdId;
+  } else {
+    localStorage.removeItem('active_household_id');
+    delete api.defaults.headers.common['X-Household-Id'];
+  }
+};
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('auth_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  const householdId = getActiveHouseholdId();
+  if (householdId) {
+    config.headers['X-Household-Id'] = householdId;
   }
   return config;
 });

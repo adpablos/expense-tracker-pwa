@@ -1,7 +1,7 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-import api from '../services/api';
+import api, { setActiveHouseholdId } from '../services/api';
 
 export interface Household {
   id: string;
@@ -26,9 +26,7 @@ export const useHouseholds = () => {
         },
       });
       setHouseholds(response.data);
-      if (response.data.length > 0 && !activeHousehold) {
-        setActiveHousehold(response.data[0]);
-      }
+      if (response.data.length > 0 && !activeHousehold) setActiveHousehold(response.data[0]);
       fetchedRef.current = true;
     } catch (error) {
       console.error('Error fetching households:', error);
@@ -41,6 +39,7 @@ export const useHouseholds = () => {
 
   const setActiveHouseholdSafely = useCallback((household: Household | null) => {
     setActiveHousehold(household);
+    setActiveHouseholdId(household ? household.id : null);
   }, []);
 
   return {
