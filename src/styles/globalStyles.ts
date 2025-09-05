@@ -1,7 +1,5 @@
 import { createGlobalStyle } from 'styled-components';
 
-import { theme } from './theme';
-
 const GlobalStyle = createGlobalStyle`
   * {
     box-sizing: border-box;
@@ -19,21 +17,18 @@ const GlobalStyle = createGlobalStyle`
       'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: ${theme.colors.background};
-    color: ${theme.colors.text};
+    background: linear-gradient(180deg, ${({ theme }) => theme.colors.gradientFrom}, ${({ theme }) => theme.colors.gradientTo});
+    color: ${({ theme }) => theme.colors.text};
   }
 
   a {
-    color: ${theme.colors.primary};
+    color: ${({ theme }) => theme.colors.primary};
     text-decoration: none;
-    &:hover {
-      text-decoration: underline;
-    }
+    transition: color ${({ theme }) => theme.transitions.default};
+    &:hover { color: ${({ theme }) => theme.colors.primaryHover}; }
   }
 
-  button {
-    cursor: pointer;
-  }
+  button { cursor: pointer; }
 
   input, select, textarea {
     font-family: inherit;
@@ -41,33 +36,34 @@ const GlobalStyle = createGlobalStyle`
   }
 
   h1, h2, h3, h4, h5, h6 {
-    margin-bottom: ${theme.padding.medium};
-    color: ${theme.colors.text};
+    margin-bottom: ${({ theme }) => theme.padding.medium};
+    color: ${({ theme }) => theme.colors.text};
+    letter-spacing: -0.01em;
   }
 
   p {
-    margin-bottom: ${theme.padding.small};
+    margin-bottom: ${({ theme }) => theme.padding.small};
   }
 
-  // Estilos para el scrollbar
+  // Scrollbar styles
   ::-webkit-scrollbar {
     width: 8px;
   }
 
   ::-webkit-scrollbar-track {
-    background: ${theme.colors.backgroundLight};
+    background: ${({ theme }) => theme.colors.backgroundLight};
   }
 
   ::-webkit-scrollbar-thumb {
-    background: ${theme.colors.primary};
+    background: ${({ theme }) => theme.colors.primary};
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: ${theme.colors.primaryHover};
+    background: ${({ theme }) => theme.colors.primaryHover};
   }
 
-  // Clase de utilidad para ocultar elementos visualmente pero mantenerlos accesibles
+  // Visually-hidden utility
   .visually-hidden {
     position: absolute;
     width: 1px;
@@ -78,6 +74,12 @@ const GlobalStyle = createGlobalStyle`
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+  }
+  
+  // Focus ring for accessibility
+  :focus-visible {
+    outline: 3px solid ${({ theme }) => theme.colors.ring};
+    outline-offset: 2px;
   }
 `;
 
