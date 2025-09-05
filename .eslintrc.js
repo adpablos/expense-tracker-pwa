@@ -21,6 +21,22 @@ module.exports = {
       version: 'detect',
     },
   },
+  overrides: [
+    {
+      files: ['server.js'],
+      env: { node: true },
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off',
+      },
+    },
+    {
+      files: ['src/**/*.{ts,tsx}'],
+      rules: {
+        // Reduce noisy false positives for default imports matching named exports
+        'import/no-named-as-default': 'off',
+      },
+    },
+  ],
   rules: {
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': [
