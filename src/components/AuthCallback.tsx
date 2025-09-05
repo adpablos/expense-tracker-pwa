@@ -35,30 +35,45 @@ const AuthCallback: React.FC = () => {
       if (isAuthenticated) {
         try {
           const user = await getIdTokenClaims();
-          const accessToken = await getAccessTokenSilently();
+          const accessToken = await getAccessTokenSilently({
+            authorizationParams: {
+              audience: process.env.REACT_APP_AUTH0_AUDIENCE!,
+              scope: 'openid profile email offline_access',
+            },
+          });
 
           if (user) {
             localStorage.setItem('auth_token', accessToken);
 
             try {
-              // Intentamos obtener la información del usuario
-              const existingUser = await getUser();
-              console.log('Usuario existente en nuestra API');
-
-              // Si el usuario no existe, lo registramos
-              if (!existingUser) {
-                await register({
-                  auth_provider_id: user.sub,
-                  name: user.name || '',
-                  email: user.email || '',
-                });
-                console.log('Usuario registrado exitosamente en nuestra API');
-              }
+              await getUser();
             } catch (error) {
               const apiError = error as ApiError;
-              console.error('Error al obtener/registrar usuario en nuestra API:', apiError);
-              setModalError(`Error al procesar el usuario en nuestro sistema: ${apiError.message}`);
-              return;
+              const status = apiError.response?.status;
+              if (status === 401 || status === 403 || status === 404) {
+                try {
+                  await register({
+                    auth_provider_id: user.sub,
+                    name: user.name || '',
+                    email: user.email || '',
+                  });
+                } catch (regErr) {
+                  const regError = regErr as ApiError;
+                  setModalError(
+                    `No se pudo registrar el usuario en nuestro sistema: ${
+                      regError.response?.data?.message || regError.message
+                    }`
+                  );
+                  return;
+                }
+              } else {
+                setModalError(
+                  `Error al procesar el usuario en nuestro sistema: ${
+                    apiError.response?.data?.message || apiError.message
+                  }`
+                );
+                return;
+              }
             }
 
             await dispatch(
