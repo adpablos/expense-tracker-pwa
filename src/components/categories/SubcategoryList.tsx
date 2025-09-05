@@ -1,5 +1,6 @@
 /* eslint-disable import/no-named-as-default */
 import React, { useState } from 'react';
+import type { IconBaseProps } from 'react-icons';
 import { FaPlus } from 'react-icons/fa';
 import styled from 'styled-components';
 
@@ -50,6 +51,8 @@ const SubcategoryList: React.FC<SubcategoryListProps> = ({
     }
   };
 
+  const PlusIcon = FaPlus as unknown as React.ComponentType<IconBaseProps>;
+
   return (
     <>
       <List>
@@ -70,7 +73,10 @@ const SubcategoryList: React.FC<SubcategoryListProps> = ({
           placeholder="Nueva subcategoría"
         />
         <AddButton type="submit">
-          <FaPlus /> Añadir
+          <span>
+            <PlusIcon />
+          </span>{' '}
+          Añadir
         </AddButton>
       </AddSubcategoryForm>
     </>

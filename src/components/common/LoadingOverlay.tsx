@@ -3,8 +3,6 @@ import { FaSpinner } from 'react-icons/fa';
 // eslint-disable-next-line import/no-named-as-default
 import styled, { keyframes } from 'styled-components';
 
-import { theme } from '../../styles/theme';
-
 const spin = keyframes`
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -26,12 +24,12 @@ const Overlay = styled.div`
 
 const Spinner = styled(FaSpinner)`
   font-size: 3rem;
-  color: ${theme.colors.background};
+  color: ${({ theme }) => theme.colors.background};
   animation: ${spin} 1s linear infinite;
 `;
 
 const Message = styled.p`
-  color: ${theme.colors.background};
+  color: ${({ theme }) => theme.colors.background};
   margin-top: 1rem;
   font-size: 1.2rem;
 `;

@@ -1,15 +1,17 @@
 /* eslint-disable import/no-named-as-default */
 import React from 'react';
+import type { IconBaseProps } from 'react-icons';
 import { FaEdit, FaTrash } from 'react-icons/fa';
-import styled from 'styled-components';
+import styledComponents from 'styled-components';
 
 import { FlexContainer, Margin } from '../../styles/utilities';
 import { Expense } from '../../types';
 import { formatDateForDisplay } from '../../utils/dateUtils';
 import { formatAmount } from '../../utils/expenseUtils';
 import Button from '../common/Button';
+import Tag from '../ui/Tag';
 
-const Card = styled.div`
+const Card = styledComponents.div`
   background-color: ${({ theme }) => theme.colors.backgroundLight};
   border-radius: ${({ theme }) => theme.borderRadius.medium};
   box-shadow: ${({ theme }) => theme.shadows.small};
@@ -21,39 +23,35 @@ const Card = styled.div`
   }
 `;
 
-const CardHeader = styled(FlexContainer)`
+const CardHeader = styledComponents(FlexContainer)`
   justify-content: space-between;
   align-items: center;
   margin-bottom: ${({ theme }) => theme.space.small};
 `;
 
-const ExpenseDate = styled.span`
+const ExpenseDate = styledComponents.span`
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   font-size: ${({ theme }) => theme.fontSizes.small};
 `;
 
-const Amount = styled.span`
+const Amount = styledComponents.span`
   color: ${({ theme }) => theme.colors.primary};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   font-size: ${({ theme }) => theme.fontSizes.medium};
 `;
 
-const Description = styled.p`
+const Description = styledComponents.p`
   margin: 0;
   font-size: ${({ theme }) => theme.fontSizes.medium};
   margin-bottom: ${({ theme }) => theme.space.small};
 `;
 
-const Category = styled.span`
-  background-color: ${({ theme }) => theme.colors.secondary};
-  color: ${({ theme }) => theme.colors.background};
-  padding: 2px 6px;
-  border-radius: 12px;
-  font-size: ${({ theme }) => theme.fontSizes.xsmall};
-  margin-right: ${({ theme }) => theme.space.xsmall};
+const CategoryGroup = styledComponents.div`
+  display: inline-flex;
+  gap: ${({ theme }) => theme.space.xsmall};
 `;
 
-const ActionButton = styled(Button)`
+const ActionButton = styledComponents(Button)`
   padding: ${({ theme }) => theme.space.xsmall};
 `;
 
@@ -62,6 +60,9 @@ interface ExpenseCardProps {
   onEdit: (expense: Expense) => void;
   onDelete: (expense: Expense) => void;
 }
+
+const EditIcon = FaEdit as unknown as React.ComponentType<IconBaseProps>;
+const TrashIcon = FaTrash as unknown as React.ComponentType<IconBaseProps>;
 
 const ExpenseCard: React.FC<ExpenseCardProps> = ({ expense, onEdit, onDelete }) => {
   return (
@@ -72,17 +73,17 @@ const ExpenseCard: React.FC<ExpenseCardProps> = ({ expense, onEdit, onDelete }) 
       </CardHeader>
       <Description>{expense.description}</Description>
       <FlexContainer justify="space-between" align="center">
-        <div>
-          <Category>{expense.category}</Category>
-          {expense.subcategory && <Category>{expense.subcategory}</Category>}
-        </div>
+        <CategoryGroup>
+          <Tag variant="primary">{expense.category}</Tag>
+          {expense.subcategory && <Tag>{expense.subcategory}</Tag>}
+        </CategoryGroup>
         <FlexContainer>
           <ActionButton variant="primary" onClick={() => onEdit(expense)} isRound size="small">
-            <FaEdit />
+            <EditIcon />
           </ActionButton>
           <Margin size="xsmall" direction="left">
             <ActionButton variant="danger" onClick={() => onDelete(expense)} isRound size="small">
-              <FaTrash />
+              <TrashIcon />
             </ActionButton>
           </Margin>
         </FlexContainer>

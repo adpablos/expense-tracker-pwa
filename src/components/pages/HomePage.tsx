@@ -1,120 +1,93 @@
 /* eslint-disable import/no-named-as-default */
 import { useAuth0 } from '@auth0/auth0-react';
 import React from 'react';
-import { FaCamera, FaTags, FaCog } from 'react-icons/fa';
+import { FaBolt, FaCamera, FaShieldAlt } from 'react-icons/fa';
 import styled from 'styled-components';
 
 import Button from '../common/Button';
+import Container from '../ui/Container';
 
-const HomeContainer = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: ${({ theme }) => theme.padding.large};
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    padding: ${({ theme }) => theme.padding.medium};
-  }
+const HomeContainer = styled(Container)`
+  padding-top: ${({ theme }) => theme.space.xxlarge};
+  padding-bottom: ${({ theme }) => theme.space.xxlarge};
 `;
 
 const Hero = styled.section`
   text-align: center;
-  margin-bottom: ${({ theme }) => theme.space.xlarge};
+  margin: 0 auto ${({ theme }) => theme.space.xxlarge};
+  max-width: 880px;
+  padding: ${({ theme }) => theme.space.xxlarge} ${({ theme }) => theme.space.medium};
+  border-radius: ${({ theme }) => theme.borderRadius.large};
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  box-shadow: ${({ theme }) => theme.shadows.medium};
+`;
+
+const Badge = styled.span`
+  display: inline-block;
+  font-size: ${({ theme }) => theme.fontSizes.small};
+  color: ${({ theme }) => theme.colors.primary};
+  background: ${({ theme }) => theme.colors.primaryLight}22;
+  border: 1px solid ${({ theme }) => theme.colors.primaryLight};
+  border-radius: ${({ theme }) => theme.borderRadius.pill};
+  padding: 0.25rem 0.6rem;
+  margin-bottom: ${({ theme }) => theme.space.small};
 `;
 
 const Title = styled.h1`
-  font-size: ${({ theme }) => theme.fontSizes.xxlarge};
-  color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: ${({ theme }) => theme.space.medium};
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    font-size: ${({ theme }) => theme.fontSizes.xlarge};
-  }
+  font-size: clamp(2.4rem, 3.8vw, 3.5rem);
+  color: ${({ theme }) => theme.colors.dark};
+  letter-spacing: -0.02em;
+  margin-bottom: ${({ theme }) => theme.space.small};
 `;
 
 const Subtitle = styled.p`
   font-size: ${({ theme }) => theme.fontSizes.large};
   color: ${({ theme }) => theme.colors.textLight};
-  margin-bottom: ${({ theme }) => theme.space.large};
-
-  @media (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
-    font-size: ${({ theme }) => theme.fontSizes.medium};
-  }
+  margin: 0 auto ${({ theme }) => theme.space.large};
+  max-width: 720px;
 `;
 
-const FeaturesSection = styled.section`
+const Actions = styled.div`
+  display: inline-flex;
+  gap: ${({ theme }) => theme.space.small};
+`;
+
+const Features = styled.section`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: ${({ theme }) => theme.space.large};
-  margin-bottom: ${({ theme }) => theme.space.xlarge};
+  margin: 0 auto ${({ theme }) => theme.space.xxlarge};
+  max-width: 980px;
 `;
 
-const FeatureCard = styled.div`
-  background-color: ${({ theme }) => theme.colors.backgroundLight};
+const Feature = styled.div`
+  text-align: left;
+  padding: ${({ theme }) => theme.space.medium};
+  border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius.medium};
-  padding: ${({ theme }) => theme.padding.medium};
-  box-shadow: ${({ theme }) => theme.shadows.medium};
-  text-align: center;
+  background: ${({ theme }) => theme.colors.surface};
 `;
 
 const FeatureIcon = styled.div`
-  font-size: 3rem;
+  font-size: 1.4rem;
   color: ${({ theme }) => theme.colors.primary};
-  margin-bottom: ${({ theme }) => theme.space.medium};
+  margin-bottom: ${({ theme }) => theme.space.small};
 `;
 
 const FeatureTitle = styled.h3`
-  font-size: ${({ theme }) => theme.fontSizes.large};
-  color: ${({ theme }) => theme.colors.text};
-  margin-bottom: ${({ theme }) => theme.space.small};
+  margin: 0 0 ${({ theme }) => theme.space.xsmall};
 `;
 
-const FeatureDescription = styled.p`
+const FeatureCopy = styled.p`
   color: ${({ theme }) => theme.colors.textLight};
+  margin: 0;
 `;
 
-const HowItWorksSection = styled.section`
-  margin-bottom: ${({ theme }) => theme.space.xlarge};
-`;
-
-const HowItWorksTitle = styled.h2`
-  font-size: ${({ theme }) => theme.fontSizes.xlarge};
-  color: ${({ theme }) => theme.colors.text};
+const SmallNote = styled.p`
   text-align: center;
-  margin-bottom: ${({ theme }) => theme.space.large};
-`;
-
-const StepContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: ${({ theme }) => theme.space.large};
-`;
-
-const Step = styled.div`
-  text-align: center;
-  padding: ${({ theme }) => theme.padding.medium};
-`;
-
-const StepNumber = styled.div`
-  background-color: ${({ theme }) => theme.colors.primary};
-  color: white;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 0 auto ${({ theme }) => theme.space.small};
-  font-weight: bold;
-`;
-
-const StepTitle = styled.h3`
-  font-size: ${({ theme }) => theme.fontSizes.large};
-  color: ${({ theme }) => theme.colors.text};
-  margin-bottom: ${({ theme }) => theme.space.small};
-`;
-
-const StepDescription = styled.p`
   color: ${({ theme }) => theme.colors.textLight};
+  margin-top: -${({ theme }) => theme.space.large};
 `;
 
 const HomePage: React.FC = () => {
@@ -131,57 +104,47 @@ const HomePage: React.FC = () => {
   return (
     <HomeContainer>
       <Hero>
-        <Title>Controla tus gastos de forma sencilla</Title>
-        <Subtitle>Una herramienta personal para gestionar tus finanzas con facilidad</Subtitle>
-        <Button onClick={handleRegister} variant="primary">
-          Empieza gratis
-        </Button>
+        <Badge>Minimal expense tracking</Badge>
+        <Title>Track your spending without the friction</Title>
+        <Subtitle>
+          Capture a receipt in seconds, let AI categorize it, and instantly see where your money
+          goes. No spreadsheets. No busywork. Just clarity.
+        </Subtitle>
+        <Actions>
+          <Button onClick={handleRegister} variant="primary">
+            Create account
+          </Button>
+          <Button onClick={() => loginWithRedirect()} variant="secondary">
+            Sign in
+          </Button>
+        </Actions>
       </Hero>
 
-      <FeaturesSection>
-        <FeatureCard>
+      <Features>
+        <Feature>
           <FeatureIcon>
             <FaCamera />
           </FeatureIcon>
-          <FeatureTitle>Registro fácil de gastos</FeatureTitle>
-          <FeatureDescription>Captura tus gastos con fotos o notas de voz</FeatureDescription>
-        </FeatureCard>
-        <FeatureCard>
+          <FeatureTitle>Capture fast</FeatureTitle>
+          <FeatureCopy>Snap a photo or record audio. We parse and prefill for you.</FeatureCopy>
+        </Feature>
+        <Feature>
           <FeatureIcon>
-            <FaTags />
+            <FaBolt />
           </FeatureIcon>
-          <FeatureTitle>Categorización inteligente</FeatureTitle>
-          <FeatureDescription>Organiza automáticamente tus gastos con IA</FeatureDescription>
-        </FeatureCard>
-        <FeatureCard>
+          <FeatureTitle>Smart categorization</FeatureTitle>
+          <FeatureCopy>AI assigns category and subcategory; you keep full control.</FeatureCopy>
+        </Feature>
+        <Feature>
           <FeatureIcon>
-            <FaCog />
+            <FaShieldAlt />
           </FeatureIcon>
-          <FeatureTitle>Personalización</FeatureTitle>
-          <FeatureDescription>Crea y gestiona tus propias categorías</FeatureDescription>
-        </FeatureCard>
-      </FeaturesSection>
+          <FeatureTitle>Made for households</FeatureTitle>
+          <FeatureCopy>Share budgets, manage members, and stay in sync effortlessly.</FeatureCopy>
+        </Feature>
+      </Features>
 
-      <HowItWorksSection>
-        <HowItWorksTitle>Cómo funciona</HowItWorksTitle>
-        <StepContainer>
-          <Step>
-            <StepNumber>1</StepNumber>
-            <StepTitle>Regístrate y personaliza</StepTitle>
-            <StepDescription>Crea tu cuenta y configura tus categorías</StepDescription>
-          </Step>
-          <Step>
-            <StepNumber>2</StepNumber>
-            <StepTitle>Registra tus gastos</StepTitle>
-            <StepDescription>Manual o automáticamente con fotos o voz</StepDescription>
-          </Step>
-          <Step>
-            <StepNumber>3</StepNumber>
-            <StepTitle>Visualiza y analiza</StepTitle>
-            <StepDescription>Revisa y comprende tus patrones de gasto</StepDescription>
-          </Step>
-        </StepContainer>
-      </HowItWorksSection>
+      <SmallNote>Works great on mobile. Install it as a PWA for a native feel.</SmallNote>
     </HomeContainer>
   );
 };

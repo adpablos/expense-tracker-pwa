@@ -1,5 +1,6 @@
 /* eslint-disable import/no-named-as-default */
 import React from 'react';
+import type { IconBaseProps } from 'react-icons';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import styled from 'styled-components';
 
@@ -48,6 +49,9 @@ interface ExpenseTableProps {
   onDelete: (expense: Expense) => void;
 }
 
+const EditIcon = FaEdit as unknown as React.ComponentType<IconBaseProps>;
+const TrashIcon = FaTrash as unknown as React.ComponentType<IconBaseProps>;
+
 const ExpenseTable: React.FC<ExpenseTableProps> = ({ expenses, onEdit, onDelete }) => {
   return (
     <TableWrapper>
@@ -79,7 +83,7 @@ const ExpenseTable: React.FC<ExpenseTableProps> = ({ expenses, onEdit, onDelete 
                     size="small"
                     aria-label="Editar gasto"
                   >
-                    <FaEdit />
+                    <EditIcon />
                   </Button>
                   <Button
                     variant="danger"
@@ -88,7 +92,7 @@ const ExpenseTable: React.FC<ExpenseTableProps> = ({ expenses, onEdit, onDelete 
                     size="small"
                     aria-label="Eliminar gasto"
                   >
-                    <FaTrash />
+                    <TrashIcon />
                   </Button>
                 </ButtonContainer>
               </TableCell>

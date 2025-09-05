@@ -1,6 +1,7 @@
 /* eslint-disable import/no-named-as-default */
 import { isAxiosError } from 'axios';
 import React, { useState, useEffect } from 'react';
+import type { IconBaseProps } from 'react-icons';
 import { FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
@@ -202,6 +203,12 @@ const CategoriesManager: React.FC = () => {
     }
   };
 
+  const PlusIcon = FaPlus as unknown as React.ComponentType<IconBaseProps>;
+  const EditIcon = FaEdit as unknown as React.ComponentType<IconBaseProps>;
+  const TrashIcon = FaTrash as unknown as React.ComponentType<IconBaseProps>;
+  const ChevronUpIcon = FaChevronUp as unknown as React.ComponentType<IconBaseProps>;
+  const ChevronDownIcon = FaChevronDown as unknown as React.ComponentType<IconBaseProps>;
+
   const handleUpdateSubcategory = async (
     subcategoryId: string,
     categoryId: string,
@@ -266,7 +273,7 @@ const CategoriesManager: React.FC = () => {
                     setEditingCategory({ id: category.id, name: category.name });
                   }}
                 >
-                  <FaEdit />
+                  <EditIcon />
                 </Button>
                 <Button
                   variant="danger"
@@ -275,9 +282,9 @@ const CategoriesManager: React.FC = () => {
                     handleDeleteCategory(category.id, category.name);
                   }}
                 >
-                  <FaTrash />
+                  <TrashIcon />
                 </Button>
-                {expandedCategories[category.id] ? <FaChevronUp /> : <FaChevronDown />}
+                {expandedCategories[category.id] ? <ChevronUpIcon /> : <ChevronDownIcon />}
               </ActionButtons>
             </CategoryHeader>
             <SubcategoryList isExpanded={expandedCategories[category.id] || false}>
@@ -294,7 +301,7 @@ const CategoriesManager: React.FC = () => {
                         })
                       }
                     >
-                      <FaEdit />
+                      <EditIcon />
                     </Button>
                     <Button
                       variant="danger"
@@ -302,7 +309,7 @@ const CategoriesManager: React.FC = () => {
                         handleDeleteSubcategory(subcategory.id, category.id, subcategory.name)
                       }
                     >
-                      <FaTrash />
+                      <TrashIcon />
                     </Button>
                   </ActionButtons>
                 </SubcategoryItem>
@@ -316,7 +323,10 @@ const CategoriesManager: React.FC = () => {
                   }
                 />
                 <Button onClick={() => handleCreateSubcategory(category.id)}>
-                  <FaPlus /> Añadir
+                  <span>
+                    <PlusIcon />
+                  </span>{' '}
+                  Añadir
                 </Button>
               </SubcategoryItem>
             </SubcategoryList>

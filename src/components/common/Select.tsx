@@ -23,17 +23,20 @@ const StyledLabel = styled.label`
 `;
 
 const StyledSelect = styled.select`
-  padding: ${({ theme }) => theme.space.xsmall};
+  padding: ${({ theme }) => theme.space.small};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.borderRadius.small};
   font-size: ${({ theme }) => theme.fontSizes.medium};
   color: ${({ theme }) => theme.colors.text};
   background-color: ${({ theme }) => theme.colors.backgroundLight};
-  transition: border-color 0.3s ease;
+  transition:
+    box-shadow ${({ theme }) => theme.transitions.default},
+    border-color ${({ theme }) => theme.transitions.default};
 
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 0 0 4px ${({ theme }) => theme.colors.ring};
   }
 
   &:disabled {

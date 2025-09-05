@@ -1,40 +1,39 @@
 /* eslint-disable import/no-named-as-default */
 import React from 'react';
-import styled from 'styled-components';
+import styledComponents from 'styled-components';
 
 import { useHouseholds } from '../../hooks/useHouseholds';
-import { theme } from '../../styles/theme';
+// theme imported via styled theme in styled-components props
 import ExpenseForm from '../expenses/ExpenseForm';
 import MonthlyExpensesChart from '../expenses/MonthlyExpensesChart';
-import { Col, Container, Row } from '../layout/Grid';
+import { Col, Row } from '../layout/Grid';
+import Container from '../ui/Container';
+import PageHeader from '../ui/PageHeader';
 
 // Importa el componente RecentExpenses si existe
 // import RecentExpenses from '../expenses/RecentExpenses';
 
-const HomeContainer = styled(Container)`
-  padding-top: ${theme.padding.large};
-  padding-bottom: ${theme.padding.large};
+const HomeContainer = styledComponents(Container)`
+  padding-top: ${({ theme }) => theme.padding.large};
+  padding-bottom: ${({ theme }) => theme.padding.large};
 `;
 
-const Title = styled.h1`
-  color: ${theme.colors.primary};
-  font-size: ${theme.fontSizes.xxlarge};
-  margin-bottom: ${theme.padding.large};
-  text-align: center;
+const TitleSpacer = styledComponents.div`
+  margin-bottom: ${({ theme }) => theme.padding.large};
 `;
 
-const Section = styled.section`
-  background-color: ${theme.colors.backgroundLight};
-  border-radius: ${theme.borderRadius.medium};
-  padding: ${theme.padding.medium};
-  box-shadow: ${theme.shadows.medium};
+const SectionCard = styledComponents.section`
+  background-color: ${({ theme }) => theme.colors.backgroundLight};
+  border-radius: ${({ theme }) => theme.borderRadius.medium};
+  padding: ${({ theme }) => theme.padding.medium};
+  box-shadow: ${({ theme }) => theme.shadows.medium};
   height: 100%;
 `;
 
-const SectionTitle = styled.h2`
-  color: ${theme.colors.text};
-  font-size: ${theme.fontSizes.large};
-  margin-bottom: ${theme.padding.medium};
+const SectionTitle = styledComponents.h2`
+  color: ${({ theme }) => theme.colors.text};
+  font-size: ${({ theme }) => theme.fontSizes.large};
+  margin-bottom: ${({ theme }) => theme.padding.medium};
   text-align: center;
 `;
 
@@ -51,28 +50,33 @@ const DashboardPage: React.FC = () => {
 
   return (
     <HomeContainer>
-      <Title>Dashboard de {getHouseholdName()}</Title>
+      <TitleSpacer>
+        <PageHeader
+          title={`Resumen de ${getHouseholdName()}`}
+          subtitle="Una vista clara de tus hábitos de gasto"
+        />
+      </TitleSpacer>
       <Row>
         <Col xs={12} md={6}>
-          <Section>
-            <SectionTitle>Registrar Nuevo Gasto</SectionTitle>
+          <SectionCard>
+            <SectionTitle>Nuevo gasto</SectionTitle>
             <ExpenseForm />
-          </Section>
+          </SectionCard>
         </Col>
         <Col xs={12} md={6}>
-          <Section>
-            <SectionTitle>Distribución de gastos por categoría</SectionTitle>
+          <SectionCard>
+            <SectionTitle>Gastos por categoría</SectionTitle>
             <MonthlyExpensesChart />
-          </Section>
+          </SectionCard>
         </Col>
       </Row>
       <Row>
         <Col xs={12}>
-          <Section>
+          <SectionCard>
             <SectionTitle>Gastos Recientes</SectionTitle>
             {/* Comenta o elimina la siguiente línea si RecentExpenses no existe */}
             {/* <RecentExpenses /> */}
-          </Section>
+          </SectionCard>
         </Col>
       </Row>
     </HomeContainer>

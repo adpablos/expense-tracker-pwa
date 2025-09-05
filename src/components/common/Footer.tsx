@@ -1,22 +1,22 @@
 // src/components/common/Footer.tsx
 
 import React from 'react';
-import styled from 'styled-components';
+import styledComponents from 'styled-components';
 
-const FooterContainer = styled.footer`
+const FooterContainer = styledComponents.footer`
   background-color: ${({ theme }) => theme.colors.backgroundLight};
-  color: ${({ theme }) => theme.colors.text};
+  color: ${({ theme }) => theme.colors.textLight};
   padding: ${({ theme }) => theme.padding.medium} 0;
-  box-shadow: ${({ theme }) => theme.shadows.small};
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
-const FooterContent = styled.div`
+const FooterContent = styledComponents.div`
   max-width: 1200px;
   margin: 0 auto;
   text-align: center;
 `;
 
-const Copyright = styled.p`
+const Copyright = styledComponents.p`
   margin: 0;
 `;
 

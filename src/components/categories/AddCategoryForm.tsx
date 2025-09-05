@@ -1,5 +1,6 @@
 /* eslint-disable import/no-named-as-default */
 import React, { useState, useEffect } from 'react';
+import type { IconBaseProps } from 'react-icons';
 import { FaPlus } from 'react-icons/fa';
 import styled from 'styled-components';
 
@@ -72,6 +73,8 @@ const AddCategoryForm: React.FC<{ onAddCategory: (name: string) => void }> = ({
     }
   };
 
+  const PlusIcon = FaPlus as unknown as React.ComponentType<IconBaseProps>;
+
   return (
     <Form onSubmit={handleSubmit}>
       <InputWrapper>
@@ -83,7 +86,9 @@ const AddCategoryForm: React.FC<{ onAddCategory: (name: string) => void }> = ({
         />
       </InputWrapper>
       <AddButton type="submit" $isCompact={isCompact}>
-        <FaPlus />
+        <span>
+          <PlusIcon />
+        </span>
         <span>Añadir Categoría</span>
       </AddButton>
     </Form>

@@ -1,5 +1,6 @@
 /* eslint-disable import/no-named-as-default */
 import React, { useState } from 'react';
+import type { IconBaseProps } from 'react-icons';
 import { FaEdit, FaTrash, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import styled from 'styled-components';
 
@@ -61,6 +62,11 @@ interface CategoryCardProps {
   onDeleteSubcategory: (subcategoryId: string, categoryId: string, subcategoryName: string) => void;
 }
 
+const EditIcon = FaEdit as unknown as React.ComponentType<IconBaseProps>;
+const TrashIcon = FaTrash as unknown as React.ComponentType<IconBaseProps>;
+const ChevronDownIcon = FaChevronDown as unknown as React.ComponentType<IconBaseProps>;
+const ChevronUpIcon = FaChevronUp as unknown as React.ComponentType<IconBaseProps>;
+
 const CategoryCard: React.FC<CategoryCardProps> = ({
   category,
   onUpdateCategory,
@@ -78,17 +84,17 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
         <CategoryName>{category.name}</CategoryName>
         <ActionButtons>
           <ActionButton onClick={() => setIsEditing(true)}>
-            <FaEdit />
+            <EditIcon />
           </ActionButton>
           <ActionButton
             variant="danger"
             onClick={() => onDeleteCategory(category.id, category.name)}
           >
-            <FaTrash />
+            <TrashIcon />
           </ActionButton>
           <ToggleButton onClick={() => setIsExpanded(!isExpanded)}>
             {category.subcategories?.length || 0} subcategorías
-            {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
+            {isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
           </ToggleButton>
         </ActionButtons>
       </CategoryHeader>

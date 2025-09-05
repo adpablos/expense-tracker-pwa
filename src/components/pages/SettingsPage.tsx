@@ -1,31 +1,33 @@
 /* eslint-disable import/no-named-as-default */
 import React, { useState, useEffect } from 'react';
+import type { IconBaseProps } from 'react-icons';
 import { FaUser, FaHome, FaPlus } from 'react-icons/fa';
 import { useSelector, useDispatch } from 'react-redux';
-import styled from 'styled-components';
+import styledComponents from 'styled-components';
 
 import { useHouseholdContext } from '../../contexts/HouseholdContext';
 import { AppDispatch, RootState } from '../../store';
 import { updateProfile } from '../../store/slices/authSlice';
 import Button from '../common/Button';
 import Input from '../common/Input';
+import Container from '../ui/Container';
+import PageHeader from '../ui/PageHeader';
 
-const PageContainer = styled.div`
+const PlusIcon = FaPlus as unknown as React.ComponentType<IconBaseProps>;
+
+const PageContainer = styledComponents(Container)`
   max-width: 800px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-`;
-
-const Title = styled.h1`
-  font-size: 2rem;
+  margin-top: 2rem;
   margin-bottom: 2rem;
 `;
 
-const Section = styled.div`
+// Title removed in favor of PageHeader
+
+const Section = styledComponents.div`
   margin-bottom: 2rem;
 `;
 
-const SectionTitle = styled.h2`
+const SectionTitle = styledComponents.h2`
   font-size: 1.5rem;
   margin-bottom: 1rem;
   display: flex;
@@ -36,14 +38,14 @@ const SectionTitle = styled.h2`
   }
 `;
 
-const HouseholdGrid = styled.div`
+const HouseholdGrid = styledComponents.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
   margin-top: 1rem;
 `;
 
-const HouseholdCard = styled.div<{ isActive: boolean }>`
+const HouseholdCard = styledComponents.div<{ isActive: boolean }>`
   background-color: ${({ theme, isActive }) =>
     isActive ? theme.colors.primary : theme.colors.backgroundLight};
   color: ${({ isActive }) => (isActive ? 'white' : 'inherit')};
@@ -59,12 +61,12 @@ const HouseholdCard = styled.div<{ isActive: boolean }>`
   }
 `;
 
-const HouseholdName = styled.h3`
+const HouseholdName = styledComponents.h3`
   margin: 0;
   font-size: 1.2rem;
 `;
 
-const AddHouseholdCardBase = styled.div`
+const AddHouseholdCardBase = styledComponents.div`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -83,7 +85,7 @@ const AddHouseholdCardBase = styled.div`
   }
 `;
 
-const Modal = styled.div`
+const Modal = styledComponents.div`
   position: fixed;
   top: 0;
   left: 0;
@@ -95,7 +97,7 @@ const Modal = styled.div`
   justify-content: center;
 `;
 
-const ModalContent = styled.div`
+const ModalContent = styledComponents.div`
   background-color: white;
   padding: 2rem;
   border-radius: 8px;
@@ -140,10 +142,10 @@ const SettingsPage: React.FC = () => {
 
   return (
     <PageContainer>
-      <Title>Ajustes</Title>
+      <PageHeader title="Ajustes" subtitle="Tu cuenta y hogares" />
       <Section>
         <SectionTitle>
-          <FaUser /> Perfil de Usuario
+          <FaUser /> Perfil
         </SectionTitle>
         <form onSubmit={handleUpdateProfile}>
           <Input label="Nombre" value={name} onChange={(e) => setName(e.target.value)} />
@@ -158,7 +160,7 @@ const SettingsPage: React.FC = () => {
       </Section>
       <Section>
         <SectionTitle>
-          <FaHome /> Mis Hogares
+          <FaHome /> Hogares
         </SectionTitle>
         <HouseholdGrid>
           {households && households.length > 0 ? (
@@ -175,7 +177,9 @@ const SettingsPage: React.FC = () => {
             <p>No se encontraron hogares. Añade uno nuevo.</p>
           )}
           <AddHouseholdCardBase onClick={() => setIsModalOpen(true)}>
-            <FaPlus />
+            <span>
+              <PlusIcon />
+            </span>
             <span>Añadir Hogar</span>
           </AddHouseholdCardBase>
         </HouseholdGrid>

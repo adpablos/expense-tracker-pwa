@@ -1,27 +1,26 @@
 /* eslint-disable import/no-named-as-default */
 import React from 'react';
-import styled from 'styled-components';
+import styledComponents from 'styled-components';
 
 import CategoriesManager from '../categories/CategoriesManager';
+import Container from '../ui/Container';
+import PageHeader from '../ui/PageHeader';
 
-const PageContainer = styled.div`
-  padding: ${({ theme }) => theme.space.large};
+const PageContainer = styledComponents(Container)`
+  padding-top: ${({ theme }) => theme.space.large};
+  padding-bottom: ${({ theme }) => theme.space.large};
 `;
 
-const Title = styled.h1`
-  color: ${({ theme }) => theme.colors.primary};
+const HeaderSpacer = styledComponents.div`
   margin-bottom: ${({ theme }) => theme.space.medium};
-  text-align: left;
-
-  @media (max-width: 768px) {
-    text-align: center;
-  }
 `;
 
 const CategoriesPage: React.FC = () => {
   return (
     <PageContainer>
-      <Title>Gestión de Categorías</Title>
+      <HeaderSpacer>
+        <PageHeader title="Categorías" subtitle="Organiza cómo entiendes tus gastos" />
+      </HeaderSpacer>
       <CategoriesManager />
     </PageContainer>
   );

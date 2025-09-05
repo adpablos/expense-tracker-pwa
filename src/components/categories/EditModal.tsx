@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import type { IconBaseProps } from 'react-icons';
 import { FaEdit, FaSave, FaTimes } from 'react-icons/fa';
-import styled from 'styled-components';
+import { styled } from 'styled-components';
 
-import Button from '../common/Button';
-import Input from '../common/Input';
+import UIButton from '../common/Button';
+import TextInput from '../common/Input';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -59,6 +60,10 @@ interface EditModalProps {
   title: string;
 }
 
+const EditIcon = FaEdit as unknown as React.ComponentType<IconBaseProps>;
+const SaveIcon = FaSave as unknown as React.ComponentType<IconBaseProps>;
+const TimesIcon = FaTimes as unknown as React.ComponentType<IconBaseProps>;
+
 const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onSave, initialName, title }) => {
   const [name, setName] = useState(initialName);
 
@@ -79,11 +84,11 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onSave, initialN
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
         <Title>
-          <FaEdit style={{ marginRight: '0.5rem' }} /> {title}
+          <EditIcon style={{ marginRight: '0.5rem' }} /> {title}
         </Title>
         <InputContainer>
           <Label htmlFor="name">Nombre:</Label>
-          <Input
+          <TextInput
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -91,12 +96,12 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, onSave, initialN
           />
         </InputContainer>
         <ButtonGroup>
-          <Button variant="secondary" onClick={onClose}>
-            <FaTimes /> Cancelar
-          </Button>
-          <Button variant="primary" onClick={handleSave}>
-            <FaSave /> Guardar
-          </Button>
+          <UIButton variant="secondary" onClick={onClose}>
+            <TimesIcon /> Cancelar
+          </UIButton>
+          <UIButton variant="primary" onClick={handleSave}>
+            <SaveIcon /> Guardar
+          </UIButton>
         </ButtonGroup>
       </ModalContent>
     </ModalOverlay>

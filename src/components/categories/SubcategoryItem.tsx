@@ -1,5 +1,6 @@
 /* eslint-disable import/no-named-as-default */
 import React, { useState } from 'react';
+import type { IconBaseProps } from 'react-icons';
 import { FaEdit, FaTrash, FaSave, FaTimes } from 'react-icons/fa';
 import styled from 'styled-components';
 
@@ -63,6 +64,11 @@ const SubcategoryItem: React.FC<SubcategoryItemProps> = ({
     setIsEditing(false);
   };
 
+  const EditIcon = FaEdit as unknown as React.ComponentType<IconBaseProps>;
+  const TrashIcon = FaTrash as unknown as React.ComponentType<IconBaseProps>;
+  const SaveIcon = FaSave as unknown as React.ComponentType<IconBaseProps>;
+  const TimesIcon = FaTimes as unknown as React.ComponentType<IconBaseProps>;
+
   if (isEditing) {
     return (
       <Item>
@@ -74,10 +80,10 @@ const SubcategoryItem: React.FC<SubcategoryItemProps> = ({
         />
         <Actions>
           <ActionButton onClick={handleUpdate}>
-            <FaSave />
+            <SaveIcon />
           </ActionButton>
           <ActionButton onClick={handleCancel}>
-            <FaTimes />
+            <TimesIcon />
           </ActionButton>
         </Actions>
       </Item>
@@ -89,13 +95,13 @@ const SubcategoryItem: React.FC<SubcategoryItemProps> = ({
       <Name>{subcategory.name}</Name>
       <Actions>
         <ActionButton onClick={() => setIsEditing(true)}>
-          <FaEdit />
+          <EditIcon />
         </ActionButton>
         <ActionButton
           variant="danger"
           onClick={() => onDeleteSubcategory(subcategory.id, categoryId, subcategory.name)}
         >
-          <FaTrash />
+          <TrashIcon />
         </ActionButton>
       </Actions>
     </Item>

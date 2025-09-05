@@ -1,5 +1,6 @@
 /* eslint-disable import/no-named-as-default */
 import React from 'react';
+import type { IconBaseProps } from 'react-icons';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import styled from 'styled-components';
 
@@ -28,6 +29,9 @@ interface ExpenseItemProps {
   onEdit: (expense: Expense) => void;
 }
 
+const EditIcon = FaEdit as unknown as React.ComponentType<IconBaseProps>;
+const TrashIcon = FaTrash as unknown as React.ComponentType<IconBaseProps>;
+
 const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense, onDelete, onEdit }) => {
   return (
     <TableRow>
@@ -45,10 +49,10 @@ const ExpenseItem: React.FC<ExpenseItemProps> = ({ expense, onDelete, onEdit }) 
       <TableCell>
         <ButtonContainer>
           <Button variant="primary" onClick={() => onEdit(expense)} isRound size="small">
-            <FaEdit />
+            <EditIcon />
           </Button>
           <Button variant="danger" onClick={() => onDelete(expense)} isRound size="small">
-            <FaTrash />
+            <TrashIcon />
           </Button>
         </ButtonContainer>
       </TableCell>

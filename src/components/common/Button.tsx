@@ -24,6 +24,8 @@ const ButtonBase = styled.button<ButtonProps>`
   border: none;
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.default};
+  border-radius: ${({ theme }) => theme.borderRadius.pill};
+  position: relative;
 
   ${({ isRound }) =>
     isRound
@@ -31,7 +33,7 @@ const ButtonBase = styled.button<ButtonProps>`
           border-radius: 50%;
         `
       : css`
-          border-radius: ${({ theme }) => theme.borderRadius.medium};
+          border-radius: ${({ theme }) => theme.borderRadius.pill};
         `}
 
   ${({ fullWidth }) =>
@@ -48,17 +50,26 @@ const ButtonBase = styled.button<ButtonProps>`
 
 const ButtonVariants = {
   primary: css<ButtonProps>`
-    background-color: ${({ theme, isActive }) =>
-      isActive ? theme.colors.primaryHover : theme.colors.primary};
-    color: ${({ theme }) => theme.colors.backgroundLight};
+    background: linear-gradient(
+      180deg,
+      ${({ theme }) => theme.colors.primary},
+      ${({ theme }) => theme.colors.primaryDark}
+    );
+    color: ${({ theme }) => theme.colors.white};
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
     &:hover:not(:disabled) {
-      background-color: ${({ theme }) => theme.colors.primaryHover};
+      transform: translateY(-1px);
+      filter: brightness(1.02);
+    }
+    &:active {
+      transform: translateY(0);
+      filter: brightness(0.98);
     }
   `,
   secondary: css<ButtonProps>`
     background-color: ${({ theme, isActive }) =>
       isActive ? theme.colors.secondaryHover : theme.colors.secondary};
-    color: ${({ theme }) => theme.colors.backgroundLight};
+    color: ${({ theme }) => theme.colors.white};
     &:hover:not(:disabled) {
       background-color: ${({ theme }) => theme.colors.secondaryHover};
     }
@@ -66,7 +77,7 @@ const ButtonVariants = {
   success: css<ButtonProps>`
     background-color: ${({ theme, isActive }) =>
       isActive ? theme.colors.successHover : theme.colors.success};
-    color: ${({ theme }) => theme.colors.backgroundLight};
+    color: ${({ theme }) => theme.colors.white};
     &:hover:not(:disabled) {
       background-color: ${({ theme }) => theme.colors.successHover};
     }
@@ -74,7 +85,7 @@ const ButtonVariants = {
   danger: css<ButtonProps>`
     background-color: ${({ theme, isActive }) =>
       isActive ? theme.colors.dangerHover : theme.colors.danger};
-    color: ${({ theme }) => theme.colors.backgroundLight};
+    color: ${({ theme }) => theme.colors.white};
     &:hover:not(:disabled) {
       background-color: ${({ theme }) => theme.colors.dangerHover};
     }
@@ -131,9 +142,9 @@ const StyledButton = styled(ButtonBase).withConfig({
 })<ButtonProps>`
   ${({ variant = 'primary' }) => ButtonVariants[variant]}
   ${({ size = 'medium' }) => ButtonSizes[size]}
-  
+
   &:hover:not(:disabled) {
-    transform: scale(1.05);
+    transform: translateY(-1px);
   }
 
   width: ${(props) => (props.fullWidth ? '100%' : 'auto')};
