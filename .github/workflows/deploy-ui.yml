@@ -34,7 +34,7 @@ jobs:
         run: npm i -g @railway/cli@^4
 
       - name: Link project
-        run: railway link --project $RAILWAY_PROJECT_ID
+        run: railway link --project $RAILWAY_PROJECT_ID --team "Alex de Pablos's Projects" --service "$UI_SERVICE_NAME"
 
       - name: Select environment
         id: env
@@ -64,7 +64,6 @@ jobs:
           echo "Hitting $UI_SMOKE_URL ..."
           curl -fsSL --retry 6 --retry-delay 5 "$UI_SMOKE_URL" >/dev/null
           echo "UI smoke test OK"
-
 
 
 
